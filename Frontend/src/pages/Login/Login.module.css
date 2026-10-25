@@ -1,8 +1,450 @@
-.login {
+
+/* ================= ANIMATIONS ================= */
+
+@keyframes vl-floatLeaf {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.35;
+  }
+
+  50% {
+    transform: translateY(-22px) rotate(12deg);
+    opacity: 0.55;
+  }
+
+  100% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.35;
+  }
+}
+
+@keyframes vl-drift {
+  0% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(18px, -14px);
+  }
+
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes vl-fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes vl-shine {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* ================= PAGE ================= */
+
+.vlPage {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
+  flex-wrap: wrap;
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #ffffff;
+}
+
+/* ================= LEFT PANEL ================= */
+
+.vlLeft {
+  flex: 1 1 480px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    #14532d 0%,
+    #16a34a 55%,
+    #4ade80 100%
+  );
+  color: #ffffff;
+  padding: 64px 56px;
+  display: flex;
   align-items: center;
-  font-family: Arial, sans-serif;
+  border-top-right-radius: 48px;
+  border-bottom-right-radius: 48px;
+  box-sizing: border-box;
+}
+
+.vlBlob {
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  filter: blur(4px);
+  pointer-events: none;
+}
+
+.vlBlobTop {
+  top: -80px;
+  left: -80px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.vlBlobBottom {
+  bottom: -120px;
+  right: -60px;
+  width: 320px;
+  height: 320px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ================= FLOATING LEAVES ================= */
+
+.vlLeaf {
+  position: absolute;
+  font-size: 30px;
+  user-select: none;
+  pointer-events: none;
+  animation: vl-floatLeaf 7s ease-in-out infinite;
+}
+
+.vlLeaf1 {
+  top: 14%;
+  left: 12%;
+}
+
+.vlLeaf2 {
+  top: 68%;
+  left: 22%;
+  animation-delay: 1.4s;
+}
+
+.vlLeaf3 {
+  top: 30%;
+  right: 16%;
+  animation-delay: 0.8s;
+}
+
+.vlLeaf4 {
+  bottom: 18%;
+  right: 24%;
+  font-size: 22px;
+  animation: vl-drift 10s ease-in-out infinite;
+}
+
+/* ================= LEFT CONTENT ================= */
+
+.vlLeftContent {
+  position: relative;
+  z-index: 2;
+  max-width: 460px;
+  animation: vl-fadeUp 0.6s ease both;
+}
+
+.vlBadge {
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  margin-bottom: 24px;
+  backdrop-filter: blur(4px);
+}
+
+.vlHeadline {
+  font-size: 46px;
+  line-height: 1.15;
+  font-weight: 800;
+  margin: 0 0 20px;
+}
+
+.vlHeadlineAccent {
+  background: linear-gradient(
+    90deg,
+    #bbf7d0,
+    #ffffff,
+    #bbf7d0
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: vl-shine 4s linear infinite;
+}
+
+.vlInfoText {
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.92);
+  margin: 0 0 24px;
+}
+
+.vlBulletList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.vlBullet {
+  font-size: 14.5px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+/* ================= STATISTICS ================= */
+
+.vlStatRow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.vlStat {
+  text-align: left;
+}
+
+.vlStatNum {
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.vlStatLabel {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 2px;
+}
+
+.vlStatDivider {
+  width: 1px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+/* ================= RIGHT PANEL ================= */
+
+.vlRight {
+  flex: 1 1 420px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 32px;
+  background: #f9fafb;
+  box-sizing: border-box;
+}
+
+.vlCard {
+  width: 150%;
+  max-width: 600px;
+  box-sizing: border-box;
+  background: #ffffff;
+  padding: 40px 36px;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(22, 163, 74, 0.1);
+  display: flex;
+  flex-direction: column;
+  animation: vl-fadeUp 0.6s ease both;
+}
+
+/* ================= LOGO ================= */
+
+.vlLogoCircle {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border-radius: 70%;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin: 0 auto 14px;
+}
+
+.vlFormTitle {
+  margin: 0 0 6px;
+  text-align: center;
+  color: #14532d;
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.vlFormSubtitle {
+  margin: 0 0 26px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13.5px;
+}
+
+/* ================= FORM ================= */
+
+.vlLabel {
+  font-size: 20px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.vlInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14px;
+  color: #14532d;
+  background: #ffffff;
+  border: 2px solid #d1d5db;
+  border-radius: 10px;
+  outline: none;
+  margin-bottom: 18px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.vlInput:focus,
+.vlInputFocused {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.15);
+}
+
+/* ================= REMEMBER / FORGOT ================= */
+
+.vlRowBetween {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+  font-size: 15px;
+}
+
+.vlCheckboxLabel {
+  color: #4b5563;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.vlCheckboxLabel input {
+  accent-color: #16a34a;
+}
+
+.vlLink {
+  color: #16a34a;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.vlLink:hover {
+  text-decoration: underline;
+}
+
+.vlLinkStrong {
+  color: #15803d;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.vlLinkStrong:hover {
+  text-decoration: underline;
+}
+
+/* ================= LOGIN BUTTON ================= */
+
+.vlButton {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 13px;
+  font-family: inherit;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(22, 163, 74, 0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.vlButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 26px rgba(22, 163, 74, 0.45);
+}
+
+.vlButton:active {
+  transform: translateY(0);
+}
+
+.vlButton:focus-visible {
+  outline: 3px solid #86efac;
+  outline-offset: 3px;
+}
+
+/* ================= SIGNUP ================= */
+
+.vlSignupText {
+  margin: 20px 0 0;
+  text-align: center;
+  font-size: 18px;
+  color: #6b7280;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+  .vlLeft {
+    flex: 1 1 100%;
+    border-radius: 0 0 40px 40px;
+    padding: 48px 36px;
+  }
+
+  .vlHeadline {
+    font-size: 36px;
+  }
+
+  .vlRight {
+    flex: 1 1 100%;
+    padding: 36px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .vlLeft {
+    padding: 40px 24px;
+  }
+
+  .vlHeadline {
+    font-size: 32px;
+  }
+
+  .vlRight {
+    padding: 28px 16px;
+  }
+
+  .vlCard {
+    padding: 32px 24px;
+  }
+
+  .vlStatRow {
+    gap: 16px;
+  }
 }
