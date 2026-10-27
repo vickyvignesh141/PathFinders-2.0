@@ -1,10 +1,11 @@
-
 import { useState } from "react";
+import { Users, GraduationCap, UserCheck, Settings } from "lucide-react";
 import styles from "./Login.module.css";
 
 export default function VolunteerLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("student"); // Default role
   const [focused, setFocused] = useState(null);
 
   const handleLogin = (e) => {
@@ -16,7 +17,7 @@ export default function VolunteerLogin() {
     }
 
     if (username === "volunteer" && password === "1234") {
-      alert(`Welcome back, ${username}! 🌱`);
+      alert(`Welcome back, ${username}! Role: ${role}`);
     } else {
       alert("Invalid username or password.");
       setPassword("");
@@ -25,19 +26,11 @@ export default function VolunteerLogin() {
 
   return (
     <div className={styles.vlPage}>
-      {/* LEFT PANEL */}
+      {/* LEFT PANEL - Maatram Volunteering Details */}
       <div className={styles.vlLeft}>
-        <div className={`${styles.vlBlob} ${styles.vlBlobTop}`} />
-        <div className={`${styles.vlBlob} ${styles.vlBlobBottom}`} />
-
-        <span className={`${styles.vlLeaf} ${styles.vlLeaf1}`}>🍃</span>
-        <span className={`${styles.vlLeaf} ${styles.vlLeaf2}`}>🌿</span>
-        <span className={`${styles.vlLeaf} ${styles.vlLeaf3}`}>🌱</span>
-        <span className={`${styles.vlLeaf} ${styles.vlLeaf4}`}>✦</span>
-
         <div className={styles.vlLeftContent}>
           <div className={styles.vlBadge}>
-            🌍 Join the Movement
+            MAATRAM VOLUNTEER COMMUNITY
           </div>
 
           <h1 className={styles.vlHeadline}>
@@ -49,59 +42,32 @@ export default function VolunteerLogin() {
           </h1>
 
           <p className={styles.vlInfoText}>
-            Become part of a community of volunteers creating real impact —
-            one small act of kindness at a time. Plant trees, teach kids,
-            feed the hungry, and grow together.
+            Become part of a community of volunteers creating real impact. 
+            Your time, skills, and experience can shape a student's future and 
+            empower young minds to create a brighter tomorrow.
           </p>
-
-          <ul className={styles.vlBulletList}>
-            <li className={styles.vlBullet}>
-              🌿 12,000+ active volunteers worldwide
-            </li>
-            <li className={styles.vlBullet}>
-              🤝 480+ local community projects
-            </li>
-            <li className={styles.vlBullet}>
-              ⏱️ Flexible hours — volunteer your way
-            </li>
-          </ul>
-
-          <div className={styles.vlStatRow}>
-            <div className={styles.vlStat}>
-              <div className={styles.vlStatNum}>98%</div>
-              <div className={styles.vlStatLabel}>
-                Happy volunteers
-              </div>
-            </div>
-
-            <div className={styles.vlStatDivider} />
-
-            <div className={styles.vlStat}>
-              <div className={styles.vlStatNum}>1.2M</div>
-              <div className={styles.vlStatLabel}>
-                Lives touched
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
       {/* RIGHT PANEL — LOGIN */}
       <div className={styles.vlRight}>
         <form className={styles.vlCard} onSubmit={handleLogin}>
-          <div className={styles.vlLogoCircle}>🌱</div>
+          
+          {/* Maatram Logo */}
+          <div className={styles.vlLogoCircle}>M</div>
 
-          <h2 className={styles.vlFormTitle}>Welcome Back</h2>
+          <h2 className={styles.vlFormTitle}>VOLUNTEER LOGIN</h2>
 
           <p className={styles.vlFormSubtitle}>
-            Log in to continue your volunteering journey
+            Log in to continue your journey
           </p>
+
+        
 
           {/* USERNAME */}
           <label className={styles.vlLabel} htmlFor="username">
             Username
           </label>
-
           <input
             id="username"
             type="text"
@@ -120,7 +86,6 @@ export default function VolunteerLogin() {
           <label className={styles.vlLabel} htmlFor="password">
             Password
           </label>
-
           <input
             id="password"
             type="password"
@@ -135,27 +100,52 @@ export default function VolunteerLogin() {
             }`}
           />
 
-          <div className={styles.vlRowBetween}>
-            <label className={styles.vlCheckboxLabel}>
-              <input type="checkbox" />
-              Remember me
+            {/* NEW ROLE SELECTION BOXES */}
+          <div className={styles.vlRoleSection}>
+            <label className={styles.vlRoleLabel}>
+              <Users size={16} strokeWidth={2.5} /> Select User Type *
             </label>
+            
+            <div className={styles.vlRoleGrid}>
+              {/* STUDENT */}
+              <div 
+                className={`${styles.vlRoleBox} ${role === "student" ? styles.vlRoleBoxActive : ""}`}
+                onClick={() => setRole("student")}
+              >
+                <div className={styles.vlRoleIconWrap}>
+                  <GraduationCap size={22} />
+                </div>
+                <span>Student</span>
+              </div>
 
-            <a href="#" className={styles.vlLink}>
-              Forgot password?
-            </a>
+              {/* ALUMNI / MENTOR */}
+              <div 
+                className={`${styles.vlRoleBox} ${role === "alumni" ? styles.vlRoleBoxActive : ""}`}
+                onClick={() => setRole("alumni")}
+              >
+                <div className={styles.vlRoleIconWrap}>
+                  <UserCheck size={22} />
+                </div>
+                <span>Alumni</span>
+              </div>
+
+              {/* ADMIN */}
+              <div 
+                className={`${styles.vlRoleBox} ${role === "admin" ? styles.vlRoleBoxActive : ""}`}
+                onClick={() => setRole("admin")}
+              >
+                <div className={styles.vlRoleIconWrap}>
+                  <Settings size={22} />
+                </div>
+                <span>Admin</span>
+              </div>
+            </div>
           </div>
 
           <button type="submit" className={styles.vlButton}>
             LOGIN
           </button>
 
-          <p className={styles.vlSignupText}>
-            New here?{" "}
-            <a href="#" className={styles.vlLinkStrong}>
-              Create an account
-            </a>
-          </p>
         </form>
       </div>
     </div>
