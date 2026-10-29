@@ -1,15 +1,10 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Login from "./pages/Login/Login.jsx";
-import Dashboard from "./pages/Dashboard/Dashboard.jsx";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/login" element={<Login />} />
-      </Routes>
-    </BrowserRouter>
+    <div className="app">
+      <AppRoutes />
+    </div>
   );
 }
 
