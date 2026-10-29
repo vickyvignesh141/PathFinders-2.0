@@ -18,7 +18,7 @@ def login():
     password = data.get("password")
     role = data.get("role")
     
-    if role not in ["student", "alumini", "admin"]:
+    if role not in ["student", "alumni", "admin"]:
         return jsonify({
         "success": False,
         "message": "Invalid role"
@@ -46,7 +46,8 @@ def login():
         return jsonify({
             "success": True,
             "message": "Login successful",
-            "username": volunteer["username"]
+            "username": volunteer["username"],
+            "role": volunteer["role"]
         }), 200
 
     return jsonify({

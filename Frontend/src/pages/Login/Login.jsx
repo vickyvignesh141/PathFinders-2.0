@@ -1,28 +1,54 @@
 import { useState } from "react";
 import { Users, GraduationCap, UserCheck, Settings } from "lucide-react";
 import styles from "./Login.module.css";
+import { loginUser } from "../../services/authService";
+import { useNavigate } from "react-router-dom";
 
 export default function VolunteerLogin() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student"); // Default role
+  const [role, setRole] = useState("");
   const [focused, setFocused] = useState(null);
+  const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+
+
+
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!username || !password) {
+    if (!username.trim() || !password) {
       alert("Please enter both username and password.");
       return;
     }
 
-    if (username === "volunteer" && password === "1234") {
-      alert(`Welcome back, ${username}! Role: ${role}`);
-    } else {
-      alert("Invalid username or password.");
+    try {
+      const data = await loginUser(username.trim(), password, role);
+
+      if (data.success) {
+        alert(`Welcome back, ${data.username}! Role: ${data.role}`);  // Dashboard navigation will be added in the next step.
+
+        if (data.success) {
+          if (data.role === "student") {
+            navigate("/student/StudentDashboard");
+          } else if (data.role === "alumni") {
+            navigate("/alumni/AlumniDashboard");
+          } else if (data.role === "admin") {
+            navigate("/Director/DirectorDashboard");
+          }
+        }
+
+      }
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        "Unable to connect to the server. Please try again.";
+
+      alert(message);
       setPassword("");
     }
   };
+
 
   return (
     <div className={styles.vlPage}>
@@ -42,8 +68,8 @@ export default function VolunteerLogin() {
           </h1>
 
           <p className={styles.vlInfoText}>
-            Become part of a community of volunteers creating real impact. 
-            Your time, skills, and experience can shape a student's future and 
+            Become part of a community of volunteers creating real impact.
+            Your time, skills, and experience can shape a student's future and
             empower young minds to create a brighter tomorrow.
           </p>
         </div>
@@ -52,7 +78,7 @@ export default function VolunteerLogin() {
       {/* RIGHT PANEL — LOGIN */}
       <div className={styles.vlRight}>
         <form className={styles.vlCard} onSubmit={handleLogin}>
-          
+
           {/* Maatram Logo */}
           <div className={styles.vlLogoCircle}>M</div>
 
@@ -62,7 +88,7 @@ export default function VolunteerLogin() {
             Log in to continue your journey
           </p>
 
-        
+
 
           {/* USERNAME */}
           <label className={styles.vlLabel} htmlFor="username">
@@ -77,9 +103,8 @@ export default function VolunteerLogin() {
             onBlur={() => setFocused(null)}
             placeholder="Enter your username"
             autoComplete="username"
-            className={`${styles.vlInput} ${
-              focused === "user" ? styles.vlInputFocused : ""
-            }`}
+            className={`${styles.vlInput} ${focused === "user" ? styles.vlInputFocused : ""
+              }`}
           />
 
           {/* PASSWORD */}
@@ -95,20 +120,19 @@ export default function VolunteerLogin() {
             onBlur={() => setFocused(null)}
             placeholder="Enter your password"
             autoComplete="current-password"
-            className={`${styles.vlInput} ${
-              focused === "pass" ? styles.vlInputFocused : ""
-            }`}
+            className={`${styles.vlInput} ${focused === "pass" ? styles.vlInputFocused : ""
+              }`}
           />
 
-            {/* NEW ROLE SELECTION BOXES */}
+          {/* NEW ROLE SELECTION BOXES */}
           <div className={styles.vlRoleSection}>
             <label className={styles.vlRoleLabel}>
               <Users size={16} strokeWidth={2.5} /> Select User Type *
             </label>
-            
+
             <div className={styles.vlRoleGrid}>
               {/* STUDENT */}
-              <div 
+              <div
                 className={`${styles.vlRoleBox} ${role === "student" ? styles.vlRoleBoxActive : ""}`}
                 onClick={() => setRole("student")}
               >
@@ -119,7 +143,7 @@ export default function VolunteerLogin() {
               </div>
 
               {/* ALUMNI / MENTOR */}
-              <div 
+              <div
                 className={`${styles.vlRoleBox} ${role === "alumni" ? styles.vlRoleBoxActive : ""}`}
                 onClick={() => setRole("alumni")}
               >
@@ -130,7 +154,7 @@ export default function VolunteerLogin() {
               </div>
 
               {/* ADMIN */}
-              <div 
+              <div
                 className={`${styles.vlRoleBox} ${role === "admin" ? styles.vlRoleBoxActive : ""}`}
                 onClick={() => setRole("admin")}
               >
