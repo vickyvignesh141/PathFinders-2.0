@@ -5,6 +5,7 @@ import StudentDashboard from "../pages/Student/StudentDashboard.jsx";
 import AlumniDashboard from "../pages/Alumni/AlumniDashboard.jsx";
 import AdminDashboard from "../pages/Admin/AdminDashboard.jsx";
 import DirectorDashboard from "../pages/Director/DirectorDashboard.jsx";
+import EventCreation from "../pages/Admin/CreateEvents.jsx"
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/directordashboard" element={<DirectorDashboard />} />
         //Admin Routes
         <Route path="/admindashboard" element={<AdminDashboard />} />
+        <Route path="/createevent" element={<EventCreation />} />
         //Alumni Routes
         <Route path="/alumnidashboard" element={<AlumniDashboard />} />
 
