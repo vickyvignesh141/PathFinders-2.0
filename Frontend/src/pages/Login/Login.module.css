@@ -17,13 +17,16 @@
   background: #ffffff;
 }
 
-/* ================= LEFT PANEL (Premium Unique Gradient) ================= */
+/* ================= LEFT PANEL (Black + White + Yellow Mix) ================= */
 .vlLeft {
   flex: 1 1 480px;
   position: relative;
   overflow: hidden;
-  /* Premium Black & Dark Charcoal mix */
-  background: linear-gradient(145deg, #0a0a0a 0%, #1a1a1a 100%);
+  /* Mixing of black, white and yellow */
+  background:
+    radial-gradient(circle at 85% 15%, rgba(255, 204, 0, 0.20) 0%, transparent 45%),
+    radial-gradient(circle at 15% 85%, rgba(255, 255, 255, 0.10) 0%, transparent 50%),
+    linear-gradient(145deg, #0a0a0a 0%, #1c1a12 50%, #2e2710 100%);
   color: #ffffff;
   padding: 64px 56px;
   display: flex;
@@ -31,6 +34,43 @@
   border-top-right-radius: 48px;
   border-bottom-right-radius: 48px;
   box-sizing: border-box;
+}
+
+/* Yellow glow orb (soft depth) */
+.vlLeft::before {
+  content: "";
+  position: absolute;
+  width: 360px;
+  height: 360px;
+  top: -130px;
+  right: -110px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 204, 0, 0.30) 0%,
+    rgba(255, 204, 0, 0.08) 45%,
+    transparent 70%
+  );
+  filter: blur(12px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* White diagonal shimmer streak */
+.vlLeft::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.05) 48%,
+    rgba(255, 255, 255, 0.10) 50%,
+    rgba(255, 255, 255, 0.05) 52%,
+    transparent 65%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
 .vlLeftContent {

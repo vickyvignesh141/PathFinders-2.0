@@ -1,0 +1,622 @@
+/* ================= BASE ================= */
+.dashboard {
+  min-height: 100vh;
+  background: #f5f6f8;
+  font-family: "Segoe UI", Arial, sans-serif;
+  color: #111;
+}
+
+/* ================= TOP BAR ================= */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoIcon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ffcc00, #f7b500);
+  color: #111;
+  font-size: 22px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(255, 204, 0, 0.35);
+}
+
+.brandName {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.3px;
+}
+
+.brandName span {
+  color: #d4a400;
+  font-weight: 600;
+}
+
+.brandSub {
+  margin: 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #111;
+  color: #ffcc00;
+  font-weight: 800;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.userText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.userName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+
+.userRole {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ================= MAIN ================= */
+.main {
+  padding: 32px 40px 64px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+/* ================= WELCOME BANNER ================= */
+.welcome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 32px;
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 90% 20%, rgba(255, 204, 0, 0.25) 0%, transparent 50%),
+    linear-gradient(135deg, #0a0a0a 0%, #1c1a12 60%, #2e2710 100%);
+  color: #fff;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.welcome::before {
+  content: "";
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  top: -80px;
+  right: -60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 204, 0, 0.35), transparent 70%);
+  pointer-events: none;
+}
+
+.welcomeTitle {
+  margin: 0 0 8px;
+  font-size: 26px;
+  font-weight: 800;
+}
+
+.accent {
+  color: #ffcc00;
+}
+
+.welcomeText {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.welcomeStats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.welcomeStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.welcomeStatNum {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffcc00;
+}
+
+.welcomeStatLabel {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.welcomeStatDivider {
+  width: 1px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ================= QUICK ACTIONS ================= */
+.quickSection {
+  margin-bottom: 28px;
+}
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.quickCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 18px;
+  background: #fff;
+  border: 1.5px solid #eee;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-align: left;
+  font-family: inherit;
+}
+
+.quickCard:hover {
+  border-color: #ffcc00;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(255, 204, 0, 0.15);
+}
+
+.quickIcon {
+  font-size: 26px;
+  margin-bottom: 6px;
+}
+
+.quickLabel {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+}
+
+.quickDesc {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ================= SECTION TITLE ================= */
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 800;
+  margin: 0 0 16px;
+  color: #111;
+}
+
+/* ================= FILTER BAR ================= */
+.filterBar {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.filterBtn {
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  color: #4b5563;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filterBtn:hover {
+  border-color: #ffcc00;
+  color: #111;
+}
+
+.filterBtnActive {
+  background: #111;
+  border-color: #111;
+  color: #ffcc00;
+}
+
+/* ================= EVENTS GRID ================= */
+.eventsSection {
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+
+.eventsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.eventCard {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.eventCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+}
+
+.eventHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.eventIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #fff9e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+
+.eventCategory {
+  font-size: 11px;
+  font-weight: 700;
+  color: #b8860b;
+  background: #fff9e0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.eventTitle {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  color: #111;
+}
+
+.eventDesc {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #6b7280;
+}
+
+.eventMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 12px 0;
+  border-top: 1px dashed #eee;
+  border-bottom: 1px dashed #eee;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #4b5563;
+}
+
+.metaIcon {
+  font-size: 13px;
+}
+
+.eventFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.seats {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.registerBtn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  background: #ffcc00;
+  color: #111;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(255, 204, 0, 0.35);
+}
+
+.registerBtn:hover {
+  background: #111;
+  color: #ffcc00;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+.registerBtn:active {
+  transform: translateY(0);
+}
+
+.registeredBtn {
+  background: #111;
+  color: #ffcc00;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.registeredBtn:hover {
+  background: #333;
+  color: #ffcc00;
+}
+
+/* ================= BOTTOM GRID ================= */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px;
+  border: 1px solid #eee;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.panelHeader .sectionTitle {
+  margin: 0;
+}
+
+.viewAllBtn {
+  background: transparent;
+  border: none;
+  color: #b8860b;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.viewAllBtn:hover {
+  background: #fff9e0;
+}
+
+/* ===== Directory ===== */
+.directoryList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.directoryItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.directoryItem:hover {
+  background: #fafafa;
+}
+
+.directoryAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #111;
+  color: #ffcc00;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.directoryInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  line-height: 1.3;
+}
+
+.directoryName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+}
+
+.directoryRole {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.directoryBatch {
+  font-size: 12px;
+  font-weight: 700;
+  color: #b8860b;
+  background: #fff9e0;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+/* ===== Announcements ===== */
+.announceList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.announceItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 8px;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.announceItem:hover {
+  background: #fafafa;
+}
+
+.announceTag {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #111;
+  background: #ffcc00;
+  padding: 4px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.announceInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.announceTitle {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #111;
+}
+
+.announceDate {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 900px) {
+  .topbar {
+    padding: 14px 20px;
+  }
+  .main {
+    padding: 24px 20px 48px;
+  }
+  .welcome {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 24px;
+  }
+  .welcomeTitle {
+    font-size: 22px;
+  }
+  .welcomeStats {
+    width: 100%;
+    justify-content: space-around;
+  }
+  .bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    padding: 12px 16px;
+  }
+  .brandName {
+    font-size: 15px;
+  }
+  .brandSub {
+    font-size: 11px;
+  }
+  .logoIcon {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+  }
+  .userText {
+    display: none;
+  }
+  .main {
+    padding: 20px 14px 40px;
+  }
+  .welcomeTitle {
+    font-size: 20px;
+  }
+  .welcomeStatNum {
+    font-size: 22px;
+  }
+  .welcomeStats {
+    gap: 12px;
+  }
+  .eventsGrid {
+    grid-template-columns: 1fr;
+  }
+  .quickGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
