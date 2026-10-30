@@ -1,128 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./StudentDashboard.module.css";
 
-const eventsData = [
-  {
-    id: 1,
-    title: "Physical Verification",
-    date: "2025-11-12",
-    endDate: "2025-11-12",
-    time: "10:00 AM",
-    location: "Main Campus",
-    description: "Document verification and physical presence check for all enrolled students.",
-    icon: "✅",
-    category: "Verification",
-    seats: 120,
-    registered: false,
-    completed: true,
-    hours: 4,
-  },
-  {
-    id: 2,
-    title: "School Visit",
-    date: "2025-11-18",
-    endDate: "2025-11-18",
-    time: "09:00 AM",
-    location: "Govt. Higher Sec. School",
-    description: "Community outreach visit to nearby schools to spread awareness.",
-    icon: "🏫",
-    category: "Outreach",
-    seats: 60,
-    registered: true,
-    completed: false,
-    hours: 6,
-  },
-  {
-    id: 3,
-    title: "Karpom Karpipom",
-    date: "2025-11-22",
-    endDate: "2025-11-22",
-    time: "04:00 PM",
-    location: "Community Hall",
-    description: "Learn and teach session — share knowledge with fellow students.",
-    icon: "📚",
-    category: "Learning",
-    seats: 80,
-    registered: true,
-    completed: false,
-    hours: 3,
-  },
-  {
-    id: 4,
-    title: "Santa Class",
-    date: "2025-11-25",
-    endDate: "2025-11-25",
-    time: "11:00 AM",
-    location: "Online (Zoom)",
-    description: "Special interactive session with mentors and guest speakers.",
-    icon: "🎅",
-    category: "Workshop",
-    seats: 200,
-    registered: false,
-    completed: true,
-    hours: 2,
-  },
-  {
-    id: 5,
-    title: "Palm Tree Plantation",
-    date: "2025-11-30",
-    endDate: "2025-11-30",
-    time: "07:00 AM",
-    location: "Green Field Area",
-    description: "Environment drive — plant palm trees and support green initiatives.",
-    icon: "🌴",
-    category: "Environment",
-    seats: 100,
-    registered: true,
-    completed: false,
-    hours: 5,
-  },
-  {
-    id: 6,
-    title: "Boot Camp",
-    date: "2025-12-05",
-    endDate: "2025-12-06",
-    time: "08:00 AM",
-    location: "Training Ground",
-    description: "Intensive 2-day boot camp for skill development and team building.",
-    icon: "🥾",
-    category: "Training",
-    seats: 50,
-    registered: false,
-    completed: false,
-    hours: 8,
-  },
-  {
-    id: 7,
-    title: "Sangamam",
-    date: "2025-12-10",
-    endDate: "2025-12-10",
-    time: "05:00 PM",
-    location: "Auditorium",
-    description: "Annual cultural meet — celebrate talent and togetherness.",
-    icon: "🎭",
-    category: "Cultural",
-    seats: 300,
-    registered: true,
-    completed: false,
-    hours: 4,
-  },
-  {
-    id: 8,
-    title: "Mock Interview",
-    date: "2025-12-15",
-    endDate: "2025-12-15",
-    time: "10:00 AM",
-    location: "Seminar Hall",
-    description: "Practice interviews with industry experts and get feedback.",
-    icon: "💼",
-    category: "Career",
-    seats: 40,
-    registered: true,
-    completed: false,
-    hours: 3,
-  },
-];
+
 
 const studentData = {
   name: "Santhosh Kumar",
@@ -228,7 +107,9 @@ const formatFullDate = (iso) => {
 };
 
 const StudentDashboard = () => {
-  const [events, setEvents] = useState(eventsData);
+  const [events, setEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [eventError, setEventError] = useState("");
   const [profile] = useState(studentData);
   const [calDate, setCalDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -250,6 +131,67 @@ const StudentDashboard = () => {
 
   // Only upcoming (not completed) events in the strip
   const upcomingEvents = events.filter((e) => !e.completed);
+
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await fetch(
+          "http://localhost:5000/api/events/"
+        );
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Failed to fetch events");
+        }
+
+        const formattedEvents = result.events.map((event) => {
+const start = new Date(event.startAt);
+const end = new Date(event.endAt);
+
+const hours =
+  !isNaN(start.getTime()) && !isNaN(end.getTime())
+    hours;
+          return {
+            id: event._id,
+            title: event.eventTitle,
+            date: event.date,
+            endDate: event.date,
+            time: start.toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+              hour12: true,
+            }),
+            location: event.location,
+            description: event.eventDescription,
+            icon: "🤝",
+            category: event.volunteerWork,
+            seats: event.volunteersNeeded,
+            registered: false,
+            completed: event.status === "completed",
+            hours: Math.max(
+              0,
+              (end - start) / (1000 * 60 * 60)
+            ),
+            instructions: event.instructions,
+            zone: event.zone,
+            startTime: event.startTime,
+            endTime: event.endTime,
+          };
+        });
+
+        setEvents(formattedEvents);
+      } catch (error) {
+        console.error("Fetch Events Error:", error);
+        setEventError("Unable to load events.");
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   // Scroll the strip one card at a time (wraps around at both ends)
   const slideBy = useCallback((dir) => {
@@ -276,14 +218,19 @@ const StudentDashboard = () => {
     return () => clearInterval(timer);
   }, [paused, upcomingEvents.length, slideBy]);
 
-  const handleRegister = (id) => {
-    setEvents((prev) =>
-      prev.map((ev) => (ev.id === id ? { ...ev, registered: !ev.registered } : ev))
-    );
-    setSelectedEvent((prev) =>
-      prev && prev.id === id ? { ...prev, registered: !prev.registered } : prev
-    );
-  };
+const handleRegister = (id) => {
+  setEvents((prev) =>
+    prev.map((ev) =>
+      ev.id === id ? { ...ev, registered: !ev.registered } : ev
+    )
+  );
+
+  setSelectedEvent((prev) =>
+    prev && prev.id === id
+      ? { ...prev, registered: !prev.registered }
+      : prev
+  );
+};
 
   const totalRegistered = events.filter((e) => e.registered).length;
   const registeredEvents = events.filter((e) => e.registered);
@@ -463,7 +410,11 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          {upcomingEvents.length === 0 ? (
+          {loadingEvents ? (
+            <p className={styles.emptyText}>Loading events...</p>
+          ) : eventError ? (
+            <p className={styles.emptyText}>{eventError}</p>
+          ) : upcomingEvents.length === 0 ? (
             <p className={styles.emptyText}>No upcoming events right now.</p>
           ) : (
             <div className={styles.eventsTrack} ref={trackRef}>
@@ -507,9 +458,8 @@ const StudentDashboard = () => {
                     <div className={styles.eventCardFooter}>
                       <span className={styles.eventLink}>View Details</span>
                       <span
-                        className={`${styles.eventStatus} ${
-                          ev.registered ? styles.statusRegistered : styles.statusOpen
-                        }`}
+                        className={`${styles.eventStatus} ${ev.registered ? styles.statusRegistered : styles.statusOpen
+                          }`}
                       >
                         {ev.registered ? "✓ Registered" : "Open"}
                       </span>
@@ -568,14 +518,12 @@ const StudentDashboard = () => {
                 return (
                   <div
                     key={student.rank}
-                    className={`${styles.leaderboardItem} ${
-                      isCurrent ? styles.currentItem : ""
-                    }`}
+                    className={`${styles.leaderboardItem} ${isCurrent ? styles.currentItem : ""
+                      }`}
                   >
                     <span
-                      className={`${styles.rank} ${
-                        student.rank <= 3 ? styles.topRank : ""
-                      }`}
+                      className={`${styles.rank} ${student.rank <= 3 ? styles.topRank : ""
+                        }`}
                     >
                       {student.rank}
                     </span>
@@ -674,9 +622,8 @@ const StudentDashboard = () => {
                 {calDays.map((day, i) => (
                   <div
                     key={i}
-                    className={`${styles.dayCell} ${day ? "" : styles.emptyCell} ${
-                      day && eventsByDay[day] ? styles.eventDay : ""
-                    }`}
+                    className={`${styles.dayCell} ${day ? "" : styles.emptyCell} ${day && eventsByDay[day] ? styles.eventDay : ""
+                      }`}
                   >
                     {day && (
                       <>
@@ -887,9 +834,8 @@ const StudentDashboard = () => {
                 Close
               </button>
               <button
-                className={`${styles.saveBtn} ${
-                  selectedEvent.registered ? styles.registeredBtn : ""
-                }`}
+                className={`${styles.saveBtn} ${selectedEvent.registered ? styles.registeredBtn : ""
+                  }`}
                 onClick={() => handleRegister(selectedEvent.id)}
               >
                 {selectedEvent.registered ? "✓ Registered — Unregister" : "Register Now"}
@@ -955,14 +901,12 @@ const StudentDashboard = () => {
                 return (
                   <div
                     key={student.rank}
-                    className={`${styles.leaderboardItem} ${
-                      isCurrent ? styles.currentItem : ""
-                    }`}
+                    className={`${styles.leaderboardItem} ${isCurrent ? styles.currentItem : ""
+                      }`}
                   >
                     <span
-                      className={`${styles.rank} ${
-                        student.rank <= 3 ? styles.topRank : ""
-                      }`}
+                      className={`${styles.rank} ${student.rank <= 3 ? styles.topRank : ""
+                        }`}
                     >
                       {student.rank}
                     </span>

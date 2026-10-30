@@ -33,7 +33,7 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async(e) => {
     e.preventDefault();
 
     if (!form.eventTitle.trim()) {
@@ -85,9 +85,28 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
 
     console.log("Created Event:", eventData);
 
-    if (onSubmit) {
-      onSubmit(eventData);
+   try {
+    const response = await fetch("http://localhost:5000/api/events/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(eventData)
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+        alert("Event created successfully!");
+        if (onSubmit) onSubmit(eventData);
+    } else {
+        setError(result.message);
     }
+
+} catch (error) {
+    console.error(error);
+    setError("Server connection failed");
+}
   };
 
   return (

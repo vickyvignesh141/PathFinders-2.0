@@ -1,3 +1,8 @@
+/* Remove the browser's default 8px body margin (it caused the extra space / page scroll) */
+:global(body) {
+  margin: 0;
+}
+
 /* ================= ANIMATIONS ================= */
 @keyframes vl-fadeUp {
   from { opacity: 0; transform: translateY(18px); }
@@ -122,7 +127,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 48px 32px;
+  padding: 24px 32px;
   background: #ffffff;
   box-sizing: border-box;
 }
@@ -298,6 +303,89 @@
 
 .vlButton:active {
   transform: translateY(0);
+}
+
+.vlRegisterText {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.vlRegisterText span {
+  color: #d4a900;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.vlRegisterText span:hover {
+  text-decoration: underline;
+}
+
+
+/* ================= FLIP CARD ================= */
+
+/* FIXED SIZE for both Login and Register (shrinks only if the screen is shorter) */
+.vlFlipContainer {
+  width: 100%;
+  max-width: 500px;
+  height: min(680px, calc(100vh - 48px));
+  perspective: 1200px;
+}
+
+.vlFlipInner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s ease;
+  transform-style: preserve-3d;
+}
+
+.vlFlipped {
+  transform: rotateY(180deg);
+}
+
+.vlFlipFront,
+.vlFlipBack {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background: #ffffff;
+  padding: 40px 36px;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+  border: 1px solid #f0f0f0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+
+  /* SCROLL inside the card when content is taller than the fixed size */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #ffcc00 transparent;
+}
+
+.vlFlipFront::-webkit-scrollbar,
+.vlFlipBack::-webkit-scrollbar {
+  width: 6px;
+}
+
+.vlFlipFront::-webkit-scrollbar-track,
+.vlFlipBack::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.vlFlipFront::-webkit-scrollbar-thumb,
+.vlFlipBack::-webkit-scrollbar-thumb {
+  background: #ffcc00;
+  border-radius: 999px;
+}
+
+.vlFlipBack {
+  transform: rotateY(180deg);
 }
 
 /* ================= RESPONSIVE ================= */
