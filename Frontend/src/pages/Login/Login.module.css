@@ -361,27 +361,17 @@
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 
-  /* SCROLL inside the card when content is taller than the fixed size */
+  /* SCROLL inside the card when content is taller than the fixed size (scrollbar hidden) */
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: #ffcc00 transparent;
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* old Edge / IE */
 }
 
+/* Hide scrollbar (Chrome, Edge, Safari) */
 .vlFlipFront::-webkit-scrollbar,
 .vlFlipBack::-webkit-scrollbar {
-  width: 6px;
-}
-
-.vlFlipFront::-webkit-scrollbar-track,
-.vlFlipBack::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.vlFlipFront::-webkit-scrollbar-thumb,
-.vlFlipBack::-webkit-scrollbar-thumb {
-  background: #ffcc00;
-  border-radius: 999px;
+  display: none;
 }
 
 .vlFlipBack {
