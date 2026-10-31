@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Users,
   GraduationCap,
@@ -6,7 +6,7 @@ import {
   Settings
 } from "lucide-react";
 import styles from "./Login.module.css";
-import { loginUser } from "../../services/authService";
+import { loginUser, registerUser } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
 
 export default function VolunteerLogin() {
@@ -28,6 +28,12 @@ export default function VolunteerLogin() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const navigate = useNavigate();
+  const registerRef = useRef(null);
+
+  const openRegister = () => {
+    if (registerRef.current) registerRef.current.scrollTop = 0;
+    setIsRegistering(true);
+  };
 
   // LOGIN FUNCTION
   const handleLogin = async (e) => {
@@ -48,7 +54,7 @@ export default function VolunteerLogin() {
           navigate("/student/StudentDashboard");
         } else if (data.role === "alumni") {
           navigate("/alumni/AlumniDashboard");
-        } else if (data.role === "admin") {
+        } else if (data.role === "director") {
           navigate("/Director/DirectorDashboard");
         }
       }
@@ -63,6 +69,55 @@ export default function VolunteerLogin() {
   };
 
   // REGISTRATION FUNCTION WILL BE ADDED NEXT
+  const handleRegister = async (e) => {
+    e.preventDefault();
+
+    if (
+      !regName.trim() ||
+      !regUsername.trim() ||
+      !regPhone.trim() ||
+      !regEmail.trim() ||
+      !regPassword ||
+      !confirmPassword
+    ) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    if (regPassword !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    try {
+      const data = await registerUser(
+        regName.trim(),
+        regUsername.trim(),
+        regPhone.trim(),
+        regEmail.trim(),
+        regPassword
+      );
+
+      if (data.success) {
+        alert("Registration successful! Please login.");
+
+        setRegName("");
+        setRegUsername("");
+        setRegPhone("");
+        setRegEmail("");
+        setRegPassword("");
+        setConfirmPassword("");
+
+        setIsRegistering(false);
+      }
+    } catch (error) {
+      alert(
+        error.response?.data?.message ||
+        "Registration failed. Please try again."
+      );
+    }
+  };
+
 
   return (
     <div className={styles.vlPage}>
@@ -99,9 +154,8 @@ export default function VolunteerLogin() {
         <div className={styles.vlFlipContainer}>
 
           <div
-            className={`${styles.vlFlipInner} ${
-              isRegistering ? styles.vlFlipped : ""
-            }`}
+            className={`${styles.vlFlipInner} ${isRegistering ? styles.vlFlipped : ""
+              }`}
           >
 
             {/* ================= LOGIN FRONT ================= */}
@@ -130,14 +184,18 @@ export default function VolunteerLogin() {
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) =>
+                    setUsername(
+                      e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 9)
+                    )
+                  }
                   onFocus={() => setFocused("user")}
                   onBlur={() => setFocused(null)}
-                  placeholder="Enter your username"
+                  placeholder="MAA012345"
+                  maxLength={9}
                   autoComplete="username"
-                  className={`${styles.vlInput} ${
-                    focused === "user" ? styles.vlInputFocused : ""
-                  }`}
+                  className={`${styles.vlInput} ${focused === "user" ? styles.vlInputFocused : ""
+                    }`}
                 />
 
                 {/* PASSWORD */}
@@ -153,9 +211,8 @@ export default function VolunteerLogin() {
                   onBlur={() => setFocused(null)}
                   placeholder="Enter your password"
                   autoComplete="current-password"
-                  className={`${styles.vlInput} ${
-                    focused === "pass" ? styles.vlInputFocused : ""
-                  }`}
+                  className={`${styles.vlInput} ${focused === "pass" ? styles.vlInputFocused : ""
+                    }`}
                 />
 
                 {/* ROLE SELECTION */}
@@ -169,9 +226,8 @@ export default function VolunteerLogin() {
                   <div className={styles.vlRoleGrid}>
 
                     <div
-                      className={`${styles.vlRoleBox} ${
-                        role === "student" ? styles.vlRoleBoxActive : ""
-                      }`}
+                      className={`${styles.vlRoleBox} ${role === "student" ? styles.vlRoleBoxActive : ""
+                        }`}
                       onClick={() => setRole("student")}
                     >
                       <div className={styles.vlRoleIconWrap}>
@@ -181,9 +237,8 @@ export default function VolunteerLogin() {
                     </div>
 
                     <div
-                      className={`${styles.vlRoleBox} ${
-                        role === "alumni" ? styles.vlRoleBoxActive : ""
-                      }`}
+                      className={`${styles.vlRoleBox} ${role === "alumni" ? styles.vlRoleBoxActive : ""
+                        }`}
                       onClick={() => setRole("alumni")}
                     >
                       <div className={styles.vlRoleIconWrap}>
@@ -193,15 +248,14 @@ export default function VolunteerLogin() {
                     </div>
 
                     <div
-                      className={`${styles.vlRoleBox} ${
-                        role === "admin" ? styles.vlRoleBoxActive : ""
-                      }`}
-                      onClick={() => setRole("admin")}
+                      className={`${styles.vlRoleBox} ${role === "director" ? styles.vlRoleBoxActive : ""
+                        }`}
+                      onClick={() => setRole("director")}
                     >
                       <div className={styles.vlRoleIconWrap}>
                         <Settings size={22} />
                       </div>
-                      <span>Admin</span>
+                      <span>Director</span>
                     </div>
 
                   </div>
@@ -216,7 +270,7 @@ export default function VolunteerLogin() {
 
                 <p className={styles.vlRegisterText}>
                   New user?{" "}
-                  <span onClick={() => setIsRegistering(true)}>
+                  <span onClick={openRegister}>
                     Register here
                   </span>
                 </p>
@@ -225,11 +279,11 @@ export default function VolunteerLogin() {
             </div>
 
             {/* ================= REGISTRATION BACK ================= */}
-            <div className={styles.vlFlipBack}>
+            <div className={styles.vlFlipBack} ref={registerRef}>
 
               <form
                 className={styles.vlForm}
-                onSubmit={(e) => e.preventDefault()}
+                onSubmit={handleRegister}
               >
 
                 <div className={styles.vlLogoCircle}>M</div>
@@ -263,7 +317,7 @@ export default function VolunteerLogin() {
                 <input
                   type="text"
                   className={styles.vlInput}
-                  placeholder="MAA0012345"
+                  placeholder="MAA012345"
                   value={regUsername}
                   onChange={(e) =>
                     setRegUsername(e.target.value.toUpperCase())
