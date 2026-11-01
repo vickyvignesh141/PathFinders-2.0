@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "../pages/Login/Login.jsx";
 import Dashboard from "../pages/Dashboard/Dashboard.jsx";
 import StudentDashboard from "../pages/Student/StudentDashboard.jsx";
+import StudentEvent from "../pages/Student/StudentEvent.jsx";
+import StudentEventdetails from "../pages/Student/StudentEventdetails.jsx";
 import AlumniDashboard from "../pages/Alumni/AlumniDashboard.jsx";
 import AdminDashboard from "../pages/Admin/AdminDashboard.jsx";
 import DirectorDashboard from "../pages/Director/DirectorDashboard.jsx";
@@ -18,11 +20,14 @@ function App() {
         //Admin Routes
         <Route path="/admindashboard" element={<AdminDashboard />} />
         <Route path="/createevent" element={<EventCreation />} />
+
         //Alumni Routes
         <Route path="/alumnidashboard" element={<AlumniDashboard />} />
 
         //Student Routes
         <Route path="/studentdashboard" element={<StudentDashboard />} />
+        <Route path="/studentevent" element={<StudentEvent />} />
+        <Route path="/studenteventdetails" element={<StudentEventdetails />} />
 
         
       </Routes>
