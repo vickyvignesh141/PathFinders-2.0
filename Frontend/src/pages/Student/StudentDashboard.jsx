@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./StudentDashboard.module.css";
-
-
+import { useNavigate } from "react-router-dom";
 
 const studentData = {
   name: "Santhosh Kumar",
@@ -20,36 +19,156 @@ const studentData = {
 };
 
 const leaderboardData = [
-  { rank: 1, name: "Priya Ramesh", college: "Anna University", points: 4820, badge: "Diamond" },
-  { rank: 2, name: "Karthik Vel", college: "Anna University", points: 4210, badge: "Diamond" },
-  { rank: 3, name: "Meena Suresh", college: "Anna University", points: 3980, badge: "Gold" },
-  { rank: 4, name: "Santhosh Kumar", college: "Anna University", points: 2450, badge: "Gold" },
-  { rank: 5, name: "Arjun Kumar", college: "Anna University", points: 2210, badge: "Gold" },
-  { rank: 6, name: "Divya Menon", college: "Anna University", points: 1980, badge: "Silver" },
-  { rank: 7, name: "Ravi Shankar", college: "Anna University", points: 1740, badge: "Silver" },
-  { rank: 8, name: "Anitha Raj", college: "Anna University", points: 1520, badge: "Silver" },
-  { rank: 9, name: "Vignesh Babu", college: "Anna University", points: 1410, badge: "Silver" },
-  { rank: 10, name: "Lakshmi Priya", college: "Anna University", points: 1350, badge: "Silver" },
-  { rank: 11, name: "Hari Prasad", college: "Anna University", points: 1240, badge: "Silver" },
-  { rank: 12, name: "Nandhini Devi", college: "Anna University", points: 1120, badge: "Silver" },
+  {
+    rank: 1,
+    name: "Priya Ramesh",
+    college: "Anna University",
+    points: 4820,
+    badge: "Diamond",
+  },
+  {
+    rank: 2,
+    name: "Karthik Vel",
+    college: "Anna University",
+    points: 4210,
+    badge: "Diamond",
+  },
+  {
+    rank: 3,
+    name: "Meena Suresh",
+    college: "Anna University",
+    points: 3980,
+    badge: "Gold",
+  },
+  {
+    rank: 4,
+    name: "Santhosh Kumar",
+    college: "Anna University",
+    points: 2450,
+    badge: "Gold",
+  },
+  {
+    rank: 5,
+    name: "Arjun Kumar",
+    college: "Anna University",
+    points: 2210,
+    badge: "Gold",
+  },
+  {
+    rank: 6,
+    name: "Divya Menon",
+    college: "Anna University",
+    points: 1980,
+    badge: "Silver",
+  },
+  {
+    rank: 7,
+    name: "Ravi Shankar",
+    college: "Anna University",
+    points: 1740,
+    badge: "Silver",
+  },
+  {
+    rank: 8,
+    name: "Anitha Raj",
+    college: "Anna University",
+    points: 1520,
+    badge: "Silver",
+  },
+  {
+    rank: 9,
+    name: "Vignesh Babu",
+    college: "Anna University",
+    points: 1410,
+    badge: "Silver",
+  },
+  {
+    rank: 10,
+    name: "Lakshmi Priya",
+    college: "Anna University",
+    points: 1350,
+    badge: "Silver",
+  },
+  {
+    rank: 11,
+    name: "Hari Prasad",
+    college: "Anna University",
+    points: 1240,
+    badge: "Silver",
+  },
+  {
+    rank: 12,
+    name: "Nandhini Devi",
+    college: "Anna University",
+    points: 1120,
+    badge: "Silver",
+  },
 ];
 
 // Generate a full 200-student leaderboard
 const generateFullLeaderboard = () => {
   const base = [...leaderboardData];
   const firstNames = [
-    "Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Sai", "Reyansh", "Ayaan",
-    "Krishna", "Ishaan", "Shaurya", "Atharv", "Advait", "Pranav", "Dhruv", "Kabir",
-    "Ananya", "Diya", "Aadhya", "Saanvi", "Pari", "Anika", "Navya", "Myra",
-    "Sara", "Ira", "Kiara", "Riya", "Aarohi", "Anvi", "Prisha", "Tanvi",
+    "Aarav",
+    "Vivaan",
+    "Aditya",
+    "Vihaan",
+    "Arjun",
+    "Sai",
+    "Reyansh",
+    "Ayaan",
+    "Krishna",
+    "Ishaan",
+    "Shaurya",
+    "Atharv",
+    "Advait",
+    "Pranav",
+    "Dhruv",
+    "Kabir",
+    "Ananya",
+    "Diya",
+    "Aadhya",
+    "Saanvi",
+    "Pari",
+    "Anika",
+    "Navya",
+    "Myra",
+    "Sara",
+    "Ira",
+    "Kiara",
+    "Riya",
+    "Aarohi",
+    "Anvi",
+    "Prisha",
+    "Tanvi",
   ];
   const lastNames = [
-    "Sharma", "Verma", "Reddy", "Nair", "Iyer", "Menon", "Pillai", "Rao",
-    "Kumar", "Patel", "Gupta", "Singh", "Joshi", "Desai", "Kulkarni", "Mehta",
+    "Sharma",
+    "Verma",
+    "Reddy",
+    "Nair",
+    "Iyer",
+    "Menon",
+    "Pillai",
+    "Rao",
+    "Kumar",
+    "Patel",
+    "Gupta",
+    "Singh",
+    "Joshi",
+    "Desai",
+    "Kulkarni",
+    "Mehta",
   ];
   const colleges = [
-    "Anna University", "IIT Madras", "NIT Trichy", "VIT Vellore",
-    "SRM University", "PSG Tech", "Amrita University", "SASTRA",
+    "Anna University",
+    "IIT Madras",
+    "NIT Trichy",
+    "VIT Vellore",
+    "SRM University",
+    "PSG Tech",
+    "Amrita University",
+    "SASTRA",
   ];
 
   const full = [];
@@ -83,8 +202,18 @@ const badgeColors = {
 
 /* ---------- Date helpers (no timezone surprises) ---------- */
 const MONTHS_SHORT = [
-  "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-  "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
 ];
 
 const parseISO = (iso) => {
@@ -107,6 +236,7 @@ const formatFullDate = (iso) => {
 };
 
 const StudentDashboard = () => {
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventError, setEventError] = useState("");
@@ -132,13 +262,10 @@ const StudentDashboard = () => {
   // Only upcoming (not completed) events in the strip
   const upcomingEvents = events.filter((e) => !e.completed);
 
-
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const response = await fetch(
-          "http://localhost:5000/api/events/"
-        );
+        const response = await fetch("http://localhost:5000/api/events/");
 
         const result = await response.json();
 
@@ -147,12 +274,11 @@ const StudentDashboard = () => {
         }
 
         const formattedEvents = result.events.map((event) => {
-const start = new Date(event.startAt);
-const end = new Date(event.endAt);
+          const start = new Date(event.startAt);
+          const end = new Date(event.endAt);
 
-const hours =
-  !isNaN(start.getTime()) && !isNaN(end.getTime())
-    hours;
+          const hours = !isNaN(start.getTime()) && !isNaN(end.getTime());
+          hours;
           return {
             id: event._id,
             title: event.eventTitle,
@@ -170,10 +296,7 @@ const hours =
             seats: event.volunteersNeeded,
             registered: false,
             completed: event.status === "completed",
-            hours: Math.max(
-              0,
-              (end - start) / (1000 * 60 * 60)
-            ),
+            hours: Math.max(0, (end - start) / (1000 * 60 * 60)),
             instructions: event.instructions,
             zone: event.zone,
             startTime: event.startTime,
@@ -218,19 +341,17 @@ const hours =
     return () => clearInterval(timer);
   }, [paused, upcomingEvents.length, slideBy]);
 
-const handleRegister = (id) => {
-  setEvents((prev) =>
-    prev.map((ev) =>
-      ev.id === id ? { ...ev, registered: !ev.registered } : ev
-    )
-  );
+  const handleRegister = (id) => {
+    setEvents((prev) =>
+      prev.map((ev) =>
+        ev.id === id ? { ...ev, registered: !ev.registered } : ev,
+      ),
+    );
 
-  setSelectedEvent((prev) =>
-    prev && prev.id === id
-      ? { ...prev, registered: !prev.registered }
-      : prev
-  );
-};
+    setSelectedEvent((prev) =>
+      prev && prev.id === id ? { ...prev, registered: !prev.registered } : prev,
+    );
+  };
 
   const totalRegistered = events.filter((e) => e.registered).length;
   const registeredEvents = events.filter((e) => e.registered);
@@ -257,8 +378,18 @@ const handleRegister = (id) => {
   const year = calDate.getFullYear();
   const month = calDate.getMonth();
   const monthNames = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December",
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const firstDay = new Date(year, month, 1).getDay();
@@ -357,7 +488,10 @@ const handleRegister = (id) => {
           <div>
             <h2 className={styles.welcomeTitle}>
               Welcome back,{" "}
-              <span className={styles.accent}>{profile.name.split(" ")[0]}</span> 👋
+              <span className={styles.accent}>
+                {profile.name.split(" ")[0]}
+              </span>{" "}
+              👋
             </h2>
             <p className={styles.welcomeText}>
               You have <strong>{totalRegistered}</strong> registered event
@@ -366,7 +500,9 @@ const handleRegister = (id) => {
           </div>
           <div className={styles.welcomeStats}>
             <div className={styles.welcomeStat}>
-              <span className={styles.welcomeStatNum}>{upcomingEvents.length}</span>
+              <span className={styles.welcomeStatNum}>
+                {upcomingEvents.length}
+              </span>
               <span className={styles.welcomeStatLabel}>Upcoming</span>
             </div>
             <div className={styles.welcomeStatDivider} />
@@ -389,7 +525,8 @@ const handleRegister = (id) => {
             <div>
               <h3 className={styles.sectionTitle}>🗓️ Upcoming Events</h3>
               <span className={styles.subtitle}>
-                {upcomingEvents.length} events • click a card to view details &amp; register
+                {upcomingEvents.length} events • click a card to view details
+                &amp; register
               </span>
             </div>
             <div className={styles.calNav}>
@@ -425,11 +562,17 @@ const handleRegister = (id) => {
                     key={ev.id}
                     data-event-card
                     className={styles.eventCard}
-                    onClick={() => setSelectedEvent(ev)}
+                    onClick={() =>
+                      navigate("/studentevent", {
+                        state: { event: ev },
+                      })
+                    }
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        setSelectedEvent(ev);
+                        navigate("/studentevent", {
+                          state: { event: ev },
+                        });
                       }
                     }}
                     role="button"
@@ -438,14 +581,20 @@ const handleRegister = (id) => {
                     <div className={styles.eventCardTop}>
                       <div className={styles.dateCircle}>
                         <span className={styles.dateDay}>{pad(p.d)}</span>
-                        <span className={styles.dateMonth}>{MONTHS_SHORT[p.m]}</span>
+                        <span className={styles.dateMonth}>
+                          {MONTHS_SHORT[p.m]}
+                        </span>
                       </div>
                       <h4 className={styles.eventCardTitle}>{ev.title}</h4>
                     </div>
 
                     <div className={styles.eventDeptBox}>
-                      <span className={styles.eventDeptTitle}>{ev.category}</span>
-                      <span className={styles.eventDeptSub}>📍 {ev.location}</span>
+                      <span className={styles.eventDeptTitle}>
+                        {ev.category}
+                      </span>
+                      <span className={styles.eventDeptSub}>
+                        📍 {ev.location}
+                      </span>
                     </div>
 
                     <p className={styles.eventCardDesc}>{ev.description}</p>
@@ -458,8 +607,11 @@ const handleRegister = (id) => {
                     <div className={styles.eventCardFooter}>
                       <span className={styles.eventLink}>View Details</span>
                       <span
-                        className={`${styles.eventStatus} ${ev.registered ? styles.statusRegistered : styles.statusOpen
-                          }`}
+                        className={`${styles.eventStatus} ${
+                          ev.registered
+                            ? styles.statusRegistered
+                            : styles.statusOpen
+                        }`}
                       >
                         {ev.registered ? "✓ Registered" : "Open"}
                       </span>
@@ -510,7 +662,9 @@ const handleRegister = (id) => {
 
             <div className={styles.leaderboardList}>
               {filteredLeaderboard.length === 0 && (
-                <p className={styles.emptyText}>No students match your filter.</p>
+                <p className={styles.emptyText}>
+                  No students match your filter.
+                </p>
               )}
               {filteredLeaderboard.map((student) => {
                 const badge = badgeColors[student.badge];
@@ -518,12 +672,14 @@ const handleRegister = (id) => {
                 return (
                   <div
                     key={student.rank}
-                    className={`${styles.leaderboardItem} ${isCurrent ? styles.currentItem : ""
-                      }`}
+                    className={`${styles.leaderboardItem} ${
+                      isCurrent ? styles.currentItem : ""
+                    }`}
                   >
                     <span
-                      className={`${styles.rank} ${student.rank <= 3 ? styles.topRank : ""
-                        }`}
+                      className={`${styles.rank} ${
+                        student.rank <= 3 ? styles.topRank : ""
+                      }`}
                     >
                       {student.rank}
                     </span>
@@ -533,9 +689,13 @@ const handleRegister = (id) => {
                     <div className={styles.leaderboardInfo}>
                       <span className={styles.leaderboardName}>
                         {student.name}
-                        {isCurrent && <span className={styles.youTag}>You</span>}
+                        {isCurrent && (
+                          <span className={styles.youTag}>You</span>
+                        )}
                       </span>
-                      <span className={styles.leaderboardCollege}>{student.college}</span>
+                      <span className={styles.leaderboardCollege}>
+                        {student.college}
+                      </span>
                     </div>
                     <span
                       className={styles.badgePill}
@@ -554,7 +714,9 @@ const handleRegister = (id) => {
           <div className={styles.rightColumn}>
             <section id="profile" className={styles.profileCard}>
               <div className={styles.profileTop}>
-                <div className={styles.profileAvatarLarge}>{profile.avatar}</div>
+                <div className={styles.profileAvatarLarge}>
+                  {profile.avatar}
+                </div>
                 <div className={styles.profileInfo}>
                   <h3 className={styles.profileName}>{profile.name}</h3>
                   <p className={styles.profileCollege}>{profile.college}</p>
@@ -574,7 +736,9 @@ const handleRegister = (id) => {
               </div>
               <div className={styles.statsGrid}>
                 <div className={styles.stat}>
-                  <span className={styles.statNum}>{profile.eventsCompleted}</span>
+                  <span className={styles.statNum}>
+                    {profile.eventsCompleted}
+                  </span>
                   <span className={styles.statLabel}>Events Done</span>
                 </div>
                 <div className={styles.stat}>
@@ -622,8 +786,9 @@ const handleRegister = (id) => {
                 {calDays.map((day, i) => (
                   <div
                     key={i}
-                    className={`${styles.dayCell} ${day ? "" : styles.emptyCell} ${day && eventsByDay[day] ? styles.eventDay : ""
-                      }`}
+                    className={`${styles.dayCell} ${day ? "" : styles.emptyCell} ${
+                      day && eventsByDay[day] ? styles.eventDay : ""
+                    }`}
                   >
                     {day && (
                       <>
@@ -653,10 +818,7 @@ const handleRegister = (id) => {
           className={styles.drawerOverlay}
           onClick={() => setDrawerOpen(false)}
         >
-          <aside
-            className={styles.drawer}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <aside className={styles.drawer} onClick={(e) => e.stopPropagation()}>
             <div className={styles.drawerHeader}>
               <h3 className={styles.drawerTitle}>My Account</h3>
               <button
@@ -682,7 +844,9 @@ const handleRegister = (id) => {
                 </div>
                 <div className={styles.drawerStats}>
                   <div className={styles.drawerStat}>
-                    <span className={styles.drawerStatNum}>{profile.points}</span>
+                    <span className={styles.drawerStatNum}>
+                      {profile.points}
+                    </span>
                     <span className={styles.drawerStatLabel}>Points</span>
                   </div>
                   <div className={styles.drawerStat}>
@@ -718,7 +882,9 @@ const handleRegister = (id) => {
               </div>
 
               <div id="history" className={styles.drawerSection}>
-                <h4 className={styles.drawerSectionTitle}>📋 Completed Events</h4>
+                <h4 className={styles.drawerSectionTitle}>
+                  📋 Completed Events
+                </h4>
                 <div className={styles.drawerHistoryList}>
                   {completedEvents.map((ev) => (
                     <div key={ev.id} className={styles.drawerHistoryItem}>
@@ -729,7 +895,9 @@ const handleRegister = (id) => {
                           {formatFullDate(ev.date)} • {ev.location}
                         </span>
                       </div>
-                      <span className={`${styles.historyStatus} ${styles.statusDone}`}>
+                      <span
+                        className={`${styles.historyStatus} ${styles.statusDone}`}
+                      >
                         Done
                       </span>
                     </div>
@@ -741,7 +909,9 @@ const handleRegister = (id) => {
               </div>
 
               <div id="certificate" className={styles.drawerSection}>
-                <h4 className={styles.drawerSectionTitle}>🎖️ Volunteering Certificate</h4>
+                <h4 className={styles.drawerSectionTitle}>
+                  🎖️ Volunteering Certificate
+                </h4>
                 {certificateEvent ? (
                   <div className={styles.certificateCard}>
                     <div className={styles.certificateIcon}>
@@ -755,14 +925,16 @@ const handleRegister = (id) => {
                         {certificateEvent.title}
                       </span>
                       <span className={styles.certificateMeta}>
-                        {formatFullDate(certificateEvent.date)} • {certificateEvent.hours}h credit
+                        {formatFullDate(certificateEvent.date)} •{" "}
+                        {certificateEvent.hours}h credit
                       </span>
                     </div>
                     <button className={styles.certificateBtn}>View</button>
                   </div>
                 ) : (
                   <p className={styles.emptyText}>
-                    No completed events yet — complete one to unlock your certificate.
+                    No completed events yet — complete one to unlock your
+                    certificate.
                   </p>
                 )}
               </div>
@@ -790,20 +962,27 @@ const handleRegister = (id) => {
             </div>
             <div className={styles.modalBody}>
               <div className={styles.eventDetailTop}>
-                <div className={styles.eventIconLarge}>{selectedEvent.icon}</div>
+                <div className={styles.eventIconLarge}>
+                  {selectedEvent.icon}
+                </div>
                 <div>
                   <span className={styles.eventCategory}>
                     {selectedEvent.category}
                   </span>
-                  <h4 className={styles.eventDetailTitle}>{selectedEvent.title}</h4>
+                  <h4 className={styles.eventDetailTitle}>
+                    {selectedEvent.title}
+                  </h4>
                 </div>
               </div>
-              <p className={styles.eventDetailDesc}>{selectedEvent.description}</p>
+              <p className={styles.eventDetailDesc}>
+                {selectedEvent.description}
+              </p>
               <div className={styles.eventDetailMeta}>
                 <div className={styles.metaItem}>
                   <span className={styles.metaIcon}>📅</span>
                   <span>
-                    {selectedEvent.endDate && selectedEvent.endDate !== selectedEvent.date
+                    {selectedEvent.endDate &&
+                    selectedEvent.endDate !== selectedEvent.date
                       ? `${formatFullDate(selectedEvent.date)} – ${formatFullDate(selectedEvent.endDate)}`
                       : formatFullDate(selectedEvent.date)}
                   </span>
@@ -834,11 +1013,14 @@ const handleRegister = (id) => {
                 Close
               </button>
               <button
-                className={`${styles.saveBtn} ${selectedEvent.registered ? styles.registeredBtn : ""
-                  }`}
+                className={`${styles.saveBtn} ${
+                  selectedEvent.registered ? styles.registeredBtn : ""
+                }`}
                 onClick={() => handleRegister(selectedEvent.id)}
               >
-                {selectedEvent.registered ? "✓ Registered — Unregister" : "Register Now"}
+                {selectedEvent.registered
+                  ? "✓ Registered — Unregister"
+                  : "Register Now"}
               </button>
             </div>
           </div>
@@ -893,7 +1075,9 @@ const handleRegister = (id) => {
 
             <div className={styles.fullLbList}>
               {filteredFullLeaderboard.length === 0 && (
-                <p className={styles.emptyText}>No students match your filter.</p>
+                <p className={styles.emptyText}>
+                  No students match your filter.
+                </p>
               )}
               {filteredFullLeaderboard.map((student) => {
                 const badge = badgeColors[student.badge];
@@ -901,12 +1085,14 @@ const handleRegister = (id) => {
                 return (
                   <div
                     key={student.rank}
-                    className={`${styles.leaderboardItem} ${isCurrent ? styles.currentItem : ""
-                      }`}
+                    className={`${styles.leaderboardItem} ${
+                      isCurrent ? styles.currentItem : ""
+                    }`}
                   >
                     <span
-                      className={`${styles.rank} ${student.rank <= 3 ? styles.topRank : ""
-                        }`}
+                      className={`${styles.rank} ${
+                        student.rank <= 3 ? styles.topRank : ""
+                      }`}
                     >
                       {student.rank}
                     </span>
@@ -916,7 +1102,9 @@ const handleRegister = (id) => {
                     <div className={styles.leaderboardInfo}>
                       <span className={styles.leaderboardName}>
                         {student.name}
-                        {isCurrent && <span className={styles.youTag}>You</span>}
+                        {isCurrent && (
+                          <span className={styles.youTag}>You</span>
+                        )}
                       </span>
                       <span className={styles.leaderboardCollege}>
                         {student.college}
