@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { getEventRegistrations } from "../../services/eventService";
 import styles from "./EventManage.module.css";
 
 /* ============================================================
@@ -115,6 +116,7 @@ const FALLBACK_EVENTS = {
 /* ============================================================
    FALLBACK VOLUNTEERS
    ============================================================ */
+
 
 const FALLBACK_VOLUNTEERS = [
   {
@@ -235,8 +237,12 @@ const formatTime = (date) =>
 
 const EventManage = () => {
   const navigate = useNavigate();
+  const [registeredMembers, setRegisteredMembers] = useState([]);
+  const [loadingMembers, setLoadingMembers] = useState(true);
+  const [memberError, setMemberError] = useState("");
   const location = useLocation();
   const { eventId } = useParams();
+  console.log("Current Event ID:", eventId);
 
   /*
     If AdminDashboard sends event through navigate state,
@@ -248,6 +254,39 @@ const EventManage = () => {
     stateEvent ||
     FALLBACK_EVENTS[Number(eventId)] ||
     FALLBACK_EVENTS[1];
+
+
+  const currentEventId = event?._id || event?.id || eventId;
+
+  useEffect(() => {
+    const fetchRegisteredMembers = async () => {
+      if (!currentEventId) {
+        setMemberError("Event ID is missing.");
+        setLoadingMembers(false);
+        return;
+      }
+
+      try {
+        setLoadingMembers(true);
+        setMemberError("");
+
+        const data = await getEventRegistrations(currentEventId);
+
+        setRegisteredMembers(data.registrations || []);
+      } catch (error) {
+        console.error("Error fetching registered members:", error);
+
+        setMemberError(
+          error.response?.data?.message ||
+          "Unable to load registered members."
+        );
+      } finally {
+        setLoadingMembers(false);
+      }
+    };
+
+    fetchRegisteredMembers();
+  }, [currentEventId]);
 
   const [selectedVolunteers, setSelectedVolunteers] =
     useState(event.selected || []);
@@ -279,16 +318,20 @@ const EventManage = () => {
   }, []);
 
   const interestedVolunteers = useMemo(() => {
-    const ids = event.interested || [];
-
-    return ids
-      .map((id) =>
-        allVolunteers.find(
-          (v) => v.id === id
-        )
-      )
-      .filter(Boolean);
-  }, [event, allVolunteers]);
+    return registeredMembers.map((member, index) => ({
+      id: member._id || member.registrationId || index,
+      name: member.studentName || member.name || "Unknown",
+      username: member.studentUsername || member.username || "",
+      email: member.email || "",
+      phone: member.phone || "",
+      role: member.role || "",
+      address: member.address || "",
+      residenceType: member.residenceType || "",
+      pastEvents: 0,
+      history: member.previousVolunteeringWorks || [],
+      score: 0,
+    }));
+  }, [registeredMembers]);
 
   const aiShortlisted = useMemo(() => {
     return [...allVolunteers]
@@ -308,8 +351,8 @@ const EventManage = () => {
     setSelectedVolunteers((prev) =>
       prev.includes(id)
         ? prev.filter(
-            (vId) => vId !== id
-          )
+          (vId) => vId !== id
+        )
         : [...prev, id]
     );
   };
@@ -357,8 +400,7 @@ const EventManage = () => {
       setShowQRModal(true);
     } else {
       setQrMessage(
-        `Attendance QR becomes active 30 minutes before the event. ${
-          Math.round(timeDiffMinutes)
+        `Attendance QR becomes active 30 minutes before the event. ${Math.round(timeDiffMinutes)
         } minutes remaining.`
       );
 
@@ -389,11 +431,10 @@ const EventManage = () => {
     return (
       <div
         key={volunteer.id}
-        className={`${styles.candidateRow} ${
-          isActive
-            ? styles.candidateRowOn
-            : ""
-        }`}
+        className={`${styles.candidateRow} ${isActive
+          ? styles.candidateRowOn
+          : ""
+          }`}
         onClick={() =>
           setActiveVolunteer(
             volunteer
@@ -429,11 +470,11 @@ const EventManage = () => {
             {volunteer.name}
           </div>
 
-          <div
-            className={
-              styles.candidateMeta
-            }
-          >
+          <div className={styles.candidateMeta}>
+            {volunteer.username} · {volunteer.role}
+          </div>
+
+          <div className={styles.candidateMeta}>
             {volunteer.email}
           </div>
 
@@ -828,7 +869,7 @@ const EventManage = () => {
                 <button
                   className={
                     activeTab ===
-                    "interested"
+                      "interested"
                       ? styles.volunteerTabActive
                       : styles.volunteerTab
                   }
@@ -853,21 +894,19 @@ const EventManage = () => {
                   styles.candidateList
                 }
               >
-                {activeTab === "ai"
-                  ? aiShortlisted.map(
-                      (v) =>
-                        renderVolunteer(
-                          v,
-                          true
-                        )
-                    )
-                  : interestedVolunteers.map(
-                      (v) =>
-                        renderVolunteer(
-                          v,
-                          false
-                        )
-                    )}
+                <div className={styles.candidateList}>
+                  {activeTab === "ai" ? (
+                    aiShortlisted.map((v) => renderVolunteer(v, true))
+                  ) : loadingMembers ? (
+                    <p>Loading registered members...</p>
+                  ) : memberError ? (
+                    <p>{memberError}</p>
+                  ) : interestedVolunteers.length > 0 ? (
+                    interestedVolunteers.map((v) => renderVolunteer(v, false))
+                  ) : (
+                    <p>No students have registered for this event yet.</p>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { getAllEvents } from "../../services/eventService";
 import {
   LayoutDashboard,
   Calendar,
@@ -258,7 +259,7 @@ const NAV = [
   { key: "history", label: "History", Icon: History },
   { key: "leaderboard", label: "Leaderboard", Icon: Trophy },
   { key: "volunteers", label: "Students", Icon: Users },
-  // { key: "emails", label: "Emails", Icon: Mail },
+  { key: "emails", label: "Emails", Icon: Mail },
 ];
 
 /* ============================================================
@@ -424,13 +425,13 @@ function EventCard({
     >
       <div className={styles.eventCardHead}>
         <h3 className={styles.eventTitle}>{event.title}</h3>
+        <p>Event ID: {event.eventId}</p>
 
         <span
-          className={`${styles.pill} ${
-            event.status === "Completed"
+          className={`${styles.pill} ${event.status === "Completed"
               ? styles.pillMuted
               : styles.pillYellow
-          }`}
+            }`}
         >
           {event.status}
         </span>
@@ -471,7 +472,7 @@ function EventCard({
         </div>
       </div>
 
-      
+
 
       <div className={styles.eventClickHint}>
         Click event to manage volunteers →
@@ -781,7 +782,8 @@ function AdminProfileModal({
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  const [events, setEvents] = useState(initialEvents);
+  const [events, setEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
   const [deletedEvents, setDeletedEvents] = useState([]);
   const [volunteers] = useState(initialVolunteers);
   const [emailLogs, setEmailLogs] = useState([]);
@@ -829,6 +831,76 @@ const AdminDashboard = () => {
           v.batch.toLowerCase().includes(term)
       );
   }, [volunteers, volStatus, volSearch]);
+
+
+  // FETCH EVENTS FROM BACKEND
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoadingEvents(true);
+
+        const result = await getAllEvents();
+
+        if (result.success) {
+          const formattedEvents = result.events.map((event) => ({
+            // MongoDB ID
+            id: event._id,
+
+            // Readable event ID
+            eventId: event.eventId,
+
+            // Event details
+            title: event.eventTitle,
+            description: event.eventDescription,
+            volunteerWork: event.volunteerWork,
+            instructions: event.instructions,
+
+            // Location and schedule
+            venue: event.location,
+            date: event.date,
+            startTime: event.startTime,
+            endTime: event.endTime,
+            startAt: event.startAt,
+            endAt: event.endAt,
+
+            // Volunteer requirements
+            volunteersNeeded: event.volunteersNeeded,
+            zone: event.zone,
+            targetAudience: event.targetAudience,
+
+            // Dashboard-specific fields
+            status:
+              event.status === "upcoming"
+                ? "Open"
+                : event.status,
+
+            interested: [],
+            selected: [],
+            skills: [],
+            colleges: [],
+            batches: [],
+
+            whatsappLink: "",
+            emailNote: "",
+            emailsSent: false,
+          }));
+
+          setEvents(formattedEvents);
+        } else {
+          console.error("Failed to fetch events:", result.message);
+        }
+      } catch (error) {
+        console.error(
+          "Fetch Events Error:",
+          error.response?.data || error
+        );
+      } finally {
+        setLoadingEvents(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
 
   /* ============================================================
      EVENT NAVIGATION
@@ -926,17 +998,16 @@ const AdminDashboard = () => {
           {NAV.map(({ key, label, Icon }) => (
             <button
               key={key}
-              className={`${styles.navBtn} ${
-                tab === key
+              className={`${styles.navBtn} ${tab === key
                   ? styles.navBtnActive
                   : ""
-              }`}
+                }`}
               onClick={() => {
                 if (key === "leaderboard") {
                   navigate("/leaderboard");
                 } else if (key === "history") {
                   navigate("/eventhistory");
-                } else if(key === "volunteers") {
+                } else if (key === "volunteers") {
                   navigate("/studentstatus");
                 } else {
                   setTab(key);
@@ -1142,7 +1213,6 @@ const AdminDashboard = () => {
                   View All
                 </button>
               </div>
-
               {activeEvents.length === 0 ? (
                 <p className={styles.emptyText}>
                   No upcoming events. Click
@@ -1242,10 +1312,10 @@ const AdminDashboard = () => {
           </div>
         )}
 
-     
 
 
-      
+
+
         {/* ====================================================
             EMAILS
         ==================================================== */}

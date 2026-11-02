@@ -41,15 +41,15 @@ def login():
         "role": role
     })
 
-    if volunteer and (
-        volunteer["password"], password
-    ):
+    if volunteer and volunteer["password"] == password:
         return jsonify({
             "success": True,
             "message": "Login successful",
             "username": volunteer["username"],
             "role": volunteer["role"]
+            
         }), 200
+        
 
     return jsonify({
         "success": False,
