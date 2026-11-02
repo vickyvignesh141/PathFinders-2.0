@@ -622,3 +622,14 @@
 .navBtn svg {
   transition: transform 0.2s ease;
 }
+
+.statsGrid {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.postBtn {
+  margin-left: auto;
+  flex-shrink: 0;
+}

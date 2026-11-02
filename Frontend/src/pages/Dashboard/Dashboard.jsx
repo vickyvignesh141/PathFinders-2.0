@@ -1,6 +1,7 @@
 
 import React from "react";
 import styles from "./Dashboard.module.css";
+import { useNavigate } from "react-router-dom";
 
 const opportunities = [
   {
@@ -109,31 +110,51 @@ const opportunities = [
 ];
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   return (
     <div className={styles.page}>
       {/* Simple Header */}
-      <header className={styles.header}>
-        <a href="#home" className={styles.brand}>
-          <span className={styles.logo}>M</span>
-          <span>
-            <strong className={styles.brandName}>
-              MAATRAM<span className={styles.dot}>.</span>
-            </strong>
-            <small className={styles.brandCaption}>
-              VOLUNTEER COMMUNITY
-            </small>
-          </span>
-        </a>
+     <header className={styles.header}>
+  <a href="#home" className={styles.brand}>
+    <span className={styles.logo}>M</span>
+    <span>
+      <strong className={styles.brandName}>
+        MAATRAM<span className={styles.dot}>.</span>
+      </strong>
+      <small className={styles.brandCaption}>
+        VOLUNTEER COMMUNITY
+      </small>
+    </span>
+  </a>
 
-        <nav className={styles.nav}>
-          <a href="/login" className={styles.loginBtn}>
-            Sign in Volunteer →
-          </a>
-          <a href="/login" className={styles.loginBtn}>
-            Sign in Admin →
-          </a>
-        </nav>
-      </header>
+  <nav className={styles.nav}>
+    {/* Volunteer Login */}
+    <button
+      type="button"
+      className={styles.loginBtn}
+      onClick={() =>
+        navigate("/login", {
+          state: { loginType: "volunteer" },
+        })
+      }
+    >
+      Sign in Volunteer →
+    </button>
+
+    {/* Admin Login */}
+    <button
+      type="button"
+      className={styles.loginBtn}
+      onClick={() =>
+        navigate("/login", {
+          state: { loginType: "admin" },
+        })
+      }
+    >
+      Sign in Admin →
+    </button>
+  </nav>
+</header>
 
       {/* Main Content - Volunteering Details */}
       <main className={styles.opportunities} id="home">
@@ -153,7 +174,7 @@ export default function Dashboard() {
       </main>
 
       {/* Events Section */}
-      
+
 
       {/* Simple Footer */}
       <footer className={styles.footer}>

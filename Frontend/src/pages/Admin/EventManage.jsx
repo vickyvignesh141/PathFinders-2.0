@@ -518,7 +518,7 @@ const EventManage = () => {
           <button
             className={styles.backButton}
             onClick={() =>
-              navigate("/admindashboard")
+              navigate("/admin/dashboard")
             }
           >
             <ArrowLeft size={17} />

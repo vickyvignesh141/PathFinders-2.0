@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Users,
   GraduationCap,
@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import styles from "./Login.module.css";
 import { loginUser, registerUser } from "../../services/authService";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function VolunteerLogin() {
   // Login states
@@ -28,6 +28,9 @@ export default function VolunteerLogin() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isAdmin = location.state?.loginType === "admin";
   const registerRef = useRef(null);
 
   const openRegister = () => {
@@ -36,44 +39,57 @@ export default function VolunteerLogin() {
   };
 
   // LOGIN FUNCTION
-  
-const handleLogin = async (e) => {
-  e.preventDefault();
 
-  if (!username.trim() || !password || !role) {
-    alert("Please enter username, password and select role.");
-    return;
-  }
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-  try {
-    const data = await loginUser(username.trim(), password, role);
+    if (!username.trim() || !password || !role) {
+      alert("Please enter username, password and select role.");
+      return;
+    }
+    if (!isAdmin && !role) {
+      alert("Please select user type.");
+      return;
+    }
 
-console.log("Login API response:", data);
+    if (isAdmin && !username.trim().startsWith("MAA4")) {
+      alert("Admin username must start with MAA4.");
+      return;
+    }
 
-if (data.success) {
+    try {
+      const loginRole = isAdmin ? "admin" : role;
+      const data = await loginUser(username.trim(), password, loginRole);
 
-  localStorage.setItem("username", data.username);
-  localStorage.setItem("role", data.role);
+      console.log("Login API response:", data);
 
-  console.log("Saved username:", localStorage.getItem("username"));
+      if (data.success) {
 
-  if (data.role === "student") {
-    navigate("/Student/Dashboard");
-  } else if (data.role === "alumni") {
-    navigate("/Alumni/Dashboard");
-  } else if (data.role === "director") {
-    navigate("/Director/Dashboard");
-  }
-}
-  } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      "Unable to connect to the server. Please try again.";
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("role", data.role);
 
-    alert(message);
-    setPassword("");
-  }
-};
+        console.log("Saved username:", localStorage.getItem("username"));
+
+        if (data.role === "student") {
+          navigate("/Student/Dashboard");
+        } else if (data.role === "alumni") {
+          navigate("/Alumni/Dashboard");
+        } else if (data.role === "director") {
+          navigate("/Director/Dashboard");
+        }
+        else if(data.role==="admin"){
+          navigate("/admin/dashboard");
+        }
+      }
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        "Unable to connect to the server. Please try again.";
+
+      alert(message);
+      setPassword("");
+    }
+  };
 
 
   // REGISTRATION FUNCTION WILL BE ADDED NEXT
@@ -177,7 +193,7 @@ if (data.success) {
                 <div className={styles.vlLogoCircle}>M</div>
 
                 <h2 className={styles.vlFormTitle}>
-                  VOLUNTEER LOGIN
+                  {isAdmin ? "ADMIN LOGIN" : "VOLUNTEER LOGIN"}
                 </h2>
 
                 <p className={styles.vlFormSubtitle}>
@@ -224,51 +240,53 @@ if (data.success) {
                 />
 
                 {/* ROLE SELECTION */}
-                <div className={styles.vlRoleSection}>
+                {!isAdmin && (
 
-                  <label className={styles.vlRoleLabel}>
-                    <Users size={16} strokeWidth={2.5} />
-                    Select User Type *
-                  </label>
+                  <div className={styles.vlRoleSection}>
 
-                  <div className={styles.vlRoleGrid}>
+                    <label className={styles.vlRoleLabel}>
+                      <Users size={16} strokeWidth={2.5} />
+                      Select User Type *
+                    </label>
 
-                    <div
-                      className={`${styles.vlRoleBox} ${role === "student" ? styles.vlRoleBoxActive : ""
-                        }`}
-                      onClick={() => setRole("student")}
-                    >
-                      <div className={styles.vlRoleIconWrap}>
-                        <GraduationCap size={22} />
+                    <div className={styles.vlRoleGrid}>
+
+                      <div
+                        className={`${styles.vlRoleBox} ${role === "student" ? styles.vlRoleBoxActive : ""
+                          }`}
+                        onClick={() => setRole("student")}
+                      >
+                        <div className={styles.vlRoleIconWrap}>
+                          <GraduationCap size={22} />
+                        </div>
+                        <span>Student</span>
                       </div>
-                      <span>Student</span>
-                    </div>
 
-                    <div
-                      className={`${styles.vlRoleBox} ${role === "alumni" ? styles.vlRoleBoxActive : ""
-                        }`}
-                      onClick={() => setRole("alumni")}
-                    >
-                      <div className={styles.vlRoleIconWrap}>
-                        <UserCheck size={22} />
+                      <div
+                        className={`${styles.vlRoleBox} ${role === "alumni" ? styles.vlRoleBoxActive : ""
+                          }`}
+                        onClick={() => setRole("alumni")}
+                      >
+                        <div className={styles.vlRoleIconWrap}>
+                          <UserCheck size={22} />
+                        </div>
+                        <span>Alumni</span>
                       </div>
-                      <span>Alumni</span>
-                    </div>
 
-                    <div
-                      className={`${styles.vlRoleBox} ${role === "director" ? styles.vlRoleBoxActive : ""
-                        }`}
-                      onClick={() => setRole("director")}
-                    >
-                      <div className={styles.vlRoleIconWrap}>
-                        <Settings size={22} />
+                      <div
+                        className={`${styles.vlRoleBox} ${role === "director" ? styles.vlRoleBoxActive : ""
+                          }`}
+                        onClick={() => setRole("director")}
+                      >
+                        <div className={styles.vlRoleIconWrap}>
+                          <Settings size={22} />
+                        </div>
+                        <span>Director</span>
                       </div>
-                      <span>Director</span>
-                    </div>
 
+                    </div>
                   </div>
-                </div>
-
+                )}
                 <button
                   type="submit"
                   className={styles.vlButton}
@@ -297,7 +315,7 @@ if (data.success) {
                 <div className={styles.vlLogoCircle}>M</div>
 
                 <h2 className={styles.vlFormTitle}>
-                  VOLUNTEER REGISTRATION
+                 {isAdmin ? "ADMIN REGISTRATION" : "VOLUNTEER REGISTRATION"}
                 </h2>
 
                 <p className={styles.vlFormSubtitle}>

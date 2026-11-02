@@ -429,8 +429,8 @@ function EventCard({
 
         <span
           className={`${styles.pill} ${event.status === "Completed"
-              ? styles.pillMuted
-              : styles.pillYellow
+            ? styles.pillMuted
+            : styles.pillYellow
             }`}
         >
           {event.status}
@@ -979,79 +979,6 @@ const AdminDashboard = () => {
           TOP BAR
       ====================================================== */}
 
-      <header className={styles.topbar}>
-        <div className={styles.brand}>
-          <div className={styles.logoIcon}>M</div>
-
-          <div>
-            <h1 className={styles.brandName}>
-              Maatram <span>Admin</span>
-            </h1>
-
-            <p className={styles.brandSub}>
-              Volunteer Control Panel
-            </p>
-          </div>
-        </div>
-
-        <nav className={styles.nav}>
-          {NAV.map(({ key, label, Icon }) => (
-            <button
-              key={key}
-              className={`${styles.navBtn} ${tab === key
-                  ? styles.navBtnActive
-                  : ""
-                }`}
-              onClick={() => {
-                if (key === "leaderboard") {
-                  navigate("/leaderboard");
-                } else if (key === "history") {
-                  navigate("/eventhistory");
-                } else if (key === "volunteers") {
-                  navigate("/studentstatus");
-                } else {
-                  setTab(key);
-                }
-              }}
-              title={label}
-            >
-              <Icon size={16} />
-
-              <span>{label}</span>
-
-              {key === "deleted" &&
-                deletedEvents.length > 0 && (
-                  <span className={styles.navBadge}>
-                    {deletedEvents.length}
-                  </span>
-                )}
-            </button>
-          ))}
-        </nav>
-
-        <div className={styles.topbarRight}>
-          <button
-            className={styles.postBtn}
-            onClick={() =>
-              navigate("/createevent")
-            }
-          >
-            <Plus size={16} />
-            Post Event
-          </button>
-
-          <button
-            className={styles.adminBtn}
-            onClick={() =>
-              setShowAdminProfile(true)
-            }
-          >
-            <div className={styles.adminAvatar}>
-              A
-            </div>
-          </button>
-        </div>
-      </header>
 
       <main className={styles.main}>
         {/* ====================================================
@@ -1192,8 +1119,17 @@ const AdminDashboard = () => {
                   <span className={styles.statLabel}>
                     Event Interests
                   </span>
+
+                  
                 </div>
               </div>
+              <button
+                    className={styles.postBtn}
+                    onClick={() => navigate("/admin/createevent")}
+                  >
+                    <Plus size={16} />
+                    Post Event
+                  </button>
             </section>
 
             <section

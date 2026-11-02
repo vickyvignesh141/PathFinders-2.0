@@ -1,12 +1,14 @@
 import { Outlet } from "react-router-dom";
 import Header from "../components/common/Header";
-import Footer from "../components/common/Footer";
 
 function AdminLayout() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
-
+      <Header
+        role="admin"
+        userName="Admin"
+        userRole="Admin"
+      />
       <div className="flex flex-1">
 
         <main className="flex-1 p-6">
@@ -14,7 +16,6 @@ function AdminLayout() {
         </main>
       </div>
 
-      <Footer />
     </div>
   );
 }
