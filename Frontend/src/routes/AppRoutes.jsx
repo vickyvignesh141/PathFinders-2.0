@@ -11,6 +11,7 @@ import StudentProfile from "../pages/Student/StudentProfile.jsx";
 import StudentHistory from "../pages/Student/StudentHistory.jsx";
 import StudentCertificate from "../pages/Student/StudentCertificate.jsx";
 import StudentLayout from "../layouts/StudentLayout.jsx";
+import AdminLayout from "../layouts/AdminLayout.jsx";
 
 
 import AlumniDashboard from "../pages/Alumni/AlumniDashboard.jsx";
@@ -32,35 +33,30 @@ function App() {
 
 
 
-        //Admin Routes
-        <Route path="/admindashboard" element={<AdminDashboard />} />
-        <Route path="/createevent" element={<EventCreation />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/eventhistory" element={<EventHistory />} />
-        <Route path="/manageevent/:eventId" element={<ManageEvent />} />
-        <Route path="/studentstatus"element={<StudentStatus />}/>
+        {/* Admin Routes */}
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="createevent" element={<EventCreation />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
+          <Route path="eventhistory" element={<EventHistory />} />
+          <Route path="manageevent/:eventId" element={<ManageEvent />} />
+          <Route path="studentstatus" element={<StudentStatus />} />
+        </Route>
 
 
 
-        //Alumni Routes
+        {/* Alumni Routes */}
         <Route path="/alumnidashboard" element={<AlumniDashboard />} />
 
-        //Student Routes
+        {/* Student Routes */}
         <Route path="/student" element={<StudentLayout />}>
-
-  <Route path="dashboard" element={<StudentDashboard />} />
-
-  <Route path="event" element={<StudentEvent />} />
-
-  <Route path="eventdetails" element={<StudentEventdetails />} />
-
-  <Route path="profile" element={<StudentProfile />} />
-
-  <Route path="history" element={<StudentHistory />} />
-
-  <Route path="certificate" element={<StudentCertificate />} />
-
-</Route>
+          <Route path="dashboard" element={<StudentDashboard />} />
+          <Route path="event" element={<StudentEvent />} />
+          <Route path="eventdetails" element={<StudentEventdetails />} />
+          <Route path="profile" element={<StudentProfile />} />
+          <Route path="history" element={<StudentHistory />} />
+          <Route path="certificate" element={<StudentCertificate />} />
+        </Route>
 
 
       </Routes>

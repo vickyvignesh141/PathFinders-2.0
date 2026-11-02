@@ -1,0 +1,31 @@
+
+.navbar {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+}
+
+.navButton {
+  width: 100%;
+  padding: 11px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #171717;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.navButton:hover {
+  background: #fff7d6;
+  color: #b88600;
+}
+
+.active {
+  background: #fff4c2;
+  color: #9a7200;
+}

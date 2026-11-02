@@ -24,10 +24,19 @@ def login():
     password = data.get("password", "")
     role = data.get("role", "")
 
-    if role not in ["student", "alumni", "director"]:
+    if role not in ["student", "alumni", "director", "admin"]:
         return jsonify({
             "success": False,
             "message": "Invalid role"
+        }), 400
+    
+    
+    # Admin username validation
+    if role == "admin":
+        if not re.fullmatch(r"MAA4\d{5}", username):
+            return jsonify({
+            "success": False,
+            "message": "Admin username must start with MAA4 followed by 5 digits."
         }), 400
 
     if not username or not password:
@@ -93,6 +102,12 @@ def register():
 
     elif re.fullmatch(r"MAA2\d{5}", username):
         role = "director"
+        
+    elif re.fullmatch(r"MAA4\d{5}", username):
+        return jsonify({
+        "success": False,
+        "message": "Admin accounts cannot register through volunteer registration."
+    }), 403
 
     else:
         return jsonify({
