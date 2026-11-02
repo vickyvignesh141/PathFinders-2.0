@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./StudentDashboard.module.css";
 import { useNavigate } from "react-router-dom";
-import Header from "../../components/common/Header"
-import StudentNavbar from "../../components/Navbar/StudentNavbar";
 
 const studentData = {
   name: "Santhosh Kumar",
@@ -446,16 +444,9 @@ const scrollTo = (id) => {
 
   return (
     <>
-      <Header
-    title="Student Dashboard"
-    userName="Gomagan R"
-    userId="71"
-  />
+      
 
-  <StudentNavbar
-    activeSection={activeSection}
-    onNavigate={scrollTo}
-  />
+  
     <div className={styles.dashboard}>
       {/* ===== TOP BAR ===== */}
       
@@ -541,14 +532,14 @@ const scrollTo = (id) => {
                     data-event-card
                     className={styles.eventCard}
                     onClick={() =>
-                      navigate("/studentevent", {
+                      navigate("/student/event", {
                         state: { event: ev },
                       })
                     }
                     onKeyDown={(e) => {
                       if (e.key === "Enter" || e.key === " ") {
                         e.preventDefault();
-                        navigate("/studentevent", {
+                        navigate("/student/event", {
                           state: { event: ev },
                         });
                       }
@@ -779,7 +770,7 @@ const scrollTo = (id) => {
       </div>
     </main>
 
-    {/* ===== HAMBURGER SIDE DRAWER ===== */}
+    {/* ===== HAMBURGER SIDE DRAWER ===== */}fp
 
 
       {/* ===== HAMBURGER SIDE DRAWER ===== */}

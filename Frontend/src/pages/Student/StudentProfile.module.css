@@ -1,7 +1,7 @@
 
 .profilePage {
   min-height: 100vh;
-  background: #f5f7fb;
+  background: #f8f8f6;
   padding: 35px 25px;
   font-family: "Inter", "Segoe UI", sans-serif;
 }
@@ -20,12 +20,12 @@
 .pageHeader h1 {
   font-size: 28px;
   font-weight: 700;
-  color: #172033;
+  color: #111111;
   margin: 0 0 8px;
 }
 
 .pageHeader p {
-  color: #7b8495;
+  color: #777777;
   font-size: 14px;
   margin: 0;
 }
@@ -39,7 +39,7 @@
   background: #ffffff;
   padding: 25px;
   border-radius: 14px;
-  border: 1px solid #e9edf4;
+  border: 1px solid #eeeeee;
   margin-bottom: 22px;
 }
 
@@ -47,8 +47,8 @@
   width: 105px;
   height: 105px;
   border-radius: 50%;
-  background: #eef2ff;
-  border: 3px solid #dce3ff;
+  background: #fff8cc;
+  border: 3px solid #facc15;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -58,6 +58,7 @@
 
 .photoPreview span {
   font-size: 45px;
+  color: #111111;
 }
 
 .photoPreview img {
@@ -68,20 +69,20 @@
 
 .photoContent h3 {
   font-size: 17px;
-  color: #202b40;
+  color: #111111;
   margin: 0 0 7px;
 }
 
 .photoContent p {
   font-size: 13px;
-  color: #8790a1;
+  color: #888888;
   margin: 0 0 13px;
 }
 
 .uploadButton {
   display: inline-block;
-  background: #eef2ff;
-  color: #4f46e5;
+  background: #facc15;
+  color: #111111;
   padding: 9px 17px;
   border-radius: 7px;
   font-size: 13px;
@@ -91,14 +92,14 @@
 }
 
 .uploadButton:hover {
-  background: #e0e7ff;
+  background: #eab308;
 }
 
 /* Form Sections */
 
 .formSection {
   background: #ffffff;
-  border: 1px solid #e9edf4;
+  border: 1px solid #eeeeee;
   border-radius: 14px;
   padding: 27px;
   margin-bottom: 22px;
@@ -110,7 +111,7 @@
   gap: 15px;
   margin-bottom: 27px;
   padding-bottom: 20px;
-  border-bottom: 1px solid #edf0f5;
+  border-bottom: 1px solid #eeeeee;
 }
 
 .sectionIcon {
@@ -119,8 +120,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #eef2ff;
-  color: #4f46e5;
+  background: #facc15;
+  color: #111111;
   border-radius: 10px;
   font-size: 14px;
   font-weight: 700;
@@ -128,13 +129,13 @@
 
 .sectionHeader h2 {
   font-size: 17px;
-  color: #202b40;
+  color: #111111;
   margin: 0 0 5px;
 }
 
 .sectionHeader p {
   font-size: 12px;
-  color: #929bad;
+  color: #888888;
   margin: 0;
 }
 
@@ -154,7 +155,7 @@
 }
 
 .formGroup label {
-  color: #344054;
+  color: #222222;
   font-size: 13px;
   font-weight: 600;
 }
@@ -164,11 +165,11 @@
   width: 100%;
   height: 45px;
   padding: 0 13px;
-  border: 1px solid #dce1e9;
+  border: 1px solid #dddddd;
   border-radius: 8px;
   outline: none;
   background: #ffffff;
-  color: #344054;
+  color: #222222;
   font-size: 13px;
   font-family: inherit;
   transition: 0.2s;
@@ -176,13 +177,13 @@
 }
 
 .formGroup input::placeholder {
-  color: #a6adba;
+  color: #aaaaaa;
 }
 
 .formGroup input:focus,
 .formGroup select:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  border-color: #eab308;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.18);
 }
 
 .formGroup select {
@@ -212,23 +213,23 @@
 
 .cancelButton {
   background: #ffffff;
-  color: #525c6d;
-  border: 1px solid #dce1e9;
+  color: #222222;
+  border: 1px solid #dddddd;
 }
 
 .cancelButton:hover {
-  background: #f1f3f7;
+  background: #f5f5f5;
 }
 
 .saveButton {
-  background: #4f46e5;
-  color: #ffffff;
-  border: 1px solid #4f46e5;
+  background: #facc15;
+  color: #111111;
+  border: 1px solid #facc15;
 }
 
 .saveButton:hover {
-  background: #4338ca;
-  border-color: #4338ca;
+  background: #eab308;
+  border-color: #eab308;
   transform: translateY(-1px);
 }
 
