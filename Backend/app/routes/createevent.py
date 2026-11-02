@@ -1,4 +1,5 @@
-
+from bson import ObjectId
+from datetime import datetime, timezone
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timezone
 import re
@@ -8,6 +9,7 @@ events_bp = Blueprint("events", __name__)
 
 # MongoDB Collection
 events_collection = db["events"]
+registrations_collection = db["registrations"]
 
 
 # GENERATE UNIQUE EVENT ID
@@ -205,3 +207,177 @@ def get_events():
             "success": False,
             "message": "Failed to fetch events"
         }), 500
+
+
+
+# ==================================
+# STUDENT REGISTER FOR EVENT
+# ==================================
+
+@events_bp.route("/<event_id>/register", methods=["POST"])
+def register_for_event(event_id):
+
+    data = request.get_json(silent=True) or {}
+
+    username = data.get("username", "").strip().upper()
+
+    if not username:
+        return jsonify({
+            "success": False,
+            "message": "Student username is required"
+        }), 400
+
+    # Validate MongoDB event ID
+    if not ObjectId.is_valid(event_id):
+        return jsonify({
+            "success": False,
+            "message": "Invalid event ID"
+        }), 400
+
+    # Check whether event exists
+    event = events_collection.find_one({
+        "_id": ObjectId(event_id)
+    })
+
+    if not event:
+        return jsonify({
+            "success": False,
+            "message": "Event not found"
+        }), 404
+
+    # Get student details from volunteers collection
+    student = db.volunteers.find_one({
+        "username": username,
+        "role": {"$in": ["student", "alumni"]}
+    })
+
+    if not student:
+        return jsonify({
+            "success": False,
+            "message": "Student account not found"
+        }), 404
+
+    # Prevent duplicate registration
+    existing_registration = registrations_collection.find_one({
+        "eventId": ObjectId(event_id),
+        "studentUsername": username
+    })
+
+    if existing_registration:
+        return jsonify({
+            "success": False,
+            "message": "You have already registered for this event"
+        }), 409
+
+    # Create registration document
+    registration = {
+        "eventId": ObjectId(event_id),
+
+        "eventTitle": event.get("eventTitle", ""),
+
+        "studentUsername": student.get("username", ""),
+        "studentName": student.get("name", ""),
+        "phone": student.get("phone", ""),
+        "email": student.get("email", ""),
+        "role": student.get("role", ""),
+
+        "address": student.get("address", ""),
+        "residenceType": student.get("residenceType", ""),
+        "previousVolunteeringWorks": student.get(
+            "previousVolunteeringWorks", []
+        ),
+
+        "status": "Registered",
+        "registeredAt": datetime.now(timezone.utc)
+    }
+
+    result = registrations_collection.insert_one(registration)
+
+    return jsonify({
+        "success": True,
+        "message": "Event registration successful",
+        "registrationId": str(result.inserted_id),
+        "status": "Registered"
+    }), 201
+
+
+# ==================================
+# GET LOGGED-IN STUDENT REGISTRATIONS
+# ==================================
+
+@events_bp.route("/student/registrations", methods=["GET"])
+def get_student_registrations():
+
+    username = request.args.get("username", "").strip().upper()
+
+    if not username:
+        return jsonify({
+            "success": False,
+            "message": "Student username is required"
+        }), 400
+
+    registrations = list(
+        registrations_collection.find({
+            "studentUsername": username
+        }).sort("registeredAt", -1)
+    )
+
+    for registration in registrations:
+        registration["_id"] = str(registration["_id"])
+        registration["eventId"] = str(registration["eventId"])
+
+        if registration.get("registeredAt"):
+            registration["registeredAt"] = (
+                registration["registeredAt"].isoformat()
+            )
+
+    return jsonify({
+        "success": True,
+        "registrations": registrations
+    }), 200
+
+
+# ==================================
+# ADMIN: GET REGISTRATIONS FOR AN EVENT
+# ==================================
+
+@events_bp.route("/<event_id>/registrations", methods=["GET"])
+def get_event_registrations(event_id):
+
+    if not ObjectId.is_valid(event_id):
+        return jsonify({
+            "success": False,
+            "message": "Invalid event ID"
+        }), 400
+
+    event = events_collection.find_one({
+        "_id": ObjectId(event_id)
+    })
+
+    if not event:
+        return jsonify({
+            "success": False,
+            "message": "Event not found"
+        }), 404
+
+    registrations = list(
+        registrations_collection.find({
+            "eventId": ObjectId(event_id)
+        }).sort("registeredAt", -1)
+    )
+
+    for registration in registrations:
+        registration["_id"] = str(registration["_id"])
+        registration["eventId"] = str(registration["eventId"])
+
+        if registration.get("registeredAt"):
+            registration["registeredAt"] = (
+                registration["registeredAt"].isoformat()
+            )
+
+    return jsonify({
+        "success": True,
+        "eventTitle": event.get("eventTitle", ""),
+        "totalRegistrations": len(registrations),
+        "registrations": registrations
+    }), 200

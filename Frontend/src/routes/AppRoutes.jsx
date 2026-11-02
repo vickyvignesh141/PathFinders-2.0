@@ -37,7 +37,7 @@ function App() {
         <Route path="/createevent" element={<EventCreation />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/eventhistory" element={<EventHistory />} />
-        <Route path="/manageevent" element={<ManageEvent />} />
+        <Route path="/manageevent/:eventId" element={<ManageEvent />} />
         <Route path="/studentstatus"element={<StudentStatus />}/>
 
 

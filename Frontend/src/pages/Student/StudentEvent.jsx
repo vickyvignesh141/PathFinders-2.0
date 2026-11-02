@@ -3,9 +3,11 @@ import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./StudentEvent.module.css";
 
-const API_URL = "http://localhost:5000/api/events/";
-const REGISTRATION_URL =
-  "http://localhost:5000/api/events/student/registrations";
+import {
+  getAllEvents,
+  getStudentRegistrations,
+  registerForEvent,
+} from "../../services/eventService";
 
 // Previous Student History records
 const HISTORY = [
@@ -122,10 +124,11 @@ const StudentEvent = () => {
   // Fetch admin-created upcoming events
   const fetchEvents = useCallback(async () => {
     try {
-      const response = await fetch(API_URL);
-      const result = await response.json();
+      setLoading(true);
 
-      if (!response.ok || !result.success) {
+      const result = await getAllEvents();
+
+      if (!result.success) {
         throw new Error(result.message || "Unable to fetch events");
       }
 
@@ -143,8 +146,13 @@ const StudentEvent = () => {
       setEvents(upcoming);
       setError("");
     } catch (err) {
-      console.error("Event fetch error:", err);
-      setError("Unable to load events. Please try again.");
+      console.error("Event fetch error:", err.response?.data || err);
+
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        "Unable to load events. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -153,10 +161,9 @@ const StudentEvent = () => {
   // Fetch registration statuses saved by backend
   const fetchRegistrationStatuses = useCallback(async () => {
     try {
-      const response = await fetch(REGISTRATION_URL);
-      const result = await response.json();
+      const result = await getStudentRegistrations();
 
-      if (!response.ok || !result.success) {
+      if (!result.success) {
         throw new Error(result.message || "Unable to fetch registrations");
       }
 
@@ -176,7 +183,10 @@ const StudentEvent = () => {
 
       setRegistrationStatus(statusMap);
     } catch (err) {
-      console.error("Registration status error:", err);
+      console.error(
+        "Registration status error:",
+        err.response?.data || err
+      );
     }
   }, []);
 
@@ -216,21 +226,9 @@ const StudentEvent = () => {
     try {
       setSubmitting(true);
 
-      const response = await fetch(
-        `${API_URL}${eventId}/register`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          // Add your student ID here if your backend requires it.
-          body: JSON.stringify({}),
-        }
-      );
+      const result = await registerForEvent(eventId);
 
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
+      if (!result.success) {
         throw new Error(result.message || "Registration failed");
       }
 

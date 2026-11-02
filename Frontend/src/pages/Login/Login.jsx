@@ -36,37 +36,45 @@ export default function VolunteerLogin() {
   };
 
   // LOGIN FUNCTION
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    if (!username.trim() || !password) {
-      alert("Please enter both username and password.");
-      return;
-    }
+  if (!username.trim() || !password || !role) {
+    alert("Please enter username, password and select role.");
+    return;
+  }
 
-    try {
-      const data = await loginUser(username.trim(), password, role);
+  try {
+    const data = await loginUser(username.trim(), password, role);
 
-      if (data.success) {
-        alert(`Welcome back, ${data.username}! Role: ${data.role}`);
+console.log("Login API response:", data);
 
-        if (data.role === "student") {
-          navigate("/Student/Dashboard");
-        } else if (data.role === "alumni") {
-          navigate("/Alumni/Dashboard");
-        } else if (data.role === "director") {
-          navigate("/Director/Dashboard");
-        }
-      }
-    } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        "Unable to connect to the server. Please try again.";
+if (data.success) {
 
-      alert(message);
-      setPassword("");
-    }
-  };
+  localStorage.setItem("username", data.username);
+  localStorage.setItem("role", data.role);
+
+  console.log("Saved username:", localStorage.getItem("username"));
+
+  if (data.role === "student") {
+    navigate("/Student/Dashboard");
+  } else if (data.role === "alumni") {
+    navigate("/Alumni/Dashboard");
+  } else if (data.role === "director") {
+    navigate("/Director/Dashboard");
+  }
+}
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      "Unable to connect to the server. Please try again.";
+
+    alert(message);
+    setPassword("");
+  }
+};
+
 
   // REGISTRATION FUNCTION WILL BE ADDED NEXT
   const handleRegister = async (e) => {
