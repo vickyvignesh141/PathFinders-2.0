@@ -3,8 +3,32 @@ import styles from "./CreateEvents.module.css";
 
 const ZONES = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"];
 
+const TARGET_AUDIENCES = [
+  {
+    value: "students",
+    label: "Students",
+    description: "Show this event to students only",
+  },
+  {
+    value: "alumni",
+    label: "Alumni",
+    description: "Show this event to alumni only",
+  },
+  {
+    value: "business_professionals",
+    label: "Business Professionals",
+    description: "Show this event to business professionals only",
+  },
+  {
+    value: "everyone",
+    label: "Everyone",
+    description: "Show this event to all users",
+  },
+];
+
 const CreateEvent = ({ onSubmit, onCancel }) => {
   const today = new Date();
+
   const defaultDate = `${today.getFullYear()}-${String(
     today.getMonth() + 1
   ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -20,6 +44,9 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
     instructions: "",
     volunteersNeeded: 10,
     zone: "Zone 1",
+
+    // NEW: Controls who can see this volunteering event
+    targetAudience: "students",
   });
 
   const [error, setError] = useState("");
@@ -33,7 +60,7 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
     }));
   };
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!form.eventTitle.trim()) {
@@ -61,6 +88,11 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
       return;
     }
 
+    if (!form.targetAudience) {
+      setError("Please select who this event is for.");
+      return;
+    }
+
     const startAt = new Date(
       `${form.date}T${form.startTime}:00`
     );
@@ -78,46 +110,58 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
 
     const eventData = {
       ...form,
+
       volunteersNeeded: Number(form.volunteersNeeded),
+
       startAt: startAt.toISOString(),
       endAt: endAt.toISOString(),
     };
 
     console.log("Created Event:", eventData);
 
-   try {
-    const response = await fetch("http://localhost:5000/api/events/", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify(eventData)
-    });
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/events/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(eventData),
+        }
+      );
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (result.success) {
+      if (result.success) {
         alert("Event created successfully!");
-        if (onSubmit) onSubmit(eventData);
-    } else {
-        setError(result.message);
-    }
 
-} catch (error) {
-    console.error(error);
-    setError("Server connection failed");
-}
+        if (onSubmit) {
+          onSubmit(eventData);
+        }
+      } else {
+        setError(result.message || "Failed to create event.");
+      }
+    } catch (error) {
+      console.error(error);
+      setError("Server connection failed");
+    }
   };
 
   return (
     <div className={styles.page}>
-
-      {/* Hero (black band) */}
+      {/* Hero */}
       <header className={styles.hero}>
         <div className={styles.heroInner}>
           <div className={styles.heroText}>
-            <p className={styles.eyebrow}>MAATRAM VOLUNTEERING</p>
-            <h1 className={styles.title}>Create Event</h1>
+            <p className={styles.eyebrow}>
+              MAATRAM VOLUNTEERING
+            </p>
+
+            <h1 className={styles.title}>
+              Create Event
+            </h1>
+
             <p className={styles.subtitle}>
               Create a volunteering event and provide all the
               details volunteers need.
@@ -126,25 +170,32 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
 
           <div className={styles.heroTag}>
             <span className={styles.tagYou}>YOU</span>
-            <span className={styles.tagLine}>Can Be The Change</span>
+            <span className={styles.tagLine}>
+              Can Be The Change
+            </span>
           </div>
         </div>
       </header>
 
       {/* Form */}
-      <form className={styles.form} onSubmit={handleSubmit}>
-
-        {/* Event Basic Details */}
-        <section className={`${styles.band} ${styles.bandYellow}`}>
+      <form
+        className={styles.form}
+        onSubmit={handleSubmit}
+      >
+        {/* ================= EVENT DETAILS ================= */}
+        <section
+          className={`${styles.band} ${styles.bandYellow}`}
+        >
           <div className={styles.bandInner}>
             <h2 className={styles.sectionTitle}>
               Event Details
             </h2>
 
             <div className={styles.formGrid}>
-
               {/* Event Title */}
-              <div className={`${styles.field} ${styles.fullWidth}`}>
+              <div
+                className={`${styles.field} ${styles.fullWidth}`}
+              >
                 <label className={styles.label}>
                   Event Title *
                 </label>
@@ -160,7 +211,9 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
               </div>
 
               {/* Event Description */}
-              <div className={`${styles.field} ${styles.fullWidth}`}>
+              <div
+                className={`${styles.field} ${styles.fullWidth}`}
+              >
                 <label className={styles.label}>
                   Event Description *
                 </label>
@@ -176,7 +229,9 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
               </div>
 
               {/* Volunteer Work */}
-              <div className={`${styles.field} ${styles.fullWidth}`}>
+              <div
+                className={`${styles.field} ${styles.fullWidth}`}
+              >
                 <label className={styles.label}>
                   Volunteer Work *
                 </label>
@@ -195,22 +250,73 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
                   expected from volunteers.
                 </span>
               </div>
-
             </div>
           </div>
         </section>
 
-        {/* Location & Schedule */}
-        <section className={`${styles.band} ${styles.bandWhite}`}>
+        {/* ================= TARGET AUDIENCE ================= */}
+        <section
+          className={`${styles.band} ${styles.bandWhite}`}
+        >
+          <div className={styles.bandInner}>
+            <h2 className={styles.sectionTitle}>
+              Who Can Participate?
+            </h2>
+
+            <p className={styles.helper}>
+              Select who should be able to see and participate
+              in this volunteering event.
+            </p>
+
+            <div className={styles.formGrid}>
+              <div
+                className={`${styles.field} ${styles.fullWidth}`}
+              >
+                <label className={styles.label}>
+                  Target Audience *
+                </label>
+
+                <select
+                  name="targetAudience"
+                  value={form.targetAudience}
+                  onChange={handleChange}
+                  className={styles.select}
+                >
+                  {TARGET_AUDIENCES.map((audience) => (
+                    <option
+                      key={audience.value}
+                      value={audience.value}
+                    >
+                      {audience.label}
+                    </option>
+                  ))}
+                </select>
+
+                <span className={styles.helper}>
+                  {TARGET_AUDIENCES.find(
+                    (audience) =>
+                      audience.value === form.targetAudience
+                  )?.description}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ================= LOCATION & SCHEDULE ================= */}
+        <section
+          className={`${styles.band} ${styles.bandWhite}`}
+        >
           <div className={styles.bandInner}>
             <h2 className={styles.sectionTitle}>
               Location & Schedule
             </h2>
 
             <div className={styles.formGrid}>
-
               {/* Location */}
-              <div className={`${styles.field} ${styles.fullWidth}`}>
+              <div
+                className={`${styles.field} ${styles.fullWidth}`}
+              >
                 <label className={styles.label}>
                   Location *
                 </label>
@@ -269,13 +375,14 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
                   className={styles.input}
                 />
               </div>
-
             </div>
           </div>
         </section>
 
-        {/* Volunteer Requirements */}
-        <section className={`${styles.band} ${styles.bandYellow}`}>
+        {/* ================= VOLUNTEER REQUIREMENTS ================= */}
+        <section
+          className={`${styles.band} ${styles.bandYellow}`}
+        >
           <div className={styles.bandInner}>
             <h2 className={styles.sectionTitle}>
               Volunteer Requirements
@@ -283,7 +390,6 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
 
             <div className={styles.sectionBody}>
               <div className={styles.formGrid}>
-
                 {/* Number of Volunteers */}
                 <div className={styles.field}>
                   <label className={styles.label}>
@@ -313,13 +419,15 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
                     className={styles.select}
                   >
                     {ZONES.map((zone) => (
-                      <option key={zone} value={zone}>
+                      <option
+                        key={zone}
+                        value={zone}
+                      >
                         {zone}
                       </option>
                     ))}
                   </select>
                 </div>
-
               </div>
 
               {/* Zone Buttons */}
@@ -354,8 +462,10 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
           </div>
         </section>
 
-        {/* Instructions */}
-        <section className={`${styles.band} ${styles.bandWhite}`}>
+        {/* ================= EVENT INSTRUCTIONS ================= */}
+        <section
+          className={`${styles.band} ${styles.bandWhite}`}
+        >
           <div className={styles.bandInner}>
             <h2 className={styles.sectionTitle}>
               Event Instructions
@@ -383,20 +493,16 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
           </div>
         </section>
 
-        {/* Error + Buttons (black band) */}
+        {/* ================= ERROR + BUTTONS ================= */}
         <div className={styles.actionsBand}>
           <div className={styles.actionsInner}>
-
-            {/* Error */}
             {error && (
               <div className={styles.error}>
                 {error}
               </div>
             )}
 
-            {/* Buttons */}
             <div className={styles.actions}>
-
               <button
                 type="button"
                 className={styles.cancelButton}
@@ -411,11 +517,9 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
               >
                 Create Event
               </button>
-
             </div>
           </div>
         </div>
-
       </form>
     </div>
   );
