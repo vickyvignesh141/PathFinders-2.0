@@ -1,0 +1,349 @@
+/* ============================================================
+   VARIABLES & GLOBALS
+   ============================================================ */
+.container {
+  --gold: #FFD700;
+  --gold-dark: #D4AF37;
+  --silver: #C0C0C0;
+  --silver-dark: #A9A9A9;
+  --bronze: #CD7F32;
+  --bronze-dark: #8B4513;
+  
+  --yellow: #ffcc00;
+  --yellow-light: #fff9e0;
+  --black: #0a0a0a;
+  --white: #ffffff;
+  --bg: #fafafa;
+  --bg-alt: #f2f2f2;
+  --border: rgba(17, 17, 17, 0.08);
+  --muted: rgba(17, 17, 17, 0.55);
+  --muted-strong: rgba(17, 17, 17, 0.72);
+  
+  --shadow-card: 0 4px 12px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  min-height: 100vh;
+  padding: 24px 32px 64px;
+  background: radial-gradient(circle at top right, rgba(255, 204, 0, 0.05), transparent 40%), var(--bg);
+  font-family: "Inter", "Segoe UI", sans-serif;
+  color: var(--black);
+}
+
+.inlineIcon { display: inline-block; vertical-align: middle; margin-right: 4px; }
+
+/* ============================================================
+   BACK BUTTON
+   ============================================================ */
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  margin-bottom: 24px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--white);
+  color: var(--black);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s var(--ease);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
+.backBtn:hover {
+  background: var(--yellow-light);
+  border-color: rgba(230, 184, 0, 0.4);
+  transform: translateX(-2px);
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
+.headerTitles { display: flex; flex-direction: column; gap: 4px; }
+.pageTitle { margin: 0; font-size: 28px; font-weight: 900; display: flex; align-items: center; gap: 10px; letter-spacing: -0.02em; }
+.titleIcon { color: var(--gold-dark); filter: drop-shadow(0 2px 4px rgba(255, 204, 0, 0.4)); }
+.pageSubtitle { margin: 0; font-size: 14px; color: var(--muted); }
+
+/* ============================================================
+   FILTERS BAR
+   ============================================================ */
+.filterBar {
+  display: flex; gap: 16px; margin-bottom: 40px; flex-wrap: wrap;
+  background: var(--white); padding: 16px; border-radius: 16px; border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+.searchBox { flex: 1; min-width: 250px; position: relative; display: flex; align-items: center; }
+.searchIcon { position: absolute; left: 14px; color: var(--muted); }
+.searchInput {
+  width: 100%; padding: 10px 14px 10px 40px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg); font-size: 13.5px; transition: all 0.2s var(--ease);
+}
+.searchInput:focus { background: var(--white); border-color: var(--gold-dark); outline: none; box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.15); }
+
+.dropdowns { display: flex; gap: 12px; flex-wrap: wrap; }
+.select {
+  appearance: none; padding: 10px 36px 10px 14px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--bg) url('data:image/svg+xml;utf8,<svg fill="none" stroke="%23111" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>') no-repeat right 12px center / 14px;
+  font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; color: var(--black);
+}
+.select:hover { border-color: var(--muted); }
+.select:focus { outline: none; border-color: var(--gold-dark); box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.15); }
+
+/* ============================================================
+   PODIUM (TOP 3)
+   ============================================================ */
+.podiumContainer {
+  display: flex; justify-content: center; align-items: flex-end; gap: 16px; margin-bottom: 48px;
+  padding-top: 30px; /* Space for crowns */
+}
+.podiumItem {
+  display: flex; flex-direction: column; align-items: center; width: 140px;
+  animation: floatUp 0.6s var(--ease) backwards;
+  cursor: pointer;
+  transition: transform 0.2s var(--ease-spring);
+}
+.podiumItem:hover {
+  transform: translateY(-5px) scale(1.02);
+}
+
+/* Animations */
+@keyframes floatUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes crownFloat { 0%, 100% { transform: translateY(-100%); } 50% { transform: translateY(-120%); } }
+
+.podiumAvatarWrap { position: relative; margin-bottom: 12px; z-index: 2; }
+.avatar {
+  width: 72px; height: 72px; border-radius: 50%; font-size: 28px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center; background: var(--white);
+  border: 4px solid var(--border); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.2s;
+}
+.crown {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%) translateY(-100%);
+  color: var(--gold); filter: drop-shadow(0 4px 8px rgba(255, 215, 0, 0.5));
+  animation: crownFloat 3s ease-in-out infinite; z-index: 10;
+}
+.podiumBadge {
+  position: absolute; bottom: -4px; right: -4px; width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; color: var(--white);
+  border: 2px solid var(--white); box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.podiumName { margin: 0 0 4px; font-size: 15px; font-weight: 800; text-align: center; line-height: 1.2; }
+.podiumXP { margin: 0 0 16px; font-size: 12px; font-weight: 700; color: var(--muted); text-align: center; }
+.podiumBase {
+  width: 100%; border-radius: 12px 12px 4px 4px; display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 12px; font-size: 24px; font-weight: 900; color: rgba(0,0,0,0.3); box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+}
+
+/* Rank 1 Specifics */
+.rank1 .avatar { width: 90px; height: 90px; font-size: 36px; border-color: var(--gold); box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.2), 0 12px 32px rgba(255, 215, 0, 0.3); }
+.rank1:hover .avatar { box-shadow: 0 0 0 6px rgba(255, 215, 0, 0.3), 0 16px 40px rgba(255, 215, 0, 0.4); }
+.rank1 .podiumBase { height: 140px; background: linear-gradient(180deg, var(--gold-dark) 0%, var(--gold) 100%); color: rgba(255,255,255,0.7); }
+.rank1 .podiumName { font-size: 17px; color: var(--gold-dark); }
+.rank1 { animation-delay: 0s; z-index: 3; }
+
+/* Rank 2 Specifics */
+.rank2 .avatar { border-color: var(--silver); }
+.rank2 .podiumBadge { background: var(--silver-dark); }
+.rank2 .podiumBase { height: 100px; background: linear-gradient(180deg, var(--silver-dark) 0%, var(--silver) 100%); color: rgba(255,255,255,0.8); }
+.rank2 { animation-delay: 0.1s; z-index: 2; }
+.rank2:hover .avatar { box-shadow: 0 0 0 4px rgba(192, 192, 192, 0.3), 0 12px 24px rgba(0,0,0,0.15); }
+
+/* Rank 3 Specifics */
+.rank3 .avatar { border-color: var(--bronze); }
+.rank3 .podiumBadge { background: var(--bronze-dark); }
+.rank3 .podiumBase { height: 80px; background: linear-gradient(180deg, var(--bronze-dark) 0%, var(--bronze) 100%); color: rgba(255,255,255,0.8); }
+.rank3 { animation-delay: 0.2s; z-index: 1; }
+.rank3:hover .avatar { box-shadow: 0 0 0 4px rgba(205, 127, 50, 0.3), 0 12px 24px rgba(0,0,0,0.15); }
+
+/* ============================================================
+   LIST (Rank 4+)
+   ============================================================ */
+.listContainer { background: var(--white); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow-card); overflow: hidden; }
+
+/* Grid Layout */
+.listHeader, .listRow {
+  display: grid;
+  grid-template-columns: 60px 2.5fr 2fr 1fr 100px;
+  align-items: center; gap: 16px; padding: 16px 20px;
+}
+.listHeader { background: var(--bg-alt); border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 700; color: var(--muted-strong); text-transform: uppercase; letter-spacing: 0.05em; }
+
+.listRow { border-bottom: 1px solid var(--border); transition: background 0.2s, transform 0.2s; animation: fadeSlide 0.4s var(--ease) backwards; animation-delay: calc(var(--stagger, 0) * 0.05s); cursor: pointer; }
+.listRow:last-child { border-bottom: none; }
+.listRow:hover { background: var(--yellow-light); transform: translateX(4px); border-left: 2px solid var(--gold-dark); padding-left: 18px; }
+
+@keyframes fadeSlide { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+/* Columns */
+.colRank { display: flex; justify-content: center; }
+.colVolunteer { display: flex; align-items: center; gap: 12px; }
+.colLevel { display: flex; flex-direction: column; gap: 6px; padding-right: 20px; }
+.colBadges { display: flex; align-items: center; }
+.colXP { display: flex; flex-direction: column; align-items: flex-end; }
+
+/* Elements */
+.rankBadge {
+  width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; background: var(--bg); color: var(--muted-strong);
+}
+.rankBadge.standard { border: 1px solid var(--border); }
+
+.listAvatar {
+  width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--black), #333);
+  color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800;
+}
+.volunteerInfo { display: flex; flex-direction: column; gap: 2px; }
+.volunteerName { margin: 0; font-size: 14.5px; font-weight: 700; color: var(--black); }
+.volunteerMeta { font-size: 11.5px; color: var(--muted); }
+
+/* Progress Bar */
+.levelInfo { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+.levelBadge { color: var(--gold-dark); }
+.levelNext { color: var(--muted); }
+.progressBarBg { width: 100%; height: 6px; background: var(--bg-alt); border-radius: 999px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.05); }
+.progressBarFill { height: 100%; background: linear-gradient(90deg, var(--yellow), #ff9800); border-radius: 999px; transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* Badges */
+.badgesWrapper { display: flex; gap: 6px; }
+.miniBadge { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; }
+.noBadges { color: var(--muted); font-size: 14px; font-weight: 700; }
+
+/* XP Stats */
+.xpText { font-size: 15px; font-weight: 900; color: var(--black); font-variant-numeric: tabular-nums; }
+.xpLabel { font-size: 10px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+
+/* ============================================================
+   EMPTY STATE
+   ============================================================ */
+.emptyState { display: flex; flex-direction: column; align-items: center; padding: 64px 20px; background: var(--white); border-radius: 16px; border: 1px dashed var(--border-strong); text-align: center; }
+.emptyIcon { color: var(--muted); margin-bottom: 16px; opacity: 0.5; }
+.emptyState h3 { margin: 0 0 8px; font-size: 18px; color: var(--black); }
+.emptyState p { margin: 0 0 20px; font-size: 14px; color: var(--muted); }
+.resetBtn { padding: 10px 20px; border-radius: 10px; border: none; background: var(--black); color: var(--yellow); font-weight: 700; cursor: pointer; transition: all 0.2s; }
+.resetBtn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+
+/* ============================================================
+   PROFILE POP-UP MODAL (Glass effect)
+   ============================================================ */
+.modalOverlay {
+  position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: radial-gradient(ellipse at 50% 40%, rgba(255, 204, 0, 0.10), transparent 55%), rgba(10, 10, 10, 0.58);
+  backdrop-filter: blur(8px) saturate(140%);
+  animation: overlayIn 0.24s var(--ease) both;
+}
+
+@keyframes overlayIn {
+  from { opacity: 0; backdrop-filter: blur(0px); }
+  to { opacity: 1; backdrop-filter: blur(8px) saturate(140%); }
+}
+
+.profileModal {
+  display: flex; flex-direction: column; width: 100%; max-width: 500px; max-height: calc(100vh - 48px);
+  background: var(--white); border-radius: 22px; overflow: hidden; position: relative;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  animation: modalIn 0.4s var(--ease-spring) both;
+}
+
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modalHead {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 26px;
+  background: radial-gradient(400px 200px at 0% 0%, rgba(255, 204, 0, 0.14), transparent 60%), linear-gradient(135deg, #161616 0%, #0a0a0a 60%, #1c1c1c 100%);
+  color: var(--white);
+}
+
+.profileHeaderInfo { display: flex; align-items: center; gap: 16px; }
+.avatarLg {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--yellow), var(--gold-dark));
+  color: var(--black); font-size: 24px; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 12px rgba(255, 204, 0, 0.4);
+}
+
+.modalTitle { margin: 0 0 6px; font-size: 18px; font-weight: 800; line-height: 1.3; color: var(--white); }
+.modalSub { margin: 0; font-size: 12.5px; color: rgba(255, 255, 255, 0.6); }
+
+.modalClose {
+  width: 34px; height: 34px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06); color: var(--white); cursor: pointer; transition: all 0.25s;
+  display: flex; align-items: center; justify-content: center;
+}
+.modalClose:hover { background: var(--yellow); color: var(--black); transform: rotate(90deg) scale(1.08); border-color: var(--yellow); }
+
+.modalBody {
+  flex: 1; overflow-y: auto; padding: 22px 26px; display: flex; flex-direction: column; gap: 20px; background: var(--white);
+  scrollbar-width: thin; scrollbar-color: rgba(230, 184, 0, 0.6) transparent;
+}
+
+/* Modal Inner gamification stats */
+.profileStatsRow {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg); border-radius: 14px; border: 1px solid var(--border); padding: 16px;
+}
+.profileStatBox { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 33%; }
+.profileStatBox strong { font-size: 18px; font-weight: 900; color: var(--black); }
+.profileStatBox span { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+.profileStatDivider { width: 1px; height: 30px; background: var(--border); }
+
+/* Modal Grid */
+.profileGrid { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.profileRow { display: flex; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 13.5px; }
+.profileRow:last-child { border-bottom: none; }
+.profileRow:nth-child(even) { background: var(--bg); }
+.profileLabel { font-weight: 600; color: var(--muted-strong); }
+.profileValue { font-weight: 700; color: var(--black); text-align: right; }
+
+.formBlock { display: flex; flex-direction: column; gap: 8px; }
+.fieldLabel { font-size: 12.5px; font-weight: 800; color: var(--black); }
+
+.badgesWrapperLarge { display: flex; flex-wrap: wrap; gap: 10px; }
+.largeBadge {
+  display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 12px; border: 1px solid;
+  font-size: 12.5px; font-weight: 700;
+}
+
+.listWrap { display: flex; flex-direction: column; gap: 8px; }
+.listItem { padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); display: flex; justify-content: space-between; align-items: center; }
+.listName { font-weight: 700; font-size: 13.5px; color: var(--black); }
+.listSub { font-size: 12px; font-weight: 600; color: #4caf50; background: rgba(76, 175, 80, 0.1); padding: 2px 8px; border-radius: 12px;}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .listHeader, .listRow { grid-template-columns: 50px 2fr 1.5fr 80px; }
+  .colBadges { display: none; /* Hide badges column on medium screens to save space */ }
+}
+
+@media (max-width: 640px) {
+  .container { padding: 16px; }
+  .podiumContainer { gap: 8px; align-items: flex-end; }
+  .podiumItem { width: 100px; }
+  .rank1 .avatar { width: 70px; height: 70px; font-size: 28px; }
+  .rank2 .avatar, .rank3 .avatar { width: 56px; height: 56px; font-size: 22px; }
+  .podiumName { font-size: 12px; }
+  
+  .listHeader { display: none; /* Hide grid header on mobile */ }
+  .listRow { display: flex; flex-wrap: wrap; gap: 12px; padding: 16px; position: relative; }
+  .colRank { position: absolute; top: 16px; right: 16px; }
+  .colVolunteer { width: calc(100% - 40px); }
+  .colLevel { width: 100%; padding-right: 0; margin-top: 8px; }
+  .colXP { display: none; /* XP is visible in the progress bar logic mentally, saving space */ }
+
+  .modalOverlay { padding: 0; align-items: flex-end; }
+  .profileModal { max-width: 100%; max-height: 92vh; border-radius: 22px 22px 0 0; }
+  .modalHead { padding: 18px 20px; }
+  .modalBody { padding: 18px 20px; gap: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
