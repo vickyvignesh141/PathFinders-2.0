@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import Login from "../pages/Login/Login.jsx";
 import Dashboard from "../pages/Dashboard/Dashboard.jsx";
+
 import StudentDashboard from "../pages/Student/StudentDashboard.jsx";
 import StudentEvent from "../pages/Student/StudentEvent.jsx";
 import StudentEventdetails from "../pages/Student/StudentEventdetails.jsx";
@@ -8,6 +10,9 @@ import StudentProfile from "../pages/Student/StudentProfile.jsx";
 // import StudentLeaderboard from "../pages/Student/StudentLeaderboard.jsx";
 import StudentHistory from "../pages/Student/StudentHistory.jsx";
 import StudentCertificate from "../pages/Student/StudentCertificate.jsx";
+import StudentLayout from "../layouts/StudentLayout.jsx";
+
+
 import AlumniDashboard from "../pages/Alumni/AlumniDashboard.jsx";
 import AdminDashboard from "../pages/Admin/AdminDashboard.jsx";
 import DirectorDashboard from "../pages/Director/DirectorDashboard.jsx";
@@ -41,13 +46,21 @@ function App() {
         <Route path="/alumnidashboard" element={<AlumniDashboard />} />
 
         //Student Routes
-        <Route path="/studentdashboard" element={<StudentDashboard />} />
-        <Route path="/studentevent" element={<StudentEvent />} />
-        <Route path="/studenteventdetails" element={<StudentEventdetails />} />
-        <Route path="/studentprofile" element={<StudentProfile />} />
-        {/* <Route path="/studentleaderboard" element={<StudentLeaderboard />} /> */}
-        <Route path="/studenthistory" element={<StudentHistory />} />
-        <Route path="/studentcertificate" element={<StudentCertificate />} />
+        <Route path="/student" element={<StudentLayout />}>
+
+  <Route path="dashboard" element={<StudentDashboard />} />
+
+  <Route path="event" element={<StudentEvent />} />
+
+  <Route path="eventdetails" element={<StudentEventdetails />} />
+
+  <Route path="profile" element={<StudentProfile />} />
+
+  <Route path="history" element={<StudentHistory />} />
+
+  <Route path="certificate" element={<StudentCertificate />} />
+
+</Route>
 
 
       </Routes>

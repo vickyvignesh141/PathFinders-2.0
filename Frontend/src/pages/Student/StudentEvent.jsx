@@ -256,7 +256,7 @@ const StudentEvent = () => {
   const openSelectedEvent = (event) => {
     const eventId = event._id || event.id;
 
-    navigate("/studenteventdetails", {
+    navigate("/student/eventdetails", {
       state: { event, eventId },
     });
   };
