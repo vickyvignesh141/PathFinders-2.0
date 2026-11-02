@@ -1,7 +1,7 @@
 
 from flask import Blueprint, request, jsonify
 from app.db import db
-from werkzeug.security import generate_password_hash, check_password_hash
+# from werkzeug.security import generate_password_hash, check_password_hash
 import re
 
 auth_bp = Blueprint("auth", __name__)
@@ -41,7 +41,7 @@ def login():
         "role": role
     })
 
-    if volunteer and check_password_hash(
+    if volunteer and (
         volunteer["password"], password
     ):
         return jsonify({
@@ -137,15 +137,17 @@ def register():
         }), 409
 
     # Hash password
-    hashed_password = generate_password_hash(password)
-
+    # hashed_password = generate_password_hash(password)
+    stored_password = password
+    
     # Create volunteer document
     volunteer = {
         "name": name,
         "username": username,
         "phone": phone,
         "email": email,
-        "password": hashed_password,
+        # "password": hashed_password,
+        "password": stored_password,
         "role": role
     }
 

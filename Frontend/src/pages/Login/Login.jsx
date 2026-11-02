@@ -51,11 +51,11 @@ export default function VolunteerLogin() {
         alert(`Welcome back, ${data.username}! Role: ${data.role}`);
 
         if (data.role === "student") {
-          navigate("/student/StudentDashboard");
+          navigate("/StudentDashboard");
         } else if (data.role === "alumni") {
-          navigate("/alumni/AlumniDashboard");
+          navigate("/AlumniDashboard");
         } else if (data.role === "director") {
-          navigate("/Director/DirectorDashboard");
+          navigate("/DirectorDashboard");
         }
       }
     } catch (error) {

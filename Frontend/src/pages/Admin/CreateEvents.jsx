@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styles from "./CreateEvents.module.css";
+import { createEvent } from "../../services/eventService";
 
 const ZONES = ["Zone 1", "Zone 2", "Zone 3", "Zone 4"];
 
@@ -119,33 +120,29 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
 
     console.log("Created Event:", eventData);
 
-    try {
-      const response = await fetch(
-        "http://localhost:5000/api/events/",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(eventData),
-        }
-      );
 
-      const result = await response.json();
+try {
+  const result = await createEvent(eventData);
 
-      if (result.success) {
-        alert("Event created successfully!");
+  if (result.success) {
+alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
 
-        if (onSubmit) {
-          onSubmit(eventData);
-        }
-      } else {
-        setError(result.message || "Failed to create event.");
-      }
-    } catch (error) {
-      console.error(error);
-      setError("Server connection failed");
+    if (onSubmit) {
+      onSubmit(result.event);
     }
+  } else {
+    setError(result.message || "Failed to create event");
+  }
+
+} catch (error) {
+  console.error("Create Event Error:", error);
+
+  setError(
+    error.response?.data?.message ||
+    "Server connection failed"
+  );
+}
+
   };
 
   return (
