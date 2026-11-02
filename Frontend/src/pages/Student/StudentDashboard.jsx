@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./StudentDashboard.module.css";
 import { useNavigate } from "react-router-dom";
+import Header from "../../components/common/Header"
+import StudentNavbar from "../../components/Navbar/StudentNavbar";
 
 const studentData = {
   name: "Santhosh Kumar",
@@ -406,81 +408,57 @@ const StudentDashboard = () => {
   for (let d = 1; d <= daysInMonth; d++) calDays.push(d);
   const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
 
-  const scrollTo = (id) => {
-    setActiveSection(id);
-    const el = document.getElementById(id);
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+const scrollTo = (id) => {
+  // Profile navigation
+  if (id === "profile") {
+    navigate("/studentprofile");
+    return;
+  }
+
+  // History navigation
+  if (id === "history") {
+    navigate("/studenthistory");
+    return;
+  }
+
+  // Certificate navigation
+  if (id === "certificate") {
+    navigate("/studentcertificate");
+    return;
+  }
+
+  // Dashboard section scrolling
+  setActiveSection(id);
+
+  const el = document.getElementById(id);
+
+  if (el) {
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+};
 
   // Find current user's rank in full leaderboard
   const currentUserRank =
     fullLeaderboardData.find((s) => s.name === profile.name)?.rank || "—";
 
   return (
+    <>
+      <Header
+    title="Student Dashboard"
+    userName="Gomagan R"
+    userId="71"
+  />
+
+  <StudentNavbar
+    activeSection={activeSection}
+    onNavigate={scrollTo}
+  />
     <div className={styles.dashboard}>
       {/* ===== TOP BAR ===== */}
-      <header className={styles.topbar}>
-        <div className={styles.brand}>
-          <button
-            className={styles.menuBtn}
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Open menu"
-          >
-            ☰
-          </button>
-          <div className={styles.logoIcon}>M</div>
-          <div>
-            <h1 className={styles.brandName}>
-              Maatram <span>Student</span>
-            </h1>
-            <p className={styles.brandSub}>Dashboard</p>
-          </div>
-        </div>
-
-        {/* RIGHT SIDE: nav + profile */}
-        <div className={styles.topbarRight}>
-          <nav className={styles.topnav}>
-            <button
-              className={`${styles.topnavBtn} ${activeSection === "profile" ? styles.topnavActive : ""}`}
-              onClick={() => scrollTo("profile")}
-            >
-              👤 Profile
-            </button>
-            <button
-              className={`${styles.topnavBtn} ${activeSection === "leaderboard" ? styles.topnavActive : ""}`}
-              onClick={() => scrollTo("leaderboard")}
-            >
-              🏆 Leaderboard
-            </button>
-            <button
-              className={`${styles.topnavBtn} ${activeSection === "history" ? styles.topnavActive : ""}`}
-              onClick={() => {
-                setActiveSection("history");
-                setDrawerOpen(true);
-              }}
-            >
-              📋 Event History
-            </button>
-            <button
-              className={`${styles.topnavBtn} ${activeSection === "certificate" ? styles.topnavActive : ""}`}
-              onClick={() => {
-                setActiveSection("certificate");
-                setDrawerOpen(true);
-              }}
-            >
-              🎖️ Certificate
-            </button>
-          </nav>
-
-          <div className={styles.profileBtn} style={{ cursor: "default" }}>
-            <div className={styles.avatar}>{profile.avatar}</div>
-            <div className={styles.userText}>
-              <span className={styles.userName}>{profile.name}</span>
-              <span className={styles.userRole}>{profile.college}</span>
-            </div>
-          </div>
-        </div>
-      </header>
+      
 
       <main className={styles.main}>
         {/* ===== WELCOME BANNER ===== */}
@@ -712,46 +690,7 @@ const StudentDashboard = () => {
 
           {/* Right column: Profile + Calendar */}
           <div className={styles.rightColumn}>
-            <section id="profile" className={styles.profileCard}>
-              <div className={styles.profileTop}>
-                <div className={styles.profileAvatarLarge}>
-                  {profile.avatar}
-                </div>
-                <div className={styles.profileInfo}>
-                  <h3 className={styles.profileName}>{profile.name}</h3>
-                  <p className={styles.profileCollege}>{profile.college}</p>
-                  <p className={styles.profileBatch}>
-                    {profile.batch} • {profile.department}
-                  </p>
-                </div>
-                <span
-                  className={styles.badgePill}
-                  style={{
-                    background: badgeColors[profile.badge].bg,
-                    color: badgeColors[profile.badge].color,
-                  }}
-                >
-                  {badgeColors[profile.badge].icon} {profile.badge}
-                </span>
-              </div>
-              <div className={styles.statsGrid}>
-                <div className={styles.stat}>
-                  <span className={styles.statNum}>
-                    {profile.eventsCompleted}
-                  </span>
-                  <span className={styles.statLabel}>Events Done</span>
-                </div>
-                <div className={styles.stat}>
-                  <span className={styles.statNum}>{profile.points}</span>
-                  <span className={styles.statLabel}>Points</span>
-                </div>
-                <div className={styles.stat}>
-                  <span className={styles.statNum}>{profile.totalHours}h</span>
-                  <span className={styles.statLabel}>Hours</span>
-                </div>
-              </div>
-            </section>
-
+            
             <section className={styles.calendar}>
               <div className={styles.calHeader}>
                 <h3 className={styles.sectionTitle}>📅 My Calendar</h3>
@@ -783,34 +722,65 @@ const StudentDashboard = () => {
                 ))}
               </div>
               <div className={styles.daysGrid}>
-                {calDays.map((day, i) => (
-                  <div
-                    key={i}
-                    className={`${styles.dayCell} ${day ? "" : styles.emptyCell} ${
-                      day && eventsByDay[day] ? styles.eventDay : ""
-                    }`}
-                  >
-                    {day && (
-                      <>
-                        <span>{day}</span>
-                        {eventsByDay[day] && (
-                          <span className={styles.tickIcon}>✓</span>
-                        )}
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className={styles.legend}>
-                <span className={styles.legendDot}></span>
-                <span className={styles.legendText}>
-                  Green tick = Registered event
-                </span>
-              </div>
-            </section>
-          </div>
+  {calDays.map((day, i) => {
+    const dayEvents = day ? eventsByDay[day] || [] : [];
+
+    const isSelected = dayEvents.some(
+      (ev) => ev.registrationStatus === "selected"
+    );
+
+    const isRegistered = dayEvents.some(
+      (ev) => ev.registrationStatus === "registered"
+    );
+
+    return (
+      <div
+        key={i}
+        className={`
+          ${styles.dayCell}
+          ${day ? "" : styles.emptyCell}
+          ${isRegistered ? styles.registeredEventDay : ""}
+          ${isSelected ? styles.selectedEventDay : ""}
+        `}
+        title={dayEvents.map((ev) => ev.title).join(", ")}
+      >
+        {day && <span>{day}</span>}
+
+        {dayEvents.length > 0 && (
+          <span className={styles.tickIcon}>✓</span>
+        )}
+      </div>
+    );
+  })}
+</div>
+             <div className={styles.legend}>
+  <span className={styles.legendDot}></span>
+  <span className={styles.legendText}>
+    <span style={{ color: "#dc2626", fontWeight: 700 }}>
+      Red
+    </span>{" "}
+    = Registered
+  </span>
+
+  <span
+    className={styles.legendDot}
+    style={{ background: "#22c55e" }}
+  ></span>
+
+  <span className={styles.legendText}>
+    <span style={{ color: "#15803d", fontWeight: 700 }}>
+      Green
+    </span>{" "}
+    = Admin Selected
+  </span>
+            </div>
+          </section>
         </div>
-      </main>
+      </div>
+    </main>
+
+    {/* ===== HAMBURGER SIDE DRAWER ===== */}
+
 
       {/* ===== HAMBURGER SIDE DRAWER ===== */}
       {drawerOpen && (
@@ -1124,7 +1094,9 @@ const StudentDashboard = () => {
           </div>
         </div>
       )}
+        
     </div>
+    </>
   );
 };
 
