@@ -56,9 +56,9 @@ const ROLE_CONFIG = {
 };
 
 const Header = ({
-  role = "student",
+  role ,
   title,
-  userName = "Gomagan R",
+  userName ,
   userRole,
   notificationCount = 0,
   onLogout,

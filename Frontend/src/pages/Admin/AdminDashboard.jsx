@@ -992,7 +992,7 @@ const AdminDashboard = () => {
                 <h2 className={styles.welcomeTitle}>
                   Welcome,{" "}
                   <span className={styles.accent}>
-                    Admin
+                    {localStorage.getItem("name")}
                   </span>
                 </h2>
 
@@ -1120,16 +1120,16 @@ const AdminDashboard = () => {
                     Event Interests
                   </span>
 
-                  
+
                 </div>
               </div>
               <button
-                    className={styles.postBtn}
-                    onClick={() => navigate("/admin/createevent")}
-                  >
-                    <Plus size={16} />
-                    Post Event
-                  </button>
+                className={styles.postBtn}
+                onClick={() => navigate("/admin/createevent")}
+              >
+                <Plus size={16} />
+                Post Event
+              </button>
             </section>
 
             <section

@@ -40,56 +40,63 @@ export default function VolunteerLogin() {
 
   // LOGIN FUNCTION
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
 
-    if (!username.trim() || !password || !role) {
-      alert("Please enter username, password and select role.");
-      return;
-    }
-    if (!isAdmin && !role) {
-      alert("Please select user type.");
-      return;
-    }
+const handleLogin = async (e) => {
+  e.preventDefault();
 
-    if (isAdmin && !username.trim().startsWith("MAA4")) {
-      alert("Admin username must start with MAA4.");
-      return;
-    }
+  // Admin and volunteer validation
+  if (!username.trim() || !password) {
+    alert("Please enter username and password.");
+    return;
+  }
 
-    try {
-      const loginRole = isAdmin ? "admin" : role;
-      const data = await loginUser(username.trim(), password, loginRole);
+  if (!isAdmin && !role) {
+    alert("Please select user type.");
+    return;
+  }
 
-      console.log("Login API response:", data);
+  if (isAdmin && !/^MAA4\d{5}$/.test(username.trim().toUpperCase())) {
+    alert("Admin username must start with MAA4 followed by 5 digits.");
+    return;
+  }
 
-      if (data.success) {
+  try {
+    const loginRole = isAdmin ? "admin" : role;
 
-        localStorage.setItem("username", data.username);
-        localStorage.setItem("role", data.role);
+    const data = await loginUser(
+      username.trim().toUpperCase(),
+      password,
+      loginRole
+    );
 
-        console.log("Saved username:", localStorage.getItem("username"));
+    console.log("Login API response:", data);
 
-        if (data.role === "student") {
-          navigate("/Student/Dashboard");
-        } else if (data.role === "alumni") {
-          navigate("/Alumni/Dashboard");
-        } else if (data.role === "director") {
-          navigate("/Director/Dashboard");
-        }
-        else if(data.role==="admin"){
-          navigate("/admin/dashboard");
-        }
+    if (data.success) {
+      localStorage.setItem("name", data.name);
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("role", data.role);
+
+      if (data.role === "student") {
+        navigate("/Student/Dashboard");
+      } else if (data.role === "alumni") {
+        navigate("/Alumni/Dashboard");
+      } else if (data.role === "director") {
+        navigate("/Director/Dashboard");
+      } else if (data.role === "admin") {
+        navigate("/admin/dashboard");
       }
-    } catch (error) {
-      const message =
-        error.response?.data?.message ||
-        "Unable to connect to the server. Please try again.";
-
-      alert(message);
-      setPassword("");
     }
-  };
+
+  } catch (error) {
+    const message =
+      error.response?.data?.message ||
+      "Unable to connect to the server. Please try again.";
+
+    alert(message);
+    setPassword("");
+  }
+};
+
 
 
   // REGISTRATION FUNCTION WILL BE ADDED NEXT
