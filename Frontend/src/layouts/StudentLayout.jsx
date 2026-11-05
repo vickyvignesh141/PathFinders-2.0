@@ -8,9 +8,9 @@ function StudentLayout() {
 
       {/* Common Student Header */}
       <Header
-        title="Student Dashboard"
-        userName="Gomagan R"
-        userId="71"
+        role={localStorage.getItem("role")}
+        userName={localStorage.getItem("name")}
+        userRole={localStorage.getItem("username")}
       />
 
       {/* Student Pages */}

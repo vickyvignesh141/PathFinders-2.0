@@ -458,9 +458,9 @@ const scrollTo = (id) => {
             <h2 className={styles.welcomeTitle}>
               Welcome back,{" "}
               <span className={styles.accent}>
-                {profile.name.split(" ")[0]}
+              {localStorage.getItem("name")}
               </span>{" "}
-              👋
+              
             </h2>
             <p className={styles.welcomeText}>
               You have <strong>{totalRegistered}</strong> registered event

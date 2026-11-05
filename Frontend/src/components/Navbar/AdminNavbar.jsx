@@ -3,13 +3,13 @@ import React from "react";
 import styles from "./AdminNavbar.module.css";
 
 const defaultItems = [
-  { label: "Overview", value: "/admin/dashboard" },
-  { label: "History", value: "/admin/eventhistory" },
+  { label: "Profile", value: "/admin/profile" },
+  { label: "Post Event", value: "/admin/createevent" },
   { label: "Leaderboard", value: "/admin/leaderboard" },
   { label: "Students", value: "/admin/studentstatus" },
   { label: "Emails", value: "/admin/emails" },
-  { label: "Post Event", value: "/admin/createevent" },
-  { label: "Profile", value: "/admin/profile" },
+  { label: "History", value: "/admin/eventhistory" },
+
 ];
 const AdminNavbar = ({
   items = defaultItems,
@@ -23,9 +23,8 @@ const AdminNavbar = ({
           key={item.value}
           type="button"
           role="menuitem"
-          className={`${styles.navButton} ${
-            activeSection === item.value ? styles.active : ""
-          }`}
+          className={`${styles.navButton} ${activeSection === item.value ? styles.active : ""
+            }`}
           onClick={() => onNavigate(item.value)}
         >
           {item.label}

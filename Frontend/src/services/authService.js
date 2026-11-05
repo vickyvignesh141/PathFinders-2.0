@@ -18,9 +18,16 @@ export const registerUser = async (
   email,
   password
 ) => {
-  const response = await api.post("/auth/register", {
+  const formattedUsername = username.trim().toUpperCase();
+
+  // Select API based on username prefix
+  const endpoint = formattedUsername.startsWith("MAA4")
+    ? "/auth/admin/register"
+    : "/auth/register";
+
+  const response = await api.post(endpoint, {
     name,
-    username,
+    username: formattedUsername,
     phone,
     email,
     password,

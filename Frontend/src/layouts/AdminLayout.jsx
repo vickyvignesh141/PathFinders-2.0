@@ -6,8 +6,8 @@ function AdminLayout() {
     <div className="min-h-screen flex flex-col bg-gray-50">
       <Header
         role="admin"
-        userName="Admin"
-        userRole="Admin"
+        userName={localStorage.getItem("name")}
+        userRole={localStorage.getItem("username")}
       />
       <div className="flex flex-1">
 
