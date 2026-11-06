@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
 import styles from "./StudentEventdetails.module.css";
 
 const StudentEventdetails = () => {
+   const navigate = useNavigate();
   const [rating, setRating] = useState(0);
   const [feedback, setFeedback] = useState('');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -115,8 +117,12 @@ const StudentEventdetails = () => {
 
   return (
     <div className={styles.container}>
-      <button className={styles.backBtn}>← Back to Events</button>
-
+      <button
+  className={styles.backBtn}
+  onClick={() => navigate("/student/event")}
+>
+  ← Back to Events
+</button>
       {/* Banner */}
       <div className={styles.bannerWrapper}>
         <img src={eventData.bannerUrl} alt="Event Banner" className={styles.banner} />
