@@ -6,7 +6,7 @@ import Dashboard from "../pages/Dashboard/Dashboard.jsx";
 import StudentDashboard from "../pages/Student/StudentDashboard.jsx";
 import StudentEvent from "../pages/Student/StudentEvent.jsx";
 import StudentEventdetails from "../pages/Student/StudentEventdetails.jsx";
-import StudentProfile from "../pages/Student/StudentProfile.jsx";
+import StudentProfile from "../pages/Student/studentProfile.jsx";
 // import StudentLeaderboard from "../pages/Student/StudentLeaderboard.jsx";
 import StudentHistory from "../pages/Student/StudentHistory.jsx";
 import StudentCertificate from "../pages/Student/StudentCertificate.jsx";

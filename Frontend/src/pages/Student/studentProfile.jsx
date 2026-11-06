@@ -8,13 +8,17 @@ const StudentProfile = () => {
     profilePhoto: "",
     dob: "",
     gender: "",
+    location: "",
     mobile: "",
     email: "",
     college: "",
+    collegeLocation: "",
+    zone: "",
     department: "",
     degree: "",
     year: "",
     batch: "",
+    accommodation: "",
     linkedin: "",
   });
 
@@ -58,7 +62,6 @@ const StudentProfile = () => {
   return (
     <div className={styles.profilePage}>
       <div className={styles.profileContainer}>
-
         {/* Page Header */}
         <div className={styles.pageHeader}>
           <div>
@@ -68,7 +71,6 @@ const StudentProfile = () => {
         </div>
 
         <form onSubmit={handleSubmit}>
-
           {/* Profile Photo */}
           <div className={styles.photoSection}>
             <div className={styles.photoPreview}>
@@ -106,7 +108,6 @@ const StudentProfile = () => {
             </div>
 
             <div className={styles.formGrid}>
-
               <div className={styles.formGroup}>
                 <label>Student Full Name *</label>
                 <input
@@ -143,12 +144,23 @@ const StudentProfile = () => {
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
-                  <option value="Prefer not to say">
-                    Prefer not to say
-                  </option>
+                  
+                  
                 </select>
               </div>
 
+              {/* Location */}
+              <div className={styles.formGroup}>
+                <label>Location *</label>
+                <input
+                  type="text"
+                  name="location"
+                  placeholder="Enter your location / city"
+                  value={profile.location}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
           </section>
 
@@ -163,7 +175,6 @@ const StudentProfile = () => {
             </div>
 
             <div className={styles.formGrid}>
-
               <div className={styles.formGroup}>
                 <label>Mobile Number *</label>
                 <input
@@ -191,6 +202,17 @@ const StudentProfile = () => {
                 />
               </div>
 
+              {/* LinkedIn Profile */}
+              <div className={styles.formGroup}>
+                <label>LinkedIn Profile</label>
+                <input
+                  type="url"
+                  name="linkedin"
+                  placeholder="https://www.linkedin.com/in/yourname"
+                  value={profile.linkedin}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
           </section>
 
@@ -205,7 +227,6 @@ const StudentProfile = () => {
             </div>
 
             <div className={styles.formGrid}>
-
               <div className={styles.formGroup}>
                 <label>College Name *</label>
                 <input
@@ -218,6 +239,36 @@ const StudentProfile = () => {
                 />
               </div>
 
+              {/* College Location */}
+              <div className={styles.formGroup}>
+                <label>College Location *</label>
+                <input
+                  type="text"
+                  name="collegeLocation"
+                  placeholder="Enter college location / city"
+                  value={profile.collegeLocation}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+
+              {/* Zone */}
+              <div className={styles.formGroup}>
+                <label>Zone *</label>
+                <select
+                  name="zone"
+                  value={profile.zone}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select Zone</option>
+                  <option value="Zone-1">Zone-1</option>
+                  <option value="Zone-2">Zone-2</option>
+                  <option value="Zone-3">Zone-3</option>
+                  <option value="Zone-4">Zone-4</option>
+                </select>
+              </div>
+
               <div className={styles.formGroup}>
                 <label>Department *</label>
                 <select
@@ -227,9 +278,7 @@ const StudentProfile = () => {
                   required
                 >
                   <option value="">Select Department</option>
-                  <option value="Computer Science">
-                    Computer Science
-                  </option>
+                  <option value="Computer Science">Computer Science</option>
                   <option value="Information Technology">
                     Information Technology
                   </option>
@@ -239,9 +288,7 @@ const StudentProfile = () => {
                   <option value="Electrical and Electronics">
                     Electrical and Electronics
                   </option>
-                  <option value="Mechanical">
-                    Mechanical
-                  </option>
+                  <option value="Mechanical">Mechanical</option>
                   <option value="Civil">Civil</option>
                   <option value="Artificial Intelligence">
                     Artificial Intelligence
@@ -286,7 +333,7 @@ const StudentProfile = () => {
                   <option value="2nd Year">2nd Year</option>
                   <option value="3rd Year">3rd Year</option>
                   <option value="4th Year">4th Year</option>
-                  <option value="5th Year">5th Year</option>
+                  
                 </select>
               </div>
 
@@ -299,8 +346,8 @@ const StudentProfile = () => {
                   required
                 >
                   <option value="">Select Academic Batch</option>
-                  {Array.from({ length: 15 }, (_, i) => {
-                    const start = 2020 + i;
+                  {Array.from({ length: 5 }, (_, i) => {
+                    const start = 2023 + i;
                     const end = start + 4;
 
                     return (
@@ -312,29 +359,19 @@ const StudentProfile = () => {
                 </select>
               </div>
 
-            </div>
-          </section>
-
-          {/* Professional Information */}
-          <section className={styles.formSection}>
-            <div className={styles.sectionHeader}>
-              <span className={styles.sectionIcon}>04</span>
-              <div>
-                <h2>Professional Information</h2>
-                <p>Connect your professional profile</p>
-              </div>
-            </div>
-
-            <div className={styles.formGrid}>
+              {/* Accommodation Type */}
               <div className={styles.formGroup}>
-                <label>LinkedIn Profile</label>
-                <input
-                  type="url"
-                  name="linkedin"
-                  placeholder="https://www.linkedin.com/in/yourname"
-                  value={profile.linkedin}
+                <label>Accommodation Type *</label>
+                <select
+                  name="accommodation"
+                  value={profile.accommodation}
                   onChange={handleChange}
-                />
+                  required
+                >
+                  <option value="">Select Accommodation Type</option>
+                  <option value="Hosteller">Hosteller</option>
+                  <option value="Day Scholar">Day Scholar</option>
+                </select>
               </div>
             </div>
           </section>
@@ -350,13 +387,17 @@ const StudentProfile = () => {
                   profilePhoto: "",
                   dob: "",
                   gender: "",
+                  location: "",
                   mobile: "",
                   email: "",
                   college: "",
+                  collegeLocation: "",
+                  zone: "",
                   department: "",
                   degree: "",
                   year: "",
                   batch: "",
+                  accommodation: "",
                   linkedin: "",
                 });
                 setPreview(null);
@@ -369,7 +410,6 @@ const StudentProfile = () => {
               Save Profile
             </button>
           </div>
-
         </form>
       </div>
     </div>

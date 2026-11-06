@@ -71,7 +71,11 @@ const Header = ({
   const menuRef = useRef(null);
 
   // Identify role
-  const normalizedRole = role.toLowerCase().replace(/[\s-]/g, "_");
+  const normalizedRole = (role || userRole || "student")
+  .toString()
+  .trim()
+  .toLowerCase()
+  .replace(/[\s-]/g, "_");
 
   const roleKey = normalizedRole.includes("admin")
     ? "admin"
