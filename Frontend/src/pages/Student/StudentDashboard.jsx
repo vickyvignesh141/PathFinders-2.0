@@ -483,114 +483,125 @@ const scrollTo = (id) => {
         </section>
 
         {/* ===== EVENTS STRIP (multi-card, auto-sliding) ===== */}
-        <section
-          className={styles.eventsSection}
-          onMouseEnter={() => setPaused(true)}
-          onMouseLeave={() => setPaused(false)}
-          onTouchStart={() => setPaused(true)}
-          onTouchEnd={() => setPaused(false)}
-        >
-          <div className={styles.panelHeader}>
-            <div>
-              <h3 className={styles.sectionTitle}>🗓️ Upcoming Events</h3>
-              <span className={styles.subtitle}>
-                {upcomingEvents.length} events • click a card to view details
-                &amp; register
+       {/* ===== UPCOMING EVENTS STRIP ===== */}
+<section
+  className={styles.eventsSection}
+  onMouseEnter={() => setPaused(true)}
+  onMouseLeave={() => setPaused(false)}
+  onTouchStart={() => setPaused(true)}
+  onTouchEnd={() => setPaused(false)}
+>
+  <div className={styles.panelHeader}>
+    <div>
+      <h3 className={styles.sectionTitle}>
+        <icon name="calendar-days" /> Upcoming Events
+      </h3>
+      <span className={styles.subtitle}>
+        {upcomingEvents.length} events • Explore and register
+      </span>
+    </div>
+
+    <div className={styles.calNav}>
+      <button
+        className={styles.navBtn}
+        onClick={() => slideBy(-1)}
+        aria-label="Previous events"
+      >
+        ‹
+      </button>
+
+      <button
+        className={styles.navBtn}
+        onClick={() => slideBy(1)}
+        aria-label="Next events"
+      >
+        ›
+      </button>
+    </div>
+  </div>
+
+  {loadingEvents ? (
+    <p className={styles.emptyText}>Loading events...</p>
+  ) : eventError ? (
+    <p className={styles.emptyText}>{eventError}</p>
+  ) : upcomingEvents.length === 0 ? (
+    <p className={styles.emptyText}>
+      No upcoming events right now.
+    </p>
+  ) : (
+    <div className={styles.eventsTrack} ref={trackRef}>
+      {upcomingEvents.map((ev) => {
+        const p = parseISO(ev.date);
+
+        return (
+          <article
+            key={ev.id}
+            data-event-card
+            className={styles.eventCard}
+            onClick={() =>
+              navigate("/student/event", {
+                state: { event: ev },
+              })
+            }
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigate("/student/event", {
+                  state: { event: ev },
+                });
+              }
+            }}
+            role="button"
+            tabIndex={0}
+          >
+            {/* Event Title */}
+            <h4 className={styles.eventCardTitle}>
+              {ev.title}
+            </h4>
+
+            {/* Event Information */}
+            <div className={styles.eventInfoList}>
+
+              <div className={styles.eventInfoItem}>
+                <icon name="calendar-days" />
+                <span>{formatRange(ev.date, ev.endDate)}</span>
+              </div>
+
+              <div className={styles.eventInfoItem}>
+                <icon name="clock" />
+                <span>{ev.time}</span>
+              </div>
+
+              <div className={styles.eventInfoItem}>
+                <icon name="map-pin" />
+                <span>{ev.location}</span>
+              </div>
+
+            </div>
+
+            {/* View Details */}
+            <div className={styles.eventCardFooter}>
+              <span className={styles.eventLink}>
+                View Details
+                <icon name="arrow-up-right" />
+              </span>
+
+              <span
+                className={`${styles.eventStatus} ${
+                  ev.registered
+                    ? styles.statusRegistered
+                    : styles.statusOpen
+                }`}
+              >
+                {ev.registered ? "✓ Registered" : "Open"}
               </span>
             </div>
-            <div className={styles.calNav}>
-              <button
-                className={styles.navBtn}
-                onClick={() => slideBy(-1)}
-                aria-label="Previous events"
-              >
-                ‹
-              </button>
-              <button
-                className={styles.navBtn}
-                onClick={() => slideBy(1)}
-                aria-label="Next events"
-              >
-                ›
-              </button>
-            </div>
-          </div>
-
-          {loadingEvents ? (
-            <p className={styles.emptyText}>Loading events...</p>
-          ) : eventError ? (
-            <p className={styles.emptyText}>{eventError}</p>
-          ) : upcomingEvents.length === 0 ? (
-            <p className={styles.emptyText}>No upcoming events right now.</p>
-          ) : (
-            <div className={styles.eventsTrack} ref={trackRef}>
-              {upcomingEvents.map((ev) => {
-                const p = parseISO(ev.date);
-                return (
-                  <article
-                    key={ev.id}
-                    data-event-card
-                    className={styles.eventCard}
-                    onClick={() =>
-                      navigate("/student/event", {
-                        state: { event: ev },
-                      })
-                    }
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        navigate("/student/event", {
-                          state: { event: ev },
-                        });
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div className={styles.eventCardTop}>
-                      <div className={styles.dateCircle}>
-                        <span className={styles.dateDay}>{pad(p.d)}</span>
-                        <span className={styles.dateMonth}>
-                          {MONTHS_SHORT[p.m]}
-                        </span>
-                      </div>
-                      <h4 className={styles.eventCardTitle}>{ev.title}</h4>
-                    </div>
-
-                    <div className={styles.eventDeptBox}>
-                      <span className={styles.eventDeptTitle}>
-                        {ev.category}
-                      </span>
-                      <span className={styles.eventDeptSub}>
-                        📍 {ev.location}
-                      </span>
-                    </div>
-
-                    <p className={styles.eventCardDesc}>{ev.description}</p>
-
-                    <div className={styles.eventCardDate}>
-                      <span>📅 {formatRange(ev.date, ev.endDate)}</span>
-                      <span className={styles.eventCardTime}>⏰ {ev.time}</span>
-                    </div>
-
-                    <div className={styles.eventCardFooter}>
-                      <span className={styles.eventLink}>View Details</span>
-                      <span
-                        className={`${styles.eventStatus} ${
-                          ev.registered
-                            ? styles.statusRegistered
-                            : styles.statusOpen
-                        }`}
-                      >
-                        {ev.registered ? "✓ Registered" : "Open"}
-                      </span>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          )}
-        </section>
+          </article>
+        );
+      })}
+    </div>
+  )}
+</section>
 
         {/* ===== LEADERBOARD + PROFILE & CALENDAR ===== */}
         <div className={styles.profileLeaderboardGrid}>
