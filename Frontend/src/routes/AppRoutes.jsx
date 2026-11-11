@@ -54,12 +54,11 @@ function App() {
         <Route path="/student" element={<StudentLayout />}>
           <Route path="dashboard" element={<StudentDashboard />} />
           <Route path="event" element={<StudentEvent />} />
-          <Route path="eventdetails" element={<StudentEventdetails />} />
+          <Route path="eventdetails/:eventId" element={<StudentEventdetails />} />
           <Route path="profile" element={<StudentProfile />} />
           <Route path="history" element={<StudentHistory />} />
           <Route path="certificate" element={<StudentCertificate />} />
         </Route>
-
 
       </Routes>
     </BrowserRouter>

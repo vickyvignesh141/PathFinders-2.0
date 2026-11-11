@@ -251,13 +251,11 @@ const StudentEvent = () => {
   };
 
   // Selected students can enter the event details page
-  const openSelectedEvent = (event) => {
-    const eventId = event._id || event.id;
+ const openSelectedEvent = (event) => {
+  const eventId = event.eventId;
 
-    navigate("/student/eventdetails", {
-      state: { event, eventId },
-    });
-  };
+  navigate(`/student/eventdetails/${eventId}`);
+};
 
   const renderStatus = (status) => {
     if (status === "Selected") {
