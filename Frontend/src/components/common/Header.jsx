@@ -117,15 +117,20 @@ const Header = ({
     }
   };
 
-  const handleLogout = () => {
-    setOpen(false);
+const handleLogout = () => {
+  setOpen(false);
 
-    if (onLogout) {
-      onLogout();
-    } else {
-      navigate("/");
-    }
-  };
+  // Clear logged-in user details
+  localStorage.removeItem("name");
+  localStorage.removeItem("role");
+  localStorage.removeItem("username");
+
+  if (onLogout) {
+    onLogout();
+  } else {
+    navigate("/");
+  }
+};
 
   const initial =
     userName?.trim()?.charAt(0)?.toUpperCase() || "U";

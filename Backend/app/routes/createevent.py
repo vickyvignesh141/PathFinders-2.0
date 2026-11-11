@@ -381,3 +381,66 @@ def get_event_registrations(event_id):
         "totalRegistrations": len(registrations),
         "registrations": registrations
     }), 200
+    
+    
+    # ==================================
+# ADMIN: UPDATE REGISTRATION STATUS
+# ==================================
+
+@events_bp.route(
+    "/registrations/<registration_id>/status",
+    methods=["PATCH", "OPTIONS"]
+)
+def update_registration_status(registration_id):
+
+    if request.method == "OPTIONS":
+        return "", 200
+
+    try:
+        # Validate registration ID
+        if not ObjectId.is_valid(registration_id):
+            return jsonify({
+                "success": False,
+                "message": "Invalid registration ID"
+            }), 400
+
+        data = request.get_json(silent=True) or {}
+        status = data.get("status", "").strip().capitalize()
+
+        # Allow only Approved or Rejected
+        if status not in ["Approved", "Rejected"]:
+            return jsonify({
+                "success": False,
+                "message": "Status must be Approved or Rejected"
+            }), 400
+
+        # Find registration using registration _id
+        result = registrations_collection.update_one(
+            {"_id": ObjectId(registration_id)},
+            {
+                "$set": {
+                    "status": status,
+                    "updatedAt": datetime.now(timezone.utc)
+                }
+            }
+        )
+
+        if result.matched_count == 0:
+            return jsonify({
+                "success": False,
+                "message": "Registration not found"
+            }), 404
+
+        return jsonify({
+            "success": True,
+            "message": f"Registration {status} successfully",
+            "status": status
+        }), 200
+
+    except Exception as e:
+        print("Update Registration Status Error:", e)
+
+        return jsonify({
+            "success": False,
+            "message": "Unable to update registration status"
+        }), 500
