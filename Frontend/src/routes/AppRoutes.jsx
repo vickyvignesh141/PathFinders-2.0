@@ -22,6 +22,7 @@ import Leaderboard from "../pages/Admin/Leaderboard.jsx";
 import EventHistory from "../pages/Admin/EventHistory.jsx";
 import ManageEvent from "../pages/Admin/EventManage.jsx";
 import StudentStatus from "../pages/Admin/StudentStatus.jsx"
+import Adminprofile from "../pages/Admin/Adminprofile.jsx"
 function App() {
   return (
     <BrowserRouter>
@@ -41,6 +42,7 @@ function App() {
           <Route path="eventhistory" element={<EventHistory />} />
           <Route path="manageevent/:eventId" element={<ManageEvent />} />
           <Route path="studentstatus" element={<StudentStatus />} />
+          <Route path="profile" element={<Adminprofile />} />
         </Route>
 
 
