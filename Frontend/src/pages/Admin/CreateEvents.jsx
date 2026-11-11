@@ -121,58 +121,34 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
     console.log("Created Event:", eventData);
 
 
-try {
-  const result = await createEvent(eventData);
+    try {
+      const result = await createEvent(eventData);
 
-  if (result.success) {
-alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
+      if (result.success) {
+        alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
 
-    if (onSubmit) {
-      onSubmit(result.event);
+        if (onSubmit) {
+          onSubmit(result.event);
+        }
+      } else {
+        setError(result.message || "Failed to create event");
+      }
+
+    } catch (error) {
+      console.error("Create Event Error:", error);
+
+      setError(
+        error.response?.data?.message ||
+        "Server connection failed"
+      );
     }
-  } else {
-    setError(result.message || "Failed to create event");
-  }
-
-} catch (error) {
-  console.error("Create Event Error:", error);
-
-  setError(
-    error.response?.data?.message ||
-    "Server connection failed"
-  );
-}
 
   };
 
   return (
     <div className={styles.page}>
       {/* Hero */}
-      <header className={styles.hero}>
-        <div className={styles.heroInner}>
-          <div className={styles.heroText}>
-            <p className={styles.eyebrow}>
-              MAATRAM VOLUNTEERING
-            </p>
 
-            <h1 className={styles.title}>
-              Create Event
-            </h1>
-
-            <p className={styles.subtitle}>
-              Create a volunteering event and provide all the
-              details volunteers need.
-            </p>
-          </div>
-
-          <div className={styles.heroTag}>
-            <span className={styles.tagYou}>YOU</span>
-            <span className={styles.tagLine}>
-              Can Be The Change
-            </span>
-          </div>
-        </div>
-      </header>
 
       {/* Form */}
       <form
@@ -302,7 +278,7 @@ alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
 
         {/* ================= LOCATION & SCHEDULE ================= */}
         <section
-          className={`${styles.band} ${styles.bandWhite}`}
+          className={`${styles.band} ${styles.bandYellow}`}
         >
           <div className={styles.bandInner}>
             <h2 className={styles.sectionTitle}>
@@ -404,7 +380,7 @@ alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
                 </div>
 
                 {/* Zone */}
-                <div className={styles.field}>
+                {/* <div className={styles.field}>
                   <label className={styles.label}>
                     Zone *
                   </label>
@@ -424,7 +400,7 @@ alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
                       </option>
                     ))}
                   </select>
-                </div>
+                </div> */}
               </div>
 
               {/* Zone Buttons */}
@@ -438,11 +414,10 @@ alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
                     <button
                       type="button"
                       key={zone}
-                      className={`${styles.zoneButton} ${
-                        form.zone === zone
-                          ? styles.zoneActive
-                          : ""
-                      }`}
+                      className={`${styles.zoneButton} ${form.zone === zone
+                        ? styles.zoneActive
+                        : ""
+                        }`}
                       onClick={() =>
                         setForm((prev) => ({
                           ...prev,
@@ -487,18 +462,15 @@ alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
                 safety instructions, or other important information.
               </span>
             </div>
-          </div>
-        </section>
 
-        {/* ================= ERROR + BUTTONS ================= */}
-        <div className={styles.actionsBand}>
-          <div className={styles.actionsInner}>
+            {/* Error Message */}
             {error && (
               <div className={styles.error}>
                 {error}
               </div>
             )}
 
+            {/* Action Buttons */}
             <div className={styles.actions}>
               <button
                 type="button"
@@ -515,11 +487,14 @@ alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
                 Create Event
               </button>
             </div>
+
           </div>
-        </div>
+        </section>
       </form>
     </div>
   );
 };
 
 export default CreateEvent;
+
+

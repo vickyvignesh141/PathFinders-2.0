@@ -1,22 +1,49 @@
 /* =====================================================
-   Maatram Create Event
-   Look taken from maatramfoundation.com:
-   black hero band, yellow gradient band, white band,
-   classic serif type, sharp corners, black boxes.
+   Maatram — Create Event (redesigned)
+   Palette: yellow / white / black
+   Alignment: centered single-column form —
+   section title sits above its fields.
    ===================================================== */
 
 .page {
-  --m-yellow: #fcc200;
-  --m-yellow-light: #ffe566;
-  --m-gold: #e0a100;
-  --m-orange: #ff9d00;
-  --m-black: #000;
-  --m-white: #fff;
+  /* --- yellow scale --- */
+  --y-600: #e8b200;
+  --y-500: #ffc800;
+  --y-400: #ffd84d;
+  --y-300: #ffe27a;
+  --y-100: #fff6d6;
+  --y-50: #fffdf3;
+
+  /* --- neutrals --- */
+  --black: #0d0d0d;
+  --ink: #1c1c1c;
+  --muted: #5f5f5f;
+  --line: #e8e2d2;
+  --white: #ffffff;
+
+  /* --- feedback --- */
+  --danger: #b42318;
+  --danger-bg: #fff4f1;
+  --danger-line: #f04438;
+
+  /* --- shape / depth --- */
+  --radius-lg: 18px;
+  --radius: 12px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(13, 13, 13, 0.06);
+  --shadow-md: 0 10px 30px rgba(13, 13, 13, 0.08);
+
+  /* shared width so bands + actions line up vertically */
+  --form-width: 820px;
 
   min-height: 100vh;
-  background: var(--m-white);
-  color: var(--m-black);
-  font-family: "Times New Roman", Times, Georgia, serif;
+  background: var(--y-50);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, -apple-system, "Helvetica Neue",
+    Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
 
 .page *,
@@ -25,90 +52,128 @@
   box-sizing: border-box;
 }
 
-/* ================= HERO (BLACK BAND) ================= */
+/* ================= HERO (kept for when it is re-enabled) ================= */
 
 .hero {
   position: relative;
-  background: var(--m-black);
-  color: var(--m-white);
-  padding: 64px 24px 56px;
+  overflow: hidden;
+  background: var(--black);
+  color: var(--white);
+  padding: 64px 24px 60px;
 }
 
-/* orange-yellow strip on top, like the site banner */
 .hero::before {
   content: "";
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 8px;
+  height: 6px;
   background: linear-gradient(
     90deg,
-    var(--m-orange) 0%,
-    var(--m-yellow) 60%,
-    var(--m-yellow-light) 100%
+    var(--y-600) 0%,
+    var(--y-500) 45%,
+    var(--y-300) 100%
   );
 }
 
+.hero::after {
+  content: "";
+  position: absolute;
+  right: -140px;
+  bottom: -180px;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 200, 0, 0.18) 0%,
+    rgba(255, 200, 0, 0) 70%
+  );
+  pointer-events: none;
+}
+
 .heroInner {
-  max-width: 1100px;
+  position: relative;
+  z-index: 1;
+  max-width: 1080px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
-  gap: 48px;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 40px;
   align-items: center;
 }
 
 .heroText {
-  text-align: center;
+  text-align: left;
 }
 
 .eyebrow {
-  margin: 0 0 10px;
-  color: var(--m-yellow);
-  font-size: 14px;
+  display: inline-block;
+  margin: 0 0 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(255, 200, 0, 0.14);
+  border: 1px solid rgba(255, 200, 0, 0.45);
+  color: var(--y-500);
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 
 .title {
   margin: 0;
-  font-size: 46px;
-  font-weight: 400;
-  line-height: 1.15;
-  color: var(--m-white);
+  font-size: clamp(32px, 4.4vw, 46px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  color: var(--white);
+}
+
+.title::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 5px;
+  margin-top: 18px;
+  border-radius: 999px;
+  background: var(--y-500);
 }
 
 .subtitle {
-  margin: 18px auto 0;
-  max-width: 540px;
-  color: var(--m-white);
+  margin: 18px 0 0;
+  max-width: 520px;
+  color: rgba(255, 255, 255, 0.78);
   font-size: 17px;
-  font-style: italic;
-  line-height: 1.7;
+  line-height: 1.65;
 }
 
 .heroTag {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  text-align: center;
-  padding-left: 40px;
-  border-left: 2px solid var(--m-yellow);
+  gap: 8px;
+  padding: 24px 26px;
+  border-radius: var(--radius-lg);
+  background: var(--y-500);
+  color: var(--black);
+  text-align: left;
+  box-shadow: 0 12px 28px rgba(255, 200, 0, 0.22);
 }
 
 .tagYou {
-  font-size: 26px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--m-white);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(13, 13, 13, 0.6);
 }
 
 .tagLine {
-  font-size: 26px;
-  font-weight: 400;
-  color: var(--m-white);
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--black);
 }
 
 /* ================= BANDS ================= */
@@ -118,64 +183,82 @@
 }
 
 .band {
-  padding: 60px 24px;
+  padding: 64px 24px;
 }
 
 .bandYellow {
-  background:
-    radial-gradient(
-      ellipse at 12% 20%,
-      rgba(255, 255, 255, 0.28) 0%,
-      rgba(255, 255, 255, 0) 55%
-    ),
-    linear-gradient(
-      105deg,
-      #f8b700 0%,
-      #ffd02a 48%,
-      var(--m-yellow-light) 100%
-    );
-  color: var(--m-black);
+  background: linear-gradient(
+    180deg,
+    var(--y-100) 0%,
+    var(--y-50) 100%
+  );
 }
-
 .bandWhite {
-  background: var(--m-white);
-  color: var(--m-black);
+  background: #ffffff;
 }
 
-/* title on the left, fields on the right ("Core Service" layout) */
+
+.bandYellow:nth-of-type(4) {
+  background: #ffffff;
+}
+
+/* Event Instructions - Light Golden */
+.bandWhite:nth-of-type(5) {
+  background: linear-gradient(
+    180deg,
+    var(--y-100) 0%,
+    var(--y-50) 100%
+  );
+}
+/* subtle seam between two consecutive white bands */
+.bandWhite + .bandWhite {
+  border-top: 1px dashed var(--line);
+}
+
+/* ================= NEW ALIGNMENT =================
+   Previously: title in a 260px left column, fields on the right.
+   Now: a narrow centered column, title stacked above the fields.
+   ================================================= */
+
 .bandInner {
-  max-width: 1100px;
+  max-width: var(--form-width);
   margin: 0 auto;
-  display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  gap: 56px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
 .sectionBody {
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
 .sectionTitle {
+  position: relative;
   margin: 0;
-  font-size: 36px;
-  font-weight: 400;
-  line-height: 1.25;
-  color: var(--m-black);
+  padding-left: 20px;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--black);
 }
 
-.sectionTitle::after {
+.sectionTitle::before {
   content: "";
-  display: block;
-  width: 52px;
-  height: 4px;
-  margin-top: 16px;
-  background: var(--m-black);
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 6px;
+  border-radius: 999px;
+  background: var(--y-500);
 }
 
-/* gold headings on white, like "News to cheer!" */
 .bandWhite .sectionTitle {
-  color: var(--m-gold);
+  color: var(--black);
 }
 
 /* ================= FORM GRID ================= */
@@ -183,7 +266,7 @@
 .formGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px 20px;
+  gap: 20px;
 }
 
 .fullWidth {
@@ -195,26 +278,21 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
 }
 
 .label {
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 700;
-  line-height: 1.3;
-  color: var(--m-black);
+  letter-spacing: 0.01em;
+  color: var(--ink);
 }
 
 .helper {
-  font-size: 14px;
-  font-style: italic;
+  font-size: 13.5px;
   line-height: 1.55;
-  color: rgba(0, 0, 0, 0.7);
-}
-
-.bandWhite .helper {
-  color: #555;
+  color: var(--muted);
 }
 
 /* ================= INPUTS ================= */
@@ -223,176 +301,159 @@
 .select,
 .textarea {
   width: 100%;
-  border: 2px solid var(--m-black);
-  border-radius: 2px;
-  background: var(--m-white);
-  color: var(--m-black);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background-color: var(--white);
+  color: var(--ink);
   font-family: inherit;
-  font-size: 16px;
-  outline: none;
-  transition:
-    box-shadow 0.15s ease,
-    transform 0.15s ease;
+  font-size: 15.5px;
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .input,
 .select {
-  height: 48px;
-  padding: 0 14px;
+  height: 52px;
+  padding: 0 16px;
 }
 
 .textarea {
-  padding: 12px 14px;
-  min-height: 110px;
+  padding: 14px 16px;
+  min-height: 120px;
   resize: vertical;
   line-height: 1.6;
 }
 
 .input::placeholder,
 .textarea::placeholder {
-  color: #6b6b6b;
-  font-style: italic;
+  color: #9a958a;
 }
 
-/* hard offset shadow on focus: black on yellow, yellow on white */
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: #d8d0ba;
+}
+
 .input:focus,
 .select:focus,
 .textarea:focus {
-  box-shadow: 4px 4px 0 var(--m-black);
-  transform: translate(-2px, -2px);
-}
-
-.bandWhite .input:focus,
-.bandWhite .select:focus,
-.bandWhite .textarea:focus {
-  box-shadow: 4px 4px 0 var(--m-yellow);
+  outline: none;
+  border-color: var(--y-500);
+  box-shadow: 0 0 0 4px rgba(255, 200, 0, 0.28);
 }
 
 .select {
   appearance: none;
   -webkit-appearance: none;
-  padding-right: 42px;
+  padding-right: 44px;
   cursor: pointer;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%23000' stroke-width='2'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'%3E%3Cpath d='M1 1l6 6 6-6' fill='none' stroke='%230d0d0d' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 14px center;
+  background-position: right 16px center;
 }
 
-/* ================= ZONE ================= */
+/* ================= ZONE PICKER ================= */
 
 .zoneSection {
-  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .zoneGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 10px;
+  gap: 10px;
 }
 
 .zoneButton {
-  height: 48px;
-  border: 2px solid var(--m-black);
-  border-radius: 2px;
-  background: var(--m-white);
-  color: var(--m-black);
+  height: 52px;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--ink);
   font-family: inherit;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease;
+  box-shadow: var(--shadow-sm);
+  transition: background-color 0.15s ease, color 0.15s ease,
+    border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .zoneButton:hover {
-  background: var(--m-black);
-  color: var(--m-yellow);
+  background: var(--y-100);
+  border-color: var(--y-500);
 }
 
 .zoneButton:focus-visible {
-  outline: 3px solid var(--m-black);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(255, 200, 0, 0.35);
 }
 
-.zoneActive {
-  background: var(--m-black);
-  color: var(--m-yellow);
+.zoneActive,
+.zoneActive:hover {
+  background: var(--black);
+  border-color: var(--black);
+  color: var(--y-500);
+  box-shadow: 0 6px 16px rgba(13, 13, 13, 0.18);
 }
 
-/* ================= ACTIONS (BLACK BAND) ================= */
+/* ================= ACTIONS BAR ================= */
 
-.actionsBand {
-  background: var(--m-black);
-  padding: 44px 24px 56px;
-}
-
-.actionsInner {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-
-/* black box with white bold text, like the site's highlight box */
-.error {
-  margin-bottom: 24px;
-  padding: 16px 20px;
-  border-left: 5px solid #ef4444;
-  background: #1c1c1c;
-  color: var(--m-white);
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1.5;
-}
+/* ================= ACTION BUTTONS ================= */
 
 .actions {
   display: flex;
   justify-content: flex-end;
-  gap: 14px;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 24px;
 }
 
 .cancelButton,
 .createButton {
-  min-width: 170px;
+  min-width: 150px;
   height: 50px;
-  padding: 0 28px;
-  border-radius: 2px;
+  padding: 0 26px;
+  border-radius: var(--radius);
   font-family: inherit;
-  font-size: 17px;
+  font-size: 15.5px;
   font-weight: 700;
   cursor: pointer;
-  transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease;
+  transition: all 0.2s ease;
 }
 
 .cancelButton {
-  background: transparent;
-  border: 2px solid var(--m-white);
-  color: var(--m-white);
+  background: white;
+  border: 1.5px solid var(--line);
+  color: var(--ink);
 }
 
 .cancelButton:hover {
-  background: var(--m-white);
-  color: var(--m-black);
+  background: #f5f5f5;
+  border-color: #999;
 }
 
 .createButton {
-  background: var(--m-yellow);
-  border: 2px solid var(--m-yellow);
-  color: var(--m-black);
+  background: var(--y-500);
+  border: 1.5px solid var(--y-500);
+  color: var(--black);
+  box-shadow: 0 6px 18px rgba(255, 200, 0, 0.2);
 }
 
 .createButton:hover {
-  background: var(--m-white);
-  border-color: var(--m-white);
+  background: var(--y-300);
+  border-color: var(--y-300);
 }
 
 .cancelButton:focus-visible,
 .createButton:focus-visible {
-  outline: 3px solid var(--m-yellow-light);
-  outline-offset: 3px;
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(255, 200, 0, 0.35);
 }
 
 /* ================= RESPONSIVE ================= */
@@ -400,42 +461,36 @@
 @media (max-width: 900px) {
   .heroInner {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 28px;
+  }
+
+  .heroText {
+    text-align: center;
+  }
+
+  .subtitle {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .title::after {
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .heroTag {
-    padding-left: 0;
-    padding-top: 28px;
-    border-left: none;
-    border-top: 2px solid var(--m-yellow);
-  }
-
-  .bandInner {
-    grid-template-columns: 1fr;
-    gap: 28px;
-    align-items: start;
+    align-items: center;
+    text-align: center;
   }
 }
 
 @media (max-width: 700px) {
-  .hero {
-    padding: 48px 16px 40px;
-  }
-
-  .title {
-    font-size: 36px;
-  }
-
-  .subtitle {
-    font-size: 16px;
-  }
-
   .band {
-    padding: 40px 16px;
+    padding: 44px 16px;
   }
 
   .sectionTitle {
-    font-size: 30px;
+    font-size: 20px;
   }
 
   .formGrid {
@@ -451,7 +506,7 @@
   }
 
   .actionsBand {
-    padding: 32px 16px 44px;
+    padding: 14px 16px;
   }
 
   .actions {
@@ -461,6 +516,7 @@
   .cancelButton,
   .createButton {
     width: 100%;
+    min-width: 0;
   }
 }
 
@@ -473,13 +529,12 @@
 @media (prefers-reduced-motion: reduce) {
   .input,
   .select,
-  .textarea {
+  .textarea,
+  .zoneButton,
+  .cancelButton,
+  .createButton {
     transition: none;
   }
-
-  .input:focus,
-  .select:focus,
-  .textarea:focus {
-    transform: none;
-  }
 }
+
+
