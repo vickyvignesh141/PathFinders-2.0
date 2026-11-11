@@ -844,11 +844,9 @@ const AdminDashboard = () => {
         if (result.success) {
           const formattedEvents = result.events.map((event) => ({
             // MongoDB ID
-            id: event._id,
-
-            // Readable event ID
-            eventId: event.eventId,
-
+           id: event._id,
+eventId: event.eventId,
+eventCode: event.eventCode,
             // Event details
             title: event.eventTitle,
             description: event.eventDescription,
@@ -906,13 +904,13 @@ const AdminDashboard = () => {
      EVENT NAVIGATION
      ============================================================ */
 
-  const openManageEvent = (event) => {
-    navigate(`/manageevent/${event.id}`, {
-      state: {
-        event,
-      },
-    });
-  };
+const openManageEvent = (event) => {
+  navigate(`/admin/manageevent/${event.eventId}`, {
+    state: {
+      event,
+    },
+  });
+};
 
   const openEditEvent = (event) => {
     navigate("/createevent", {
