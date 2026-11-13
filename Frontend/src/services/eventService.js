@@ -21,11 +21,9 @@ export const getAllEvents = async () => {
 // STUDENT: REGISTER FOR EVENT
 // =====================================
 export const registerForEvent = async (eventId) => {
-  const username = localStorage.getItem("username");
-
   const response = await api.post(
     `/events/${eventId}/register`,
-    { username }
+    {}
   );
 
   return response.data;
@@ -68,9 +66,51 @@ export const updateRegistrationStatus = async (
   status
 ) => {
   const response = await api.patch(
-    `events/registrations/${registrationId}/status`,
+    `/events/registrations/${registrationId}/status`,
     { status }
   );
 
   return response.data;
 };
+// GENERATE EVENT ATTENDANCE QR
+export const generateEventQR = async (eventId) => {
+  const response = await api.post(`/events/${eventId}/qr`);
+  return response.data;
+};
+
+export const verifyEventQR = async (eventId, qrPayload) => {
+  const response = await api.post(
+    `/events/${eventId}/attendance/verify-qr`,
+    { qrPayload }
+  );
+
+  return response.data;
+};
+
+
+export const getEventAttendance = async (eventId) => {
+  const response = await api.get(
+    `/events/${eventId}/attendance`
+  );
+  return response.data;
+};
+
+
+export const getMyAttendanceTimers = async () => {
+  const response = await api.get(
+    "/events/student/attendance/timers"
+  );
+  return response.data;
+};
+
+
+
+// ADMIN: COMPLETE EVENT FOR ALL STUDENTS
+export const completeAllStudentAttendance = async (eventId) => {
+  const response = await api.patch(
+    `/events/${eventId}/attendance/complete`
+  );
+
+  return response.data;
+};
+

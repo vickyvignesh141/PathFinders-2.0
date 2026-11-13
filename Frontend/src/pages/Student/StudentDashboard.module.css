@@ -917,6 +917,21 @@
   color: #6b7280;
 }
 
+
+/* Registered - RED */
+.registeredEventDay {
+  background: #fee2e2 !important;
+  border: 1px solid #ef4444 !important;
+  color: #b91c1c !important;
+}
+
+/* Admin Approved - GREEN */
+.selectedEventDay {
+  background: #dcfce7 !important;
+  border: 1px solid #22c55e !important;
+  color: #15803d !important;
+}
+
 /* ============================================================
    DRAWER
    ============================================================ */

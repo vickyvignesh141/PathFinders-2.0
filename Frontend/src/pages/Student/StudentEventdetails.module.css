@@ -18,6 +18,47 @@
   gap: 16px;
 }
 
+
+
+.qrWrapper {
+  width: 100%;
+  max-width: 360px;
+  min-height: 280px;
+  margin: 20px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+#qr-reader {
+  width: 100% !important;
+  min-height: 280px;
+  border: none !important;
+}
+
+#qr-reader__scan_region {
+  min-height: 250px !important;
+}
+
+#qr-reader video {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 250px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+#qr-reader__dashboard {
+  margin-top: 10px;
+}
+.infoCard small {
+  display: block;
+  margin-top: 5px;
+  color: #16a34a;
+  font-size: 11px;
+  font-weight: 600;
+}
 .spinner {
   width: 48px;
   height: 48px;
