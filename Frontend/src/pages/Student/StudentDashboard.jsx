@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./StudentDashboard.module.css";
+import { getStudentRegistrations } from "../../services/eventService";
 import { useNavigate } from "react-router-dom";
 
 const studentData = {
@@ -220,6 +221,26 @@ const parseISO = (iso) => {
   const [y, m, d] = iso.split("-").map(Number);
   return { y, m: m - 1, d };
 };
+const getCalendarDate = (value) => {
+  if (!value) return "";
+
+  // Date-only value: keep it unchanged
+  if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return value;
+  }
+
+  // Datetime value: convert to Indian calendar date
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+};
 
 const pad = (n) => String(n).padStart(2, "0");
 
@@ -262,59 +283,91 @@ const StudentDashboard = () => {
   // Only upcoming (not completed) events in the strip
   const upcomingEvents = events.filter((e) => !e.completed);
 
-  useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/events/");
+ 
+useEffect(() => {
+  const fetchEvents = async () => {
+    try {
+      // Fetch events and logged-in student's registrations
+      const [eventsResponse, registrationResponse] = await Promise.all([
+        fetch("http://localhost:5000/api/events/"),
+        getStudentRegistrations(),
+      ]);
 
-        const result = await response.json();
+      const result = await eventsResponse.json();
 
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || "Failed to fetch events");
-        }
-
-        const formattedEvents = result.events.map((event) => {
-          const start = new Date(event.startAt);
-          const end = new Date(event.endAt);
-
-          const hours = !isNaN(start.getTime()) && !isNaN(end.getTime());
-          hours;
-          return {
-            id: event._id,
-            title: event.eventTitle,
-            date: event.date,
-            endDate: event.date,
-            time: start.toLocaleTimeString("en-IN", {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-            }),
-            location: event.location,
-            description: event.eventDescription,
-            icon: "🤝",
-            category: event.volunteerWork,
-            seats: event.volunteersNeeded,
-            registered: false,
-            completed: event.status === "completed",
-            hours: Math.max(0, (end - start) / (1000 * 60 * 60)),
-            instructions: event.instructions,
-            zone: event.zone,
-            startTime: event.startTime,
-            endTime: event.endTime,
-          };
-        });
-
-        setEvents(formattedEvents);
-      } catch (error) {
-        console.error("Fetch Events Error:", error);
-        setEventError("Unable to load events.");
-      } finally {
-        setLoadingEvents(false);
+      if (!eventsResponse.ok || !result.success) {
+        throw new Error(result.message || "Failed to fetch events");
       }
-    };
 
-    fetchEvents();
-  }, []);
+      const registrations =
+        registrationResponse.registrations || [];
+
+      console.log("My registrations:", registrations);
+
+      const registrationMap = new Map(
+        registrations.map((registration) => [
+          String(registration.eventId),
+          registration,
+        ])
+      );
+
+      const formattedEvents = result.events.map((event) => {
+        const start = new Date(event.startAt);
+        const end = new Date(event.endAt);
+
+        const myRegistration = registrationMap.get(
+          String(event._id)
+        );
+
+        const status = myRegistration?.status || "";
+
+        return {
+          id: event._id,
+          title: event.eventTitle,
+          date: getCalendarDate(event.date || event.startAt),
+endDate: getCalendarDate(event.endDate || event.date || event.endAt || event.startAt),
+          time: start.toLocaleTimeString("en-IN", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          location: event.location,
+          description: event.eventDescription,
+          icon: "🤝",
+          category: event.volunteerWork,
+          seats: event.volunteersNeeded,
+
+          // Actual registration from database
+          registered: ["Registered", "Approved"].includes(status),
+          registrationStatus:
+            status === "Approved"
+              ? "selected"
+              : status === "Registered"
+              ? "registered"
+              : "",
+
+          completed: event.status === "completed",
+          hours: Math.max(0, (end - start) / (1000 * 60 * 60)),
+          instructions: event.instructions,
+          zone: event.zone,
+          startTime: event.startTime,
+          endTime: event.endTime,
+        };
+      });
+
+      setEvents(formattedEvents);
+
+    } catch (error) {
+      console.error("Fetch Events Error:", error);
+      setEventError("Unable to load events.");
+    } finally {
+      setLoadingEvents(false);
+    }
+  };
+
+  fetchEvents();
+}, []);
+
 
   // Scroll the strip one card at a time (wraps around at both ends)
   const slideBy = useCallback((dir) => {
@@ -727,23 +780,28 @@ const scrollTo = (id) => {
   {calDays.map((day, i) => {
     const dayEvents = day ? eventsByDay[day] || [] : [];
 
-    const isSelected = dayEvents.some(
-      (ev) => ev.registrationStatus === "selected"
-    );
+   const isSelected = dayEvents.some(
+  (ev) => ev.registrationStatus === "selected"
+);
 
-    const isRegistered = dayEvents.some(
-      (ev) => ev.registrationStatus === "registered"
-    );
+const isRegistered = dayEvents.some(
+  (ev) => ev.registrationStatus === "registered"
+);
 
     return (
       <div
         key={i}
         className={`
-          ${styles.dayCell}
-          ${day ? "" : styles.emptyCell}
-          ${isRegistered ? styles.registeredEventDay : ""}
-          ${isSelected ? styles.selectedEventDay : ""}
-        `}
+  ${styles.dayCell}
+  ${day ? "" : styles.emptyCell}
+  ${
+    isSelected
+      ? styles.selectedEventDay
+      : isRegistered
+      ? styles.registeredEventDay
+      : ""
+  }
+`}
         title={dayEvents.map((ev) => ev.title).join(", ")}
       >
         {day && <span>{day}</span>}
