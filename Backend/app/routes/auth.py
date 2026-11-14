@@ -1,4 +1,6 @@
-
+import jwt
+from datetime import datetime, timedelta, timezone
+from flask import current_app
 from flask import Blueprint, request, jsonify
 from app.db import db
 # from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,6 +12,7 @@ auth_bp = Blueprint("auth", __name__)
 # =========================
 # LOGIN
 # =========================
+
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -39,7 +42,6 @@ def login():
 
     # Select collection based on role
     if role == "admin":
-
         if not re.fullmatch(r"MAA4\d{5}", username):
             return jsonify({
                 "success": False,
@@ -50,28 +52,44 @@ def login():
             "username": username,
             "role": "admin"
         })
-
     else:
         user = db.volunteers.find_one({
             "username": username,
             "role": role
         })
 
-    # Check password
+    # Check password and generate JWT
     if user and user.get("password") == password:
+
+        now = datetime.now(timezone.utc)
+
+        access_token = jwt.encode(
+            {
+                "username": user["username"],
+                "role": user["role"],
+                "iat": now,
+                "exp": now + timedelta(
+                    hours=current_app.config["JWT_EXPIRATION_HOURS"]
+                )
+            },
+            current_app.config["JWT_SECRET_KEY"],
+            algorithm=current_app.config["JWT_ALGORITHM"]
+        )
 
         return jsonify({
             "success": True,
             "message": "Login successful",
             "name": user["name"],
             "username": user["username"],
-            "role": user["role"]
+            "role": user["role"],
+            "access_token": access_token
         }), 200
 
     return jsonify({
         "success": False,
         "message": "Invalid username or password"
     }), 401
+
 
 
 
