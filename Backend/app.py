@@ -6,6 +6,8 @@ from flask_cors import CORS
 from app.routes.auth import auth_bp
 from app.routes.createevent import events_bp
 
+from app.routes.profile import profile_bp
+
 
 app = create_app()
 
@@ -20,6 +22,7 @@ CORS(app, resources={
 
 app.register_blueprint(auth_bp, url_prefix="/api/auth")
 app.register_blueprint(events_bp, url_prefix="/api/events")
+app.register_blueprint(profile_bp, url_prefix="/api/profile")
 
 
 if __name__ == "__main__":

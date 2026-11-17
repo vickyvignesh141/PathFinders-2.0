@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getAllEvents } from "../../services/eventService";
+import EventHistory from "./EventHistory";
 import {
   LayoutDashboard,
   Calendar,
@@ -378,38 +379,88 @@ function buildShortlist(volunteers, event, allEvents) {
    HELPERS
    ============================================================ */
 
-const fmtDate = (iso) =>
-  new Date(iso).toLocaleDateString("en-IN", {
+
+
+// Convert backend event dates safely.
+// Backend may return UTC timestamps with or without the Z marker.
+const parseEventDate = (value) => {
+  if (!value) return null;
+
+  const normalized =
+    typeof value === "string" &&
+      !/(Z|[+-]\d{2}:\d{2})$/i.test(value)
+      ? `${value}Z`
+      : value;
+
+  const date = new Date(normalized);
+
+  return Number.isNaN(date.getTime()) ? null : date;
+};
+
+// Display the original event date without timezone conversion
+const fmtDate = (dateString) => {
+  if (!dateString) return "Date not available";
+
+  const [year, month, day] = dateString.split("-").map(Number);
+
+  if (!year || !month || !day) return "Date not available";
+
+  return new Date(year, month - 1, day).toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
   });
+};
 
-const fmtTime = (iso) =>
-  new Date(iso).toLocaleTimeString("en-IN", {
+// Convert stored 24-hour time into 12-hour AM/PM format
+const fmtTime = (timeString) => {
+  if (!timeString) return "Time not available";
+
+  const [hour, minute] = timeString.split(":").map(Number);
+
+  if (
+    !Number.isInteger(hour) ||
+    !Number.isInteger(minute) ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59
+  ) {
+    return "Time not available";
+  }
+
+  const period = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+
+  return `${String(hour12).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${period}`;
+};
+
+const fmtDateTime = (date, time) =>
+  `${fmtDate(date)} · ${fmtTime(time)}`;
+
+// ADD THIS BELOW
+const fmtTimestamp = (value) => {
+  const date = parseEventDate(value);
+
+  if (!date) return "Date unavailable";
+
+  return date.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    hour12: true,
+    timeZone: "Asia/Kolkata",
   });
+};
 
-const fmtDateTime = (iso) =>
-  `${fmtDate(iso)} · ${fmtTime(iso)}`;
-
-const pointsOf = (v) =>
-  v.eventsAttended * 10 +
-  v.hours * 2 +
-  Math.round(v.rating * 20);
 
 /* ============================================================
-   EVENT CARD
+   EVENT CARD — STUDENT DASHBOARD STYLE
    ============================================================ */
 
-function EventCard({
-  event,
-  onOpen,
-  onEdit,
-  onDelete,
-  style,
-}) {
+function EventCard({ event, onOpen, style }) {
   return (
     <article
       className={styles.eventCard}
@@ -419,245 +470,56 @@ function EventCard({
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
           onOpen();
         }
       }}
     >
       <div className={styles.eventCardHead}>
-        <h3 className={styles.eventTitle}>{event.title}</h3>
-        <p>Event ID: {event.eventId}</p>
-
-        <span
-          className={`${styles.pill} ${event.status === "Completed"
-            ? styles.pillMuted
-            : styles.pillYellow
-            }`}
-        >
-          {event.status}
-        </span>
+        <h3 className={styles.eventTitle}>
+          {event.title}
+        </h3>
       </div>
-
-      <p className={styles.eventDesc}>
-        {event.description}
-      </p>
 
       <div className={styles.eventMeta}>
         <span className={styles.metaItem}>
-          <Calendar size={13} />
-          {fmtDate(event.startAt)}
+          <Calendar size={14} />
+        {fmtDate(event.date)}
         </span>
 
         <span className={styles.metaItem}>
-          <Clock size={13} />
-          {fmtTime(event.startAt)}
+          <Clock size={14} />
+         {fmtTime(event.startTime)}
         </span>
 
         <span className={styles.metaItem}>
-          <MapPin size={13} />
-          {event.venue}
+          <MapPin size={14} />
+          {event.venue || "Venue not available"}
         </span>
       </div>
 
       <div className={styles.eventStats}>
         <div>
-          <strong>{event.interested.length}</strong>
-          <span>Interested</span>
+          <strong>{event.registrationCount || 0}</strong>
+          <span>Registered</span>
         </div>
 
         <div>
           <strong>
-            {event.selected.length}/{event.volunteersNeeded}
+            {(event.selected || []).length}/
+            {event.volunteersNeeded || 0}
           </strong>
           <span>Selected</span>
         </div>
       </div>
 
-
-
       <div className={styles.eventClickHint}>
-        Click event to manage volunteers →
+        View Details →
       </div>
     </article>
   );
 }
 
-/* ============================================================
-   VOLUNTEER PROFILE MODAL
-   ============================================================ */
-
-function ProfileModal({ volunteer, events, onClose }) {
-  const attended = volunteer.eventIds
-    .map((id) => events.find((e) => e.id === id))
-    .filter(Boolean);
-
-  return (
-    <div
-      className={styles.modalOverlay}
-      onClick={onClose}
-    >
-      <div
-        className={`${styles.modal} ${styles.profileModal}`}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className={styles.modalHead}>
-          <div className={styles.profileHeader}>
-            <div className={styles.avatarLg}>
-              {volunteer.name.charAt(0)}
-            </div>
-
-            <div>
-              <h3 className={styles.modalTitle}>
-                {volunteer.name}
-              </h3>
-
-              <p className={styles.modalSub}>
-                {volunteer.rollNo} · {volunteer.department}
-              </p>
-            </div>
-          </div>
-
-          <button
-            className={styles.modalClose}
-            onClick={onClose}
-            aria-label="Close"
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <div className={styles.modalBody}>
-          <div className={styles.profileGrid}>
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Status</span>
-              <span className={styles.profileValue}>
-                {volunteer.status}
-              </span>
-            </div>
-
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Email</span>
-              <span className={styles.profileValue}>
-                {volunteer.email}
-              </span>
-            </div>
-
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Phone</span>
-              <span className={styles.profileValue}>
-                {volunteer.phone}
-              </span>
-            </div>
-
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>College</span>
-              <span className={styles.profileValue}>
-                {volunteer.college}
-              </span>
-            </div>
-
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Zone</span>
-              <span className={styles.profileValue}>
-                {volunteer.zone}
-              </span>
-            </div>
-
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Batch</span>
-              <span className={styles.profileValue}>
-                {volunteer.batch}
-              </span>
-            </div>
-
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Events</span>
-              <span className={styles.profileValue}>
-                {volunteer.eventsAttended}
-              </span>
-            </div>
-
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Hours</span>
-              <span className={styles.profileValue}>
-                {volunteer.hours}h
-              </span>
-            </div>
-
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Rating</span>
-              <span className={styles.profileValue}>
-                {volunteer.rating}★
-              </span>
-            </div>
-
-            <div className={styles.profileRow}>
-              <span className={styles.profileLabel}>Points</span>
-              <span className={styles.profileValue}>
-                {pointsOf(volunteer)}
-              </span>
-            </div>
-          </div>
-
-          <div className={styles.formBlock}>
-            <span className={styles.fieldLabel}>Skills</span>
-
-            <div className={styles.chipGroup}>
-              {volunteer.skills.map((s) => (
-                <span
-                  key={s}
-                  className={styles.chip}
-                >
-                  {s}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className={styles.formBlock}>
-            <span className={styles.fieldLabel}>
-              Events participated ({attended.length})
-            </span>
-
-            {attended.length === 0 ? (
-              <p className={styles.emptyText}>
-                No events attended yet.
-              </p>
-            ) : (
-              <div className={styles.listWrap}>
-                {attended.map((e, idx) => (
-                  <div
-                    key={e.id}
-                    className={styles.listItem}
-                    style={{ "--stagger": idx }}
-                  >
-                    <div className={styles.listInfo}>
-                      <span className={styles.listName}>
-                        {e.title}
-                      </span>
-
-                      <span className={styles.listSub}>
-                        {fmtDate(e.startAt)} · {e.zone}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className={styles.modalFooter}>
-          <button
-            className={styles.ghostBtn}
-            onClick={onClose}
-          >
-            Close
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 /* ============================================================
    ADMIN PROFILE MODAL
@@ -804,14 +666,18 @@ const AdminDashboard = () => {
   ).length;
 
   const totalRegistrations = events.reduce(
-    (s, e) => s + e.interested.length,
+    (s, e) => s + (e.registrationCount || 0),
     0
   );
 
-  const activeEvents = events.filter(
-    (e) => e.status !== "Completed"
-  );
+ const activeEvents = events.filter((e) => {
+  const end = parseEventDate(e.endAt);
 
+  return (
+    e.status !== "Completed" &&
+    (!end || end.getTime() > Date.now())
+  );
+});
   const filteredVolunteers = useMemo(() => {
     const term = volSearch.trim().toLowerCase();
 
@@ -835,67 +701,77 @@ const AdminDashboard = () => {
 
   // FETCH EVENTS FROM BACKEND
   useEffect(() => {
-    const fetchEvents = async () => {
-      try {
-        setLoadingEvents(true);
+   const fetchEvents = async () => {
+  try {
+    setLoadingEvents(true);
 
-        const result = await getAllEvents();
+    const result = await getAllEvents();
 
-        if (result.success) {
-          const formattedEvents = result.events.map((event) => ({
-            // MongoDB ID
-           id: event._id,
-eventId: event.eventId,
-eventCode: event.eventCode,
-            // Event details
-            title: event.eventTitle,
-            description: event.eventDescription,
-            volunteerWork: event.volunteerWork,
-            instructions: event.instructions,
+    if (result.success) {
+      const formattedEvents = result.events.map((event) => ({
+        // MongoDB ID
+        id: event._id,
+        eventId: event.eventId,
+        eventCode: event.eventCode,
 
-            // Location and schedule
-            venue: event.location,
-            date: event.date,
-            startTime: event.startTime,
-            endTime: event.endTime,
-            startAt: event.startAt,
-            endAt: event.endAt,
+        // Event details
+        title: event.eventTitle,
+        description: event.eventDescription,
+        volunteerWork: event.volunteerWork,
+        instructions: event.instructions,
 
-            // Volunteer requirements
-            volunteersNeeded: event.volunteersNeeded,
-            zone: event.zone,
-            targetAudience: event.targetAudience,
+        // Location and schedule
+        venue: event.location,
+        date: event.date,
+        startTime: event.startTime,
+        endTime: event.endTime,
+        startAt: event.startAt,
+        endAt: event.endAt,
 
-            // Dashboard-specific fields
-            status:
-              event.status === "upcoming"
-                ? "Open"
-                : event.status,
+        // Volunteer requirements
+        volunteersNeeded: event.volunteersNeeded,
+        zone: event.zone,
+        targetAudience: event.targetAudience,
+        eventType: event.eventType || "regular",
 
-            interested: [],
-            selected: [],
-            skills: [],
-            colleges: [],
-            batches: [],
+        // Dashboard fields
+        status:
+          event.status === "upcoming"
+            ? "Open"
+            : event.status,
 
-            whatsappLink: "",
-            emailNote: "",
-            emailsSent: false,
-          }));
+        interested: Array(
+          event.registrationCount || 0
+        ).fill(null),
 
-          setEvents(formattedEvents);
-        } else {
-          console.error("Failed to fetch events:", result.message);
-        }
-      } catch (error) {
-        console.error(
-          "Fetch Events Error:",
-          error.response?.data || error
-        );
-      } finally {
-        setLoadingEvents(false);
-      }
-    };
+        registrationCount: event.registrationCount || 0,
+        selected: [],
+        skills: [],
+        colleges: [],
+        batches: [],
+
+        whatsappLink: "",
+        emailNote: "",
+        emailsSent: false,
+      }));
+
+      setEvents(
+        formattedEvents.sort(
+          (a, b) => new Date(b.startAt) - new Date(a.startAt)
+        )
+      );
+    } else {
+      console.error("Failed to fetch events:", result.message);
+    }
+  } catch (error) {
+    console.error(
+      "Fetch Events Error:",
+      error.response?.data || error
+    );
+  } finally {
+    setLoadingEvents(false);
+  }
+};
 
     fetchEvents();
   }, []);
@@ -904,13 +780,13 @@ eventCode: event.eventCode,
      EVENT NAVIGATION
      ============================================================ */
 
-const openManageEvent = (event) => {
-  navigate(`/admin/manageevent/${event.eventId}`, {
-    state: {
-      event,
-    },
-  });
-};
+  const openManageEvent = (event) => {
+    navigate(`/admin/manageevent/${event.eventId}`, {
+      state: {
+        event,
+      },
+    });
+  };
 
   const openEditEvent = (event) => {
     navigate("/createevent", {
@@ -971,230 +847,109 @@ const openManageEvent = (event) => {
     }
   };
 
+
   return (
     <div className={styles.dashboard}>
-      {/* ======================================================
-          TOP BAR
-      ====================================================== */}
-
-
       <main className={styles.main}>
-        {/* ====================================================
-            OVERVIEW
-        ==================================================== */}
 
+        {/* OVERVIEW */}
         {tab === "overview" && (
           <div className={styles.tabContent}>
+
+            {/* WELCOME - ONLY ONCE */}
             <section className={styles.welcome}>
               <div>
                 <h2 className={styles.welcomeTitle}>
                   Welcome,{" "}
                   <span className={styles.accent}>
-                    {localStorage.getItem("name")}
+                    {localStorage.getItem("name") || "Admin"}
                   </span>
                 </h2>
 
                 <p className={styles.welcomeText}>
                   You have{" "}
                   <strong>
-                    {
-                      events.filter(
-                        (e) =>
-                          e.status === "Open"
-                      ).length
-                    }
+                    {events.filter(
+                      (e) => e.status === "Open"
+                    ).length}
                   </strong>{" "}
-                  open events and{" "}
-                  <strong>{activeCount}</strong>{" "}
-                  active volunteers.
+                  open events. Keep managing your volunteering activities!
                 </p>
               </div>
 
+
               <div className={styles.welcomeStats}>
+                {/* Total Events */}
                 <div className={styles.welcomeStat}>
                   <span className={styles.welcomeStatNum}>
                     {events.length}
                   </span>
-
                   <span className={styles.welcomeStatLabel}>
-                    Events
+                    TOTAL EVENTS
                   </span>
                 </div>
 
-                <div
-                  className={
-                    styles.welcomeStatDivider
-                  }
-                />
-
+                {/* Upcoming Events */}
                 <div className={styles.welcomeStat}>
                   <span className={styles.welcomeStatNum}>
-                    {totalRegistrations}
+                    {activeEvents.length}
                   </span>
-
                   <span className={styles.welcomeStatLabel}>
-                    Interests
-                  </span>
-                </div>
-
-                <div
-                  className={
-                    styles.welcomeStatDivider
-                  }
-                />
-
-                <div className={styles.welcomeStat}>
-                  <span className={styles.welcomeStatNum}>
-                    {activeCount}
-                  </span>
-
-                  <span className={styles.welcomeStatLabel}>
-                    Active
+                    UPCOMING EVENTS
                   </span>
                 </div>
               </div>
+
             </section>
 
-            <section className={styles.statsGrid}>
-              <div className={styles.statCard}>
-                <span className={styles.statIcon}>
-                  <GraduationCap size={22} />
-                </span>
-
-                <div>
-                  <span className={styles.statNum}>
-                    {volunteers.length}
-                  </span>
-
-                  <span className={styles.statLabel}>
-                    Total Students
-                  </span>
-                </div>
-              </div>
-
-              <div className={styles.statCard}>
-                <span className={styles.statIcon}>
-                  <UserCheck size={22} />
-                </span>
-
-                <div>
-                  <span className={styles.statNum}>
-                    {activeCount}
-                  </span>
-
-                  <span className={styles.statLabel}>
-                    Active Volunteers
-                  </span>
-                </div>
-              </div>
-
-              <div className={styles.statCard}>
-                <span className={styles.statIcon}>
-                  <UserX size={22} />
-                </span>
-
-                <div>
-                  <span className={styles.statNum}>
-                    {inactiveCount}
-                  </span>
-
-                  <span className={styles.statLabel}>
-                    Inactive Volunteers
-                  </span>
-                </div>
-              </div>
-
-              <div className={styles.statCard}>
-                <span className={styles.statIcon}>
-                  <FileText size={22} />
-                </span>
-
-                <div>
-                  <span className={styles.statNum}>
-                    {totalRegistrations}
-                  </span>
-
-                  <span className={styles.statLabel}>
-                    Event Interests
-                  </span>
-
-
-                </div>
-              </div>
-              <button
-                className={styles.postBtn}
-                onClick={() => navigate("/admin/createevent")}
-              >
-                <Plus size={16} />
-                Post Event
-              </button>
-            </section>
-
-            <section
-              className={styles.animatedSection}
-            >
+            {/* UPCOMING EVENTS - ONLY ONCE */}
+            <section className={styles.animatedSection}>
               <div className={styles.panelHeader}>
                 <h3 className={styles.sectionTitle}>
                   Upcoming Events
                 </h3>
 
                 <button
-                  className={styles.viewAllBtn}
-                  onClick={() =>
-                    setTab("events")
-                  }
+                  className={styles.postBtn}
+                  onClick={() => navigate("/admin/createevent")}
                 >
-                  View All
+                  <Plus size={16} />
+                  Post Event
                 </button>
               </div>
-              {activeEvents.length === 0 ? (
+
+              {loadingEvents ? (
                 <p className={styles.emptyText}>
-                  No upcoming events. Click
-                  "Post Event" to create one.
+                  Loading events...
+                </p>
+              ) : activeEvents.length === 0 ? (
+                <p className={styles.emptyText}>
+                  No upcoming events. Click Post Event to create one.
                 </p>
               ) : (
                 <div className={styles.carousel}>
-                  <div
-                    className={
-                      styles.carouselTrack
-                    }
-                  >
-                    {[...activeEvents, ...activeEvents].map(
-                      (ev, i) => (
-                        <div
-                          className={
-                            styles.carouselItem
-                          }
-                          key={`${ev.id}-${i}`}
-                        >
-                          <EventCard
-                            event={ev}
-                            onOpen={() =>
-                              openManageEvent(ev)
-                            }
-                            onEdit={() =>
-                              openEditEvent(ev)
-                            }
-                            onDelete={() =>
-                              handleDeleteEvent(
-                                ev.id
-                              )
-                            }
-                          />
-                        </div>
-                      )
-                    )}
+                  <div className={styles.carouselTrack}>
+                    {activeEvents.map((ev, i) => (
+                      <div
+                        className={styles.carouselItem}
+                        key={ev.id}
+                      >
+                        <EventCard
+                          event={ev}
+                          style={{ "--stagger": i }}
+                          onOpen={() => openManageEvent(ev)}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
             </section>
+
           </div>
         )}
 
-        {/* ====================================================
-            EVENTS
-        ==================================================== */}
-
+        {/* EVENTS */}
         {tab === "events" && (
           <div className={styles.tabContent}>
             <div className={styles.panelHeader}>
@@ -1204,14 +959,9 @@ const openManageEvent = (event) => {
 
               <button
                 className={styles.createBtn}
-                onClick={() =>
-                  navigate("/createevent")
-                }
+                onClick={() => navigate("/createevent")}
               >
-                <Plus
-                  size={14}
-                  className={styles.inlineIcon}
-                />
+                <Plus size={14} className={styles.inlineIcon} />
                 Post Event
               </button>
             </div>
@@ -1221,39 +971,23 @@ const openManageEvent = (event) => {
                 <EventCard
                   key={ev.id}
                   event={ev}
-                  style={{
-                    "--stagger": idx,
-                  }}
-                  onOpen={() =>
-                    openManageEvent(ev)
-                  }
-                  onEdit={() =>
-                    openEditEvent(ev)
-                  }
-                  onDelete={() =>
-                    handleDeleteEvent(ev.id)
-                  }
+                  style={{ "--stagger": idx }}
+                  onOpen={() => openManageEvent(ev)}
                 />
               ))}
             </div>
 
             {events.length === 0 && (
               <p className={styles.emptyText}>
-                No events yet. Click "Post Event"
-                to create one.
+                No events yet. Click Post Event to create one.
               </p>
             )}
           </div>
         )}
 
+        
 
-
-
-
-        {/* ====================================================
-            EMAILS
-        ==================================================== */}
-
+        {/* EMAILS */}
         {tab === "emails" && (
           <section
             className={`${styles.tableSection} ${styles.tabContent}`}
@@ -1272,24 +1006,14 @@ const openManageEvent = (event) => {
               </p>
             ) : (
               <div className={styles.historyList}>
-                {emailLogs.map((log, idx) => (
+                {emailLogs.map((log) => (
                   <div
                     key={log.id}
-                    className={
-                      styles.emailLogItem
-                    }
-                    style={{
-                      "--stagger": idx,
-                    }}
+                    className={styles.emailLogItem}
                   >
-                    <div
-                      className={
-                        styles.eventCardHead
-                      }
-                    >
+                    <div className={styles.eventCardHead}>
                       <strong>
-                        {log.type} ·{" "}
-                        {log.eventTitle}
+                        {log.type} · {log.eventTitle}
                       </strong>
 
                       <span
@@ -1299,53 +1023,29 @@ const openManageEvent = (event) => {
                       </span>
                     </div>
 
-                    <p
-                      className={
-                        styles.emailStatus
-                      }
-                    >
-                      {fmtDateTime(
-                        log.sentAt
-                      )}{" "}
-                      · {log.subject}
+                    <p className={styles.emailStatus}>
+                      {fmtTimestamp(log.sentAt)} · {log.subject}
                     </p>
 
                     {log.whatsappLink && (
-                      <p
-                        className={
-                          styles.emailStatus
-                        }
-                      >
+                      <p className={styles.emailStatus}>
                         <MessageCircle
                           size={12}
-                          className={
-                            styles.inlineIcon
-                          }
+                          className={styles.inlineIcon}
                         />
                         WhatsApp:{" "}
                         <a
-                          href={
-                            log.whatsappLink
-                          }
+                          href={log.whatsappLink}
                           target="_blank"
                           rel="noreferrer"
                         >
-                          {
-                            log.whatsappLink
-                          }
+                          {log.whatsappLink}
                         </a>
                       </p>
                     )}
 
-                    <p
-                      className={
-                        styles.emailStatus
-                      }
-                    >
-                      To:{" "}
-                      {log.recipients.join(
-                        ", "
-                      )}
+                    <p className={styles.emailStatus}>
+                      To: {log.recipients.join(", ")}
                     </p>
                   </div>
                 ))}
@@ -1353,28 +1053,10 @@ const openManageEvent = (event) => {
             )}
           </section>
         )}
+
       </main>
 
-      {/* ======================================================
-          PROFILE MODAL
-      ====================================================== */}
-
-      {profileId && (
-        <ProfileModal
-          volunteer={volunteers.find(
-            (v) => v.id === profileId
-          )}
-          events={events}
-          onClose={() =>
-            setProfileId(null)
-          }
-        />
-      )}
-
-      {/* ======================================================
-          ADMIN PROFILE
-      ====================================================== */}
-
+      {/* ADMIN PROFILE */}
       {showAdminProfile && (
         <AdminProfileModal
           admin={ADMIN_PROFILE}
@@ -1382,9 +1064,7 @@ const openManageEvent = (event) => {
             events: events.length,
             emails: emailLogs.length,
           }}
-          onClose={() =>
-            setShowAdminProfile(false)
-          }
+          onClose={() => setShowAdminProfile(false)}
         />
       )}
     </div>

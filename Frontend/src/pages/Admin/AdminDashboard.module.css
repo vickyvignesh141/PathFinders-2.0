@@ -633,3 +633,485 @@
   margin-left: auto;
   flex-shrink: 0;
 }
+
+
+/* ============================================================
+   ADMIN DASHBOARD — STUDENT DASHBOARD LOOK
+   ============================================================ */
+
+/* Give the dashboard more horizontal space */
+.main {
+  max-width: 1600px;
+  padding: 18px 32px 50px;
+}
+
+/* Welcome header */
+.welcome {
+  min-height: 120px;
+  padding: 26px 40px;
+  margin-bottom: 24px;
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      500px 250px at 95% 50%,
+      rgba(255, 204, 0, 0.30),
+      transparent 65%
+    ),
+    linear-gradient(110deg, #111111 0%, #080808 65%, #292306 100%);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.welcomeTitle {
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+
+.welcomeText {
+  font-size: 15px;
+}
+
+.welcomeStats {
+  gap: 0;
+  padding: 8px 24px;
+  min-width: 115px;
+  justify-content: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.20);
+}
+
+.welcomeStatNum {
+  font-size: 30px;
+}
+
+.welcomeStatLabel {
+  font-size: 12px;
+}
+
+/* Hide old statistic cards if any remain */
+.statsGrid {
+  display: none !important;
+}
+
+/* Upcoming events heading */
+.animatedSection {
+  margin-top: 8px;
+}
+
+.panelHeader {
+  margin-bottom: 16px;
+  align-items: center;
+}
+
+.sectionTitle {
+  font-size: 19px;
+  margin: 0;
+}
+
+/* Post Event button */
+.panelHeader .postBtn {
+  margin-left: auto;
+  padding: 11px 20px;
+  border-radius: 12px;
+  font-size: 14px;
+}
+
+/* Horizontal event carousel */
+.carousel {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 2px 18px;
+  scrollbar-width: thin;
+  scrollbar-color: #c9cdd3 transparent;
+}
+
+.carouselTrack {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  width: max-content;
+}
+
+.carouselItem {
+  width: 276px;
+  min-width: 276px;
+  display: flex;
+}
+
+/* Yellow compact event cards */
+.eventCard {
+  width: 100%;
+  min-height: 228px;
+  height: 228px;
+  padding: 17px 15px 13px;
+  gap: 10px;
+  border: 1px solid rgba(230, 184, 0, 0.35);
+  border-radius: 17px;
+  background: #ffcc00;
+  color: #111111;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.09);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.eventCard:hover {
+  transform: translateY(-3px);
+  background: #ffcc00;
+  border-color: #e6b800;
+  box-shadow: 0 9px 20px rgba(0, 0, 0, 0.13);
+}
+
+/* Event title and status */
+.eventCardHead {
+  min-height: 42px;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.eventTitle {
+  flex: 1;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.35;
+  color: #111111;
+  overflow-wrap: anywhere;
+}
+
+.pill {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  font-size: 10px;
+}
+
+.pillYellow {
+  background: #ffffff;
+  color: #111111;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+}
+
+.pillMuted {
+  background: #eeeeee;
+  color: #555555;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+}
+
+/* Date, time and venue */
+.eventMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 2px;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #222222;
+  line-height: 1.35;
+}
+
+.metaItem svg {
+  color: #333333;
+  flex-shrink: 0;
+}
+
+/* Registration information */
+.eventStats {
+  margin-top: auto;
+  padding: 9px 0 7px;
+  gap: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+  border-bottom: none;
+}
+
+.eventStats div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.eventStats strong {
+  font-size: 15px;
+  color: #111111;
+}
+
+.eventStats span {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+/* Card click hint */
+.eventClickHint {
+  margin-top: 0;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.13);
+  color: #111111;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: left;
+  opacity: 1;
+}
+
+.eventCard:hover .eventClickHint {
+  color: #111111;
+}
+
+/* Responsive layout */
+@media (max-width: 720px) {
+  .main {
+    padding: 16px 14px 40px;
+  }
+
+  .welcome {
+    padding: 22px;
+    gap: 18px;
+  }
+
+  .welcomeTitle {
+    font-size: 22px;
+  }
+
+  .welcomeStats {
+    width: auto;
+    min-width: 100px;
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.20);
+    padding: 12px 0 0;
+  }
+
+  .carouselItem {
+    width: 260px;
+    min-width: 260px;
+  }
+
+  .panelHeader .postBtn {
+    padding: 9px 13px;
+  }
+}
+
+
+/* HEADER STATISTICS */
+
+.headerStats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.headerStat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 15px;
+  background: #fff8d6;
+  border-radius: 12px;
+  color: #111;
+}
+
+.headerStat div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.headerStat strong {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.headerStat span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #666;
+}
+
+/* EVENT CARD LAYOUT */
+
+.eventCard {
+  flex: 0 0 calc(
+    (100% - (var(--cards-visible) - 1) * var(--card-gap)) /
+    var(--cards-visible)
+  );
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  background: #ffcc00;
+  border-radius: 18px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.14);
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 0;
+}
+
+.eventCard:hover,
+.eventCard:focus-visible {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.2);
+}
+
+.eventCard:focus-visible {
+  box-shadow: 0 0 0 3px #111, 0 14px 28px rgba(0, 0, 0, 0.2);
+}
+
+.eventCardTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dateCircle {
+  flex-shrink: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: #111;
+  color: #ffcc00;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.05;
+  box-shadow: 0 0 0 4px #fff;
+}
+
+.dateDay {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.dateMonth {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.eventCardTitle {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #111;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.eventDeptBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 74px;
+  padding: 12px 10px;
+  background: #fff;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.eventDeptTitle {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  color: #111;
+}
+
+.eventDeptSub {
+  max-width: 100%;
+  font-size: 11px;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.eventCardDesc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #1f1f1f;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 39px;
+}
+
+.eventCardDate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #111;
+}
+
+.eventCardTime {
+  font-size: 12px;
+  font-weight: 600;
+  color: #3d3200;
+}
+
+.eventCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.eventLink {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.eventStatus {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 9px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+  background: #fff;
+  color: #111;
+}
+
+.welcomeStats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  border-left: none;
+}
+
+.welcomeStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Vertical divider between the two counts */
+.welcomeStat + .welcomeStat {
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  padding-left: 30px;
+}

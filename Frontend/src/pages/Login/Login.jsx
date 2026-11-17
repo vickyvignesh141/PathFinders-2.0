@@ -71,11 +71,11 @@ const handleLogin = async (e) => {
 
     console.log("Login API response:", data);
 
-    if (data.success) {
-      localStorage.setItem("name", data.name);
-      localStorage.setItem("username", data.username);
-      localStorage.setItem("role", data.role);
-
+   if (data.success) {
+  localStorage.setItem("accessToken", data.access_token);
+  localStorage.setItem("name", data.name);
+  localStorage.setItem("username", data.username);
+  localStorage.setItem("role", data.role);
       if (data.role === "student") {
         navigate("/Student/Dashboard");
       } else if (data.role === "alumni") {
