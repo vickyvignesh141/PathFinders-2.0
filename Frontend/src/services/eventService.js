@@ -114,3 +114,46 @@ export const completeAllStudentAttendance = async (eventId) => {
   return response.data;
 };
 
+
+
+// =====================================
+// GET VOLUNTEER LEADERBOARD
+// =====================================
+export const getLeaderboard = async () => {
+  const response = await api.get("/events/leaderboard");
+  return response.data;
+};
+
+
+// =====================================
+// CONFIRM MULTIPLE STUDENT SELECTIONS
+// =====================================
+export const confirmEventSelection = async (
+  eventId,
+  selectedRegistrationIds
+) => {
+  const response = await api.post(
+    `/events/${eventId}/confirm-selection`,
+    { selectedRegistrationIds }
+  );
+
+  return response.data;
+};
+
+
+// =====================================
+// ADMIN: GET EVENT HISTORY
+// =====================================
+export const getAdminEventHistory = async () => {
+  const response = await api.get("/events/admin/history");
+  return response.data;
+};
+
+// =====================================
+// ADMIN: GET STUDENT STATUS
+// =====================================
+export const getAdminStudentStatus = async () => {
+  const response = await api.get("/events/admin/student-status");
+  return response.data;
+};
+

@@ -1,4 +1,6 @@
+
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./CreateEvents.module.css";
 import { createEvent } from "../../services/eventService";
 
@@ -17,7 +19,7 @@ const TARGET_AUDIENCES = [
   },
   {
     value: "business_professionals",
-    label: "Business Professionals",
+    label: "External Volunteers",
     description: "Show this event to business professionals only",
   },
   {
@@ -29,6 +31,7 @@ const TARGET_AUDIENCES = [
 
 const CreateEvent = ({ onSubmit, onCancel }) => {
   const today = new Date();
+  const navigate = useNavigate();
 
   const defaultDate = `${today.getFullYear()}-${String(
     today.getMonth() + 1
@@ -45,12 +48,17 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
     instructions: "",
     volunteersNeeded: 10,
     zone: "Zone 1",
-
-    // NEW: Controls who can see this volunteering event
-    targetAudience: "students",
+    eventMode: "offline",
+    targetAudience: ["students"],
   });
 
+  const EVENT_MODES = [
+    { value: "online", label: "Online", icon: "🌐" },
+    { value: "offline", label: "Offline", icon: "📍" },
+  ];
+
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -61,6 +69,85 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
     }));
   };
 
+  // Convert 24-hour time into 12-hour parts
+  const getTimeParts = (time) => {
+    const [hour, minute] = time.split(":").map(Number);
+
+    return {
+      hour: String(hour % 12 || 12).padStart(2, "0"),
+      minute: String(minute).padStart(2, "0"),
+      period: hour >= 12 ? "PM" : "AM",
+    };
+  };
+
+  // Update hour, minute or AM/PM
+  const handleTimePartChange = (name, part, value) => {
+    setForm((prev) => {
+      const current = getTimeParts(prev[name]);
+
+      const updated = {
+        ...current,
+        [part]: value,
+      };
+
+      const hour12 = Number(updated.hour);
+      const minute = Number(updated.minute);
+
+      const hour24 =
+        updated.period === "PM"
+          ? (hour12 % 12) + 12
+          : hour12 % 12;
+
+      return {
+        ...prev,
+        [name]: `${String(hour24).padStart(2, "0")}:${String(
+          minute
+        ).padStart(2, "0")}`,
+      };
+    });
+  };
+
+  // Target audience selection
+  const handleAudienceChange = (value) => {
+    setForm((prev) => {
+      const selected = prev.targetAudience || [];
+
+      // Everyone is exclusive
+      if (value === "everyone") {
+        return {
+          ...prev,
+          targetAudience: selected.includes("everyone")
+            ? []
+            : ["everyone"],
+        };
+      }
+
+      const withoutEveryone = selected.filter(
+        (item) => item !== "everyone"
+      );
+
+      // Deselect an already selected option
+      if (withoutEveryone.includes(value)) {
+        return {
+          ...prev,
+          targetAudience: withoutEveryone.filter(
+            (item) => item !== value
+          ),
+        };
+      }
+
+      // Keep only the latest 2 selections
+      const updated = [...withoutEveryone, value];
+
+      return {
+        ...prev,
+        targetAudience:
+          updated.length > 2 ? updated.slice(-2) : updated,
+      };
+    });
+  };
+
+  // Submit event
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -89,8 +176,8 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
       return;
     }
 
-    if (!form.targetAudience) {
-      setError("Please select who this event is for.");
+    if (!form.targetAudience.length) {
+      setError("Please select at least one participant group.");
       return;
     }
 
@@ -108,32 +195,31 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
     }
 
     setError("");
+    setIsSubmitting(true);
 
     const eventData = {
       ...form,
-
+      targetAudience: form.targetAudience,
+      eventMode: form.eventMode,
       volunteersNeeded: Number(form.volunteersNeeded),
-
       startAt: startAt.toISOString(),
       endAt: endAt.toISOString(),
     };
 
     console.log("Created Event:", eventData);
 
-
     try {
       const result = await createEvent(eventData);
 
       if (result.success) {
-        alert(`Event created successfully!\nEvent ID: ${result.eventId}`);
+        alert(
+          `Event created successfully!\nEvent ID: ${result.eventId}`
+        );
 
-        if (onSubmit) {
-          onSubmit(result.event);
-        }
+        navigate("/admin/dashboard");
       } else {
         setError(result.message || "Failed to create event");
       }
-
     } catch (error) {
       console.error("Create Event Error:", error);
 
@@ -141,16 +227,13 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
         error.response?.data?.message ||
         "Server connection failed"
       );
+    } finally {
+      setIsSubmitting(false);
     }
-
   };
 
   return (
     <div className={styles.page}>
-      {/* Hero */}
-
-
-      {/* Form */}
       <form
         className={styles.form}
         onSubmit={handleSubmit}
@@ -227,51 +310,117 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
           </div>
         </section>
 
-        {/* ================= TARGET AUDIENCE ================= */}
+        {/* ================= EVENT MODE ================= */}
         <section
           className={`${styles.band} ${styles.bandWhite}`}
         >
           <div className={styles.bandInner}>
             <h2 className={styles.sectionTitle}>
-              Who Can Participate?
+              Event Mode *
             </h2>
 
-            <p className={styles.helper}>
-              Select who should be able to see and participate
-              in this volunteering event.
-            </p>
-
-            <div className={styles.formGrid}>
-              <div
-                className={`${styles.field} ${styles.fullWidth}`}
-              >
-                <label className={styles.label}>
-                  Target Audience *
-                </label>
-
-                <select
-                  name="targetAudience"
-                  value={form.targetAudience}
-                  onChange={handleChange}
-                  className={styles.select}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns:
+                  "repeat(auto-fit, minmax(200px, 1fr))",
+                gap: "12px",
+                marginTop: "12px",
+              }}
+            >
+              {EVENT_MODES.map((mode) => (
+                <button
+                  key={mode.value}
+                  type="button"
+                  onClick={() =>
+                    setForm((prev) => ({
+                      ...prev,
+                      eventMode: mode.value,
+                    }))
+                  }
+                  style={{
+                    padding: "18px",
+                    borderRadius: "10px",
+                    border:
+                      form.eventMode === mode.value
+                        ? "2px solid #16a34a"
+                        : "1px solid #ddd",
+                    background:
+                      form.eventMode === mode.value
+                        ? "#f0fdf4"
+                        : "#fff",
+                    cursor: "pointer",
+                    fontSize: "16px",
+                    fontWeight: "700",
+                  }}
                 >
-                  {TARGET_AUDIENCES.map((audience) => (
-                    <option
-                      key={audience.value}
-                      value={audience.value}
-                    >
-                      {audience.label}
-                    </option>
-                  ))}
-                </select>
+                  {mode.icon} {mode.label}
+                  {form.eventMode === mode.value && " ✓"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
 
-                <span className={styles.helper}>
-                  {TARGET_AUDIENCES.find(
-                    (audience) =>
-                      audience.value === form.targetAudience
-                  )?.description}
-                </span>
-              </div>
+        {/* ================= TARGET AUDIENCE ================= */}
+        <section
+          className={`${styles.band} ${styles.bandYellow}`}
+        >
+          <div className={styles.bandInner}>
+            <h2 className={styles.sectionTitle}>
+              Target Audience *
+            </h2>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: "16px",
+                marginTop: "20px",
+                background: "#FFF8E6",
+                padding: "20px",
+                borderRadius: "12px",
+              }}
+            >
+              {TARGET_AUDIENCES.map((audience) => (
+                <label
+                  key={audience.value}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "14px",
+                    padding: "24px",
+                    minHeight: "100px",
+                    border: form.targetAudience.includes(audience.value)
+                      ? "2px solid #D6A52A"
+                      : "1px solid #E5D8B5",
+                    borderRadius: "12px",
+                    background: form.targetAudience.includes(audience.value)
+                      ? "#FFF0C2"
+                      : "#FFFCF4",
+                    cursor: "pointer",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={form.targetAudience.includes(audience.value)}
+                    onChange={() =>
+                      handleAudienceChange(audience.value)
+                    }
+                  />
+
+                  <div>
+                    <strong style={{ fontSize: "17px" }}>
+                      {audience.label}
+                    </strong>
+
+                    <div className={styles.helper}>
+                      {audience.description}
+                    </div>
+                  </div>
+                </label>
+              ))}
             </div>
           </div>
         </section>
@@ -325,13 +474,72 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
                   Start Time *
                 </label>
 
-                <input
-                  type="time"
-                  name="startTime"
-                  value={form.startTime}
-                  onChange={handleChange}
-                  className={styles.input}
-                />
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "8px",
+                  }}
+                >
+                  <select
+                    className={styles.input}
+                    value={getTimeParts(form.startTime).hour}
+                    onChange={(e) =>
+                      handleTimePartChange(
+                        "startTime",
+                        "hour",
+                        e.target.value
+                      )
+                    }
+                  >
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const h = String(i + 1).padStart(2, "0");
+
+                      return (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  <select
+                    className={styles.input}
+                    value={getTimeParts(form.startTime).minute}
+                    onChange={(e) =>
+                      handleTimePartChange(
+                        "startTime",
+                        "minute",
+                        e.target.value
+                      )
+                    }
+                  >
+                    {Array.from({ length: 60 }, (_, i) => {
+                      const m = String(i).padStart(2, "0");
+
+                      return (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  <select
+                    className={styles.input}
+                    value={getTimeParts(form.startTime).period}
+                    onChange={(e) =>
+                      handleTimePartChange(
+                        "startTime",
+                        "period",
+                        e.target.value
+                      )
+                    }
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
               </div>
 
               {/* End Time */}
@@ -340,13 +548,72 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
                   End Time *
                 </label>
 
-                <input
-                  type="time"
-                  name="endTime"
-                  value={form.endTime}
-                  onChange={handleChange}
-                  className={styles.input}
-                />
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "8px",
+                  }}
+                >
+                  <select
+                    className={styles.input}
+                    value={getTimeParts(form.endTime).hour}
+                    onChange={(e) =>
+                      handleTimePartChange(
+                        "endTime",
+                        "hour",
+                        e.target.value
+                      )
+                    }
+                  >
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const h = String(i + 1).padStart(2, "0");
+
+                      return (
+                        <option key={h} value={h}>
+                          {h}
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  <select
+                    className={styles.input}
+                    value={getTimeParts(form.endTime).minute}
+                    onChange={(e) =>
+                      handleTimePartChange(
+                        "endTime",
+                        "minute",
+                        e.target.value
+                      )
+                    }
+                  >
+                    {Array.from({ length: 60 }, (_, i) => {
+                      const m = String(i).padStart(2, "0");
+
+                      return (
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
+                      );
+                    })}
+                  </select>
+
+                  <select
+                    className={styles.input}
+                    value={getTimeParts(form.endTime).period}
+                    onChange={(e) =>
+                      handleTimePartChange(
+                        "endTime",
+                        "period",
+                        e.target.value
+                      )
+                    }
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
               </div>
             </div>
           </div>
@@ -378,29 +645,6 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
                     className={styles.input}
                   />
                 </div>
-
-                {/* Zone */}
-                {/* <div className={styles.field}>
-                  <label className={styles.label}>
-                    Zone *
-                  </label>
-
-                  <select
-                    name="zone"
-                    value={form.zone}
-                    onChange={handleChange}
-                    className={styles.select}
-                  >
-                    {ZONES.map((zone) => (
-                      <option
-                        key={zone}
-                        value={zone}
-                      >
-                        {zone}
-                      </option>
-                    ))}
-                  </select>
-                </div> */}
               </div>
 
               {/* Zone Buttons */}
@@ -415,8 +659,8 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
                       type="button"
                       key={zone}
                       className={`${styles.zoneButton} ${form.zone === zone
-                        ? styles.zoneActive
-                        : ""
+                          ? styles.zoneActive
+                          : ""
                         }`}
                       onClick={() =>
                         setForm((prev) => ({
@@ -475,7 +719,7 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
               <button
                 type="button"
                 className={styles.cancelButton}
-                onClick={onCancel}
+                onClick={() => navigate("/admin/dashboard")}
               >
                 Cancel
               </button>
@@ -483,11 +727,11 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
               <button
                 type="submit"
                 className={styles.createButton}
+                disabled={isSubmitting}
               >
-                Create Event
+                {isSubmitting ? "Creating..." : "Create Event"}
               </button>
             </div>
-
           </div>
         </section>
       </form>
@@ -496,5 +740,3 @@ const CreateEvent = ({ onSubmit, onCancel }) => {
 };
 
 export default CreateEvent;
-
-

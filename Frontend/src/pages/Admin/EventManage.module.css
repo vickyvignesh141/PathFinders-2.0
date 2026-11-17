@@ -746,6 +746,41 @@
   animation: modalAppear 0.2s ease;
 }
 
+.studentCheckbox {
+  width: 19px;
+  height: 19px;
+  cursor: pointer;
+  accent-color: #16a34a;
+  margin-right: 14px;
+  flex-shrink: 0;
+}
+
+.bulkSelectionBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  background: #f0fdf4;
+  border-radius: 10px;
+}
+
+.confirmSelectionButton {
+  background: #15803d;
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmSelectionButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 @keyframes modalAppear {
   from {
     opacity: 0;
@@ -991,6 +1026,155 @@ button:disabled {
     width: 100%;
   }
 }
+
+
+/* =====================================
+   ATTENDANCE MANAGEMENT
+===================================== */
+
+.volunteerPanel {
+  min-width: 0;
+}
+
+.candidateList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.candidateRow {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.candidateRow:hover {
+  border-color: #a7d7b5;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.candidateInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.candidateName {
+  font-size: 16px;
+  font-weight: 700;
+  color: #172b22;
+}
+
+.candidateMeta {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
+.candidateMeta strong {
+  color: #166534;
+  font-weight: 700;
+}
+
+/* Attendance status */
+
+.approvedStatus {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 11px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.rejectedStatus {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 6px 11px;
+  border-radius: 20px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Attendance count badge */
+
+.selectedBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 7px 12px;
+  border-radius: 20px;
+  background: #ecfdf3;
+  color: #15803d;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* Mobile responsive */
+
+@media (max-width: 600px) {
+  .candidateRow {
+    padding: 13px;
+  }
+
+  .candidateName {
+    font-size: 15px;
+  }
+
+  .candidateMeta {
+    font-size: 12px;
+    overflow-wrap: anywhere;
+  }
+
+  .selectedBadge {
+    font-size: 11px;
+    padding: 6px 9px;
+  }
+}
+
+.completeEventButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: #15803d;
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.completeEventButton:hover {
+  background: #166534;
+}
+
+.completeEventButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
+.attendanceAction {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+
 
 @media (max-width: 420px) {
   .main {

@@ -53,10 +53,15 @@ def login():
             "role": "admin"
         })
     else:
-        user = db.volunteers.find_one({
+        user = db.studentvolunteers.find_one({
             "username": username,
             "role": role
         })
+        
+    
+    
+    
+    
 
     # Check password and generate JWT
     if user and user.get("password") == password:

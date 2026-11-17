@@ -4,6 +4,7 @@ import secrets
 import hashlib
 import json
 import traceback
+from services.email_service import send_selection_email
 
 from datetime import datetime, timezone, timedelta
 from pymongo.errors import DuplicateKeyError
@@ -19,12 +20,14 @@ events_bp = Blueprint("events", __name__)
 events_collection = db["events"]
 registrations_collection = db["registrations"]
 attendance_collection = db["attendance"]
+profile_collection = db["studentvolunteers"]  # Assuming student and alumni profiles are stored here
 
 # Prevent duplicate attendance for the same event and student
 attendance_collection.create_index(
     [("eventId", 1), ("studentUsername", 1)],
     unique=True
 )
+
 
 
 # ==================================
@@ -63,6 +66,7 @@ def create_event():
                 "message": "Invalid request data"
             }), 400
 
+        # EVENT TYPE
         event_type = data.get("eventType", "regular")
 
         if event_type not in ["regular", "physical_verification"]:
@@ -71,6 +75,16 @@ def create_event():
                 "message": "Invalid event type"
             }), 400
 
+        # EVENT MODE
+        event_mode = data.get("eventMode", "offline")
+
+        if event_mode not in ["online", "offline"]:
+            return jsonify({
+                "success": False,
+                "message": "Invalid event mode. Choose online or offline."
+            }), 400
+
+        # REQUIRED FIELDS
         required_fields = [
             "eventTitle",
             "eventDescription",
@@ -97,6 +111,7 @@ def create_event():
                     "message": f"{field} is required"
                 }), 400
 
+        # EVENT TITLE
         event_title = data["eventTitle"].strip()
 
         if not re.search(r'[a-zA-Z0-9]', event_title):
@@ -105,6 +120,38 @@ def create_event():
                 "message": "Event title must contain letters or numbers"
             }), 400
 
+        # TARGET AUDIENCE
+        target_audience = data.get("targetAudience", ["students"])
+
+        allowed_audiences = [
+            "students",
+            "alumni",
+            "business_professionals",
+            "everyone"
+        ]
+
+        if not isinstance(target_audience, list) or not target_audience:
+            return jsonify({
+                "success": False,
+                "message": "Please select at least one target audience"
+            }), 400
+
+        if not all(
+            audience in allowed_audiences
+            for audience in target_audience
+        ):
+            return jsonify({
+                "success": False,
+                "message": "Invalid target audience"
+            }), 400
+
+        if "everyone" in target_audience and len(target_audience) > 1:
+            return jsonify({
+                "success": False,
+                "message": "Everyone cannot be combined with other audiences"
+            }), 400
+
+        # DATE AND TIME
         start_at = datetime.fromisoformat(
             data["startAt"].replace("Z", "+00:00")
         )
@@ -119,6 +166,7 @@ def create_event():
                 "message": "End time must be after start time"
             }), 400
 
+        # VOLUNTEERS NEEDED
         volunteers_needed = int(data["volunteersNeeded"])
 
         if volunteers_needed < 1:
@@ -127,16 +175,22 @@ def create_event():
                 "message": "At least one volunteer is required"
             }), 400
 
+        # GENERATE EVENT ID
         event_id = generate_event_id(event_title)
 
+        # EVENT DOCUMENT
         event = {
             "eventId": event_id,
+
             "eventType": event_type,
-            "targetAudience": data.get("targetAudience", "students"),
+            "eventMode": event_mode,
+
+            "targetAudience": target_audience,
 
             "eventTitle": event_title,
             "eventDescription": data["eventDescription"].strip(),
             "volunteerWork": data["volunteerWork"].strip(),
+
             "location": data["location"].strip(),
 
             "date": data["date"],
@@ -147,13 +201,16 @@ def create_event():
             "endAt": end_at,
 
             "instructions": data["instructions"].strip(),
+
             "volunteersNeeded": volunteers_needed,
             "zone": data["zone"],
 
             "status": "upcoming",
+
             "createdAt": datetime.now(timezone.utc)
         }
 
+        # SAVE TO MONGODB
         result = events_collection.insert_one(event)
 
         return jsonify({
@@ -177,6 +234,7 @@ def create_event():
 
     except Exception as e:
         print("Create Event Error:", repr(e))
+
         return jsonify({
             "success": False,
             "message": "Failed to create event"
@@ -346,7 +404,7 @@ def register_for_event(event_id):
             "message": "Event not found"
         }), 404
 
-    student = db.volunteers.find_one({
+    student = db.studentvolunteers.find_one({
         "username": username,
         "role": {"$in": ["student", "alumni"]}
     })
@@ -724,7 +782,6 @@ def verify_event_qr(event_id):
 # ==================================
 # ADMIN: COMPLETE EVENT FOR ALL STUDENTS
 # ==================================
-
 @events_bp.route(
     "/<event_id>/attendance/complete",
     methods=["PATCH"]
@@ -750,7 +807,12 @@ def complete_all_student_attendance(event_id):
                 "message": "Event not found."
             }), 404
 
-        # Get only students who have checked in
+        if event.get("eventType", "regular") != "regular":
+            return jsonify({
+                "success": False,
+                "message": "This completion route is for regular QR events only."
+            }), 400
+
         pending_records = list(
             attendance_collection.find({
                 "eventId": event_object_id,
@@ -768,6 +830,7 @@ def complete_all_student_attendance(event_id):
 
         completed_records = []
         completed_count = 0
+        profile_update_failures = []
 
         for record in pending_records:
             scanned_at = record.get("scannedAt")
@@ -785,9 +848,7 @@ def complete_all_student_attendance(event_id):
                     tzinfo=timezone.utc
                 )
             else:
-                scanned_at = scanned_at.astimezone(
-                    timezone.utc
-                )
+                scanned_at = scanned_at.astimezone(timezone.utc)
 
             completed_at = datetime.now(timezone.utc)
 
@@ -796,7 +857,17 @@ def complete_all_student_attendance(event_id):
                 int((completed_at - scanned_at).total_seconds())
             )
 
-            # Conditional update prevents duplicate completion
+            # Actual attendance duration
+            credited_hours = round(
+                duration_seconds / 3600, 2
+            )
+
+            # 1 verified hour = 10 points
+            credited_points = round(
+                (duration_seconds / 3600) * 10, 2
+            )
+
+            # Complete attendance only once
             result = attendance_collection.update_one(
                 {
                     "_id": record["_id"],
@@ -809,28 +880,109 @@ def complete_all_student_attendance(event_id):
                         "attendanceStatus": "Completed",
                         "adminVerified": True,
                         "completedAt": completed_at,
-                        "durationSeconds": duration_seconds
+                        "durationSeconds": duration_seconds,
+                        "creditedHours": credited_hours,
+                        "creditedPoints": credited_points
                     }
                 }
             )
 
-            if result.modified_count == 1:
-                completed_count += 1
+            if result.modified_count != 1:
+                continue
 
-                completed_records.append({
-                    "_id": str(record["_id"]),
-                    "studentUsername": record.get(
-                        "studentUsername"
-                    ),
-                    "studentName": record.get(
-                        "studentName"
-                    ),
-                    "attendanceStatus": "Completed",
-                    "adminVerified": True,
-                    "scannedAt": scanned_at.isoformat(),
-                    "completedAt": completed_at.isoformat(),
-                    "durationSeconds": duration_seconds
+            completed_count += 1
+
+            username = str(
+                record.get("studentUsername", "")
+            ).strip().upper()
+
+            student_name = record.get(
+                "studentName", "Student"
+            )
+
+            if not username:
+                profile_update_failures.append({
+                    "username": "",
+                    "reason": "Attendance record has no student username"
                 })
+                continue
+
+            event_entry = {
+                "event_id": str(event_object_id),
+                "event_name": event.get("eventTitle", ""),
+                "hours": credited_hours,
+                "points": credited_points
+            }
+
+            # Add event and increment totals only if not already recorded
+            profile_result = profile_collection.update_one(
+                {
+                    "username": username,
+                    "past_volunteering_details.events_breakdown.event_id": {
+                        "$ne": str(event_object_id)
+                    }
+                },
+                {
+                    "$push": {
+                        "past_volunteering_details.events_breakdown": event_entry
+                    },
+                    "$inc": {
+                        "past_volunteering_details.regular_hours": credited_hours,
+                        "past_volunteering_details.total_effective_hours": credited_hours,
+                        "past_volunteering_details.total_points": credited_points
+                    }
+                }
+            )
+
+            if profile_result.modified_count == 1:
+                print(
+                    f"PROFILE UPDATED: {username} | "
+                    f"{credited_hours} hours | "
+                    f"{credited_points} points"
+                )
+            else:
+                existing_profile = profile_collection.find_one({
+                    "username": username
+                })
+
+                if not existing_profile:
+                    reason = "Student profile not found"
+                else:
+                    already_added = profile_collection.find_one({
+                        "username": username,
+                        "past_volunteering_details.events_breakdown.event_id": str(
+                            event_object_id
+                        )
+                    })
+
+                    reason = (
+                        "Event already credited in profile"
+                        if already_added
+                        else "Profile update did not modify the document"
+                    )
+
+                print(
+                    f"PROFILE NOT UPDATED: {username} | {reason}"
+                )
+
+                if reason == "Student profile not found":
+                    profile_update_failures.append({
+                        "username": username,
+                        "reason": reason
+                    })
+
+            completed_records.append({
+                "_id": str(record["_id"]),
+                "studentUsername": username,
+                "studentName": student_name,
+                "attendanceStatus": "Completed",
+                "adminVerified": True,
+                "scannedAt": scanned_at.isoformat(),
+                "completedAt": completed_at.isoformat(),
+                "durationSeconds": duration_seconds,
+                "creditedHours": credited_hours,
+                "creditedPoints": credited_points
+            })
 
         return jsonify({
             "success": True,
@@ -839,6 +991,7 @@ def complete_all_student_attendance(event_id):
                 "record(s) completed and verified."
             ),
             "completedCount": completed_count,
+            "profileUpdateFailures": profile_update_failures,
             "attendance": completed_records
         }), 200
 
@@ -852,8 +1005,6 @@ def complete_all_student_attendance(event_id):
             "success": False,
             "message": "Unable to complete event attendance."
         }), 500
-
-
 
 # ==================================
 # ADMIN: GET EVENT ATTENDANCE
@@ -992,3 +1143,523 @@ def get_my_attendance_timers():
             "message": "Unable to fetch attendance timers."
         }), 500
 
+
+# ==================================
+# LEADERBOARD: GET REAL VOLUNTEER DATA
+# ==================================
+
+
+# ==========================================
+# LEADERBOARD - HISTORICAL + NEW POINTS
+# ==========================================
+
+@events_bp.route("/leaderboard", methods=["GET"])
+@token_required(["student", "alumni", "admin"])
+def get_leaderboard():
+    try:
+        profiles = list(
+            profile_collection.find({
+                "role": {"$in": ["student", "alumni"]}
+            })
+        )
+
+        leaderboard = []
+
+        for profile in profiles:
+            username = str(
+                profile.get("username", "")
+            ).strip().upper()
+
+            if not username:
+                continue
+
+            past = profile.get(
+                "past_volunteering_details", {}
+            ) or {}
+
+            total_points = round(
+                float(past.get("total_points", 0) or 0), 2
+            )
+
+            total_hours = round(
+                float(past.get("total_effective_hours", 0) or 0), 2
+            )
+
+            regular_hours = round(
+                float(past.get("regular_hours", 0) or 0), 2
+            )
+
+            pv_hours = round(
+                float(past.get("physical_verification_hours", 0) or 0), 2
+            )
+
+            pv_count = int(
+                past.get("physical_verification_count", 0) or 0
+            )
+
+            past_events = past.get("events_breakdown", []) or []
+
+            leaderboard.append({
+                "username": username,
+                "name": profile.get("name", "Unknown"),
+
+                "rollNo": username,
+                "college": profile.get("college", ""),
+                "department": profile.get("department", ""),
+                "zone": profile.get("zone", ""),
+                "batch": profile.get("batch", ""),
+                "course": profile.get("course", ""),
+
+                # All points are now stored in the profile
+                "pastPoints": total_points,
+                "newPoints": 0,
+                "points": total_points,
+                "xp": total_points,
+
+                "pastHours": total_hours,
+                "newVerifiedHours": 0,
+                "verifiedHours": total_hours,
+                "regularHours": regular_hours,
+
+                "physicalVerificationCount": pv_count,
+                "physicalVerificationHours": pv_hours,
+
+                "eventsAttended": len(past_events),
+                "pastVolunteeringEvents": past_events
+            })
+
+        leaderboard.sort(
+            key=lambda student: student["points"],
+            reverse=True
+        )
+
+        for index, student in enumerate(leaderboard):
+            student["rank"] = index + 1
+
+        return jsonify({
+            "success": True,
+            "totalVolunteers": len(leaderboard),
+            "leaderboard": leaderboard
+        }), 200
+
+    except Exception as e:
+        print("LEADERBOARD ERROR:", repr(e))
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "message": "Unable to fetch leaderboard"
+        }), 500
+
+from bson import ObjectId
+from datetime import datetime
+
+@events_bp.route("/<event_id>/confirm-selection", methods=["POST"])
+@token_required(["admin"])
+def confirm_event_selection(event_id):
+    try:
+        data = request.get_json() or {}
+        selected_ids = data.get("selectedRegistrationIds", [])
+
+        if not ObjectId.is_valid(event_id):
+            return jsonify({
+                "success": False,
+                "message": "Invalid event ID"
+            }), 400
+
+        if not isinstance(selected_ids, list) or not selected_ids:
+            return jsonify({
+                "success": False,
+                "message": "Select at least one student"
+            }), 400
+
+        if not all(ObjectId.is_valid(str(x)) for x in selected_ids):
+            return jsonify({
+                "success": False,
+                "message": "Invalid registration ID"
+            }), 400
+
+        event_oid = ObjectId(event_id)
+        registration_oids = list({
+            ObjectId(str(x)) for x in selected_ids
+        })
+
+        event = events_collection.find_one({"_id": event_oid})
+
+        if not event:
+            return jsonify({
+                "success": False,
+                "message": "Event not found"
+            }), 404
+
+        # Fetch only registrations belonging to this event
+        registrations = list(registrations_collection.find({
+            "_id": {"$in": registration_oids},
+            "eventId": event_oid
+        }))
+
+        if len(registrations) != len(registration_oids):
+            return jsonify({
+                "success": False,
+                "message": "One or more selected students do not belong to this event"
+            }), 400
+
+        approved_count = 0
+        emails_sent = 0
+        emails_failed = 0
+        emails_skipped = 0
+
+        for registration in registrations:
+
+            registration_id = registration["_id"]
+
+            # Approve selected student
+            registrations_collection.update_one(
+                {"_id": registration_id},
+                {
+                    "$set": {
+                        "status": "Approved",
+                        "updatedAt": datetime.utcnow()
+                    }
+                }
+            )
+
+            approved_count += 1
+
+            # Claim notification so repeated clicks don't resend sent emails
+            claim = registrations_collection.update_one(
+                {
+                    "_id": registration_id,
+                    "$or": [
+                        {"emailNotification.status": {"$exists": False}},
+                        {"emailNotification.status": "pending"},
+                        {"emailNotification.status": "failed"}
+                    ]
+                },
+                {
+                    "$set": {
+                        "emailNotification.status": "sending",
+                        "emailNotification.updatedAt": datetime.utcnow()
+                    }
+                }
+            )
+
+            if claim.modified_count == 0:
+                emails_skipped += 1
+                continue
+
+            student_email = registration.get("email")
+            student_name = registration.get("studentName", "Student")
+
+            if not student_email:
+                registrations_collection.update_one(
+                    {"_id": registration_id},
+                    {"$set": {
+                        "emailNotification.status": "failed",
+                        "emailNotification.error": "Student email not found"
+                    }}
+                )
+                emails_failed += 1
+                continue
+
+            email_result = send_selection_email(
+                student_email,
+                student_name,
+                event
+            )
+
+            if email_result:
+                registrations_collection.update_one(
+                    {"_id": registration_id},
+                    {"$set": {
+                        "emailNotification.status": "sent",
+                        "emailNotification.sentAt": datetime.utcnow()
+                    },
+                    "$unset": {
+                        "emailNotification.error": ""
+                    }}
+                )
+                emails_sent += 1
+            else:
+                registrations_collection.update_one(
+                    {"_id": registration_id},
+                    {"$set": {
+                        "emailNotification.status": "failed",
+                        "emailNotification.error": "SMTP sending failed"
+                    }}
+                )
+                emails_failed += 1
+
+        return jsonify({
+            "success": True,
+            "message": "Student selection processed",
+            "approvedCount": approved_count,
+            "emailsSent": emails_sent,
+            "emailsFailed": emails_failed,
+            "emailsSkipped": emails_skipped
+        }), 200
+
+    except Exception as e:
+        print("Confirm selection error:", str(e))
+        return jsonify({
+            "success": False,
+            "message": "Failed to confirm selection"
+        }), 500
+        
+        # Record when the admin sent the approval list
+approval_sent_at = datetime.now(timezone.utc)
+
+
+        
+# ==================================
+# ADMIN: GET EVENT HISTORY
+# ==================================
+
+@events_bp.route("/admin/history", methods=["GET"])
+@token_required(["admin"])
+def get_admin_event_history():
+    try:
+        now = datetime.now(timezone.utc)
+
+        all_events = list(
+            events_collection.find().sort("date", -1)
+        )
+
+        history = []
+
+        for event in all_events:
+            event_id = event["_id"]
+            end_at = event.get("endAt")
+
+            # Treat MongoDB naive datetimes as UTC
+            if isinstance(end_at, datetime):
+                if end_at.tzinfo is None:
+                    end_at = end_at.replace(tzinfo=timezone.utc)
+                else:
+                    end_at = end_at.astimezone(timezone.utc)
+
+            # Fallback for older events without endAt
+            if not end_at and event.get("date") and event.get("endTime"):
+                try:
+                    local_end = datetime.strptime(
+                        f"{event['date']} {event['endTime']}",
+                        "%Y-%m-%d %H:%M"
+                    )
+                    end_at = (
+                        local_end - timedelta(hours=5, minutes=30)
+                    ).replace(tzinfo=timezone.utc)
+                except ValueError:
+                    end_at = None
+
+            is_completed = (
+                str(event.get("status", "")).lower() == "completed"
+            )
+            is_past = bool(end_at and end_at <= now)
+
+            if not (is_completed or is_past):
+                continue
+
+            registrations = list(
+                registrations_collection.find({
+                    "eventId": event_id
+                }).sort("registeredAt", -1)
+            )
+
+            attendance_records = list(
+                attendance_collection.find({
+                    "eventId": event_id
+                }).sort("scannedAt", 1)
+            )
+
+            attendance_by_username = {
+                str(record.get("studentUsername", "")).upper(): record
+                for record in attendance_records
+            }
+
+            registration_list = []
+
+            for registration in registrations:
+                username = str(
+                    registration.get("studentUsername", "")
+                ).upper()
+
+                attendance = attendance_by_username.get(username)
+
+                duration_seconds = (
+                    attendance.get("durationSeconds", 0)
+                    if attendance else 0
+                )
+
+                registered_at = registration.get("registeredAt")
+                scanned_at = attendance.get("scannedAt") if attendance else None
+                completed_at = attendance.get("completedAt") if attendance else None
+
+                registration_list.append({
+                    "registrationId": str(registration["_id"]),
+                    "studentName": registration.get("studentName", ""),
+                    "studentUsername": registration.get("studentUsername", ""),
+                    "email": registration.get("email", ""),
+                    "phone": registration.get("phone", ""),
+                    "college": registration.get("college", ""),
+                    "status": registration.get("status", "Registered"),
+                    "registeredAt": (
+                        registered_at.isoformat()
+                        if isinstance(registered_at, datetime)
+                        else registered_at
+                    ),
+                    "attendance": {
+                        "status": (
+                            attendance.get("attendanceStatus", "Not Checked In")
+                            if attendance else "Not Checked In"
+                        ),
+                        "adminVerified": (
+                            attendance.get("adminVerified", False)
+                            if attendance else False
+                        ),
+                        "scannedAt": (
+                            scanned_at.isoformat()
+                            if isinstance(scanned_at, datetime)
+                            else scanned_at
+                        ),
+                        "completedAt": (
+                            completed_at.isoformat()
+                            if isinstance(completed_at, datetime)
+                            else completed_at
+                        ),
+                        "durationSeconds": duration_seconds,
+                        "creditedHours": round(
+                            duration_seconds / 3600, 2
+                        )
+                    } if event.get("eventType", "regular") == "regular" else None
+                })
+
+            verified_attendance = [
+                record for record in attendance_records
+                if record.get("attendanceStatus") == "Completed"
+                and record.get("adminVerified") is True
+            ]
+
+            total_verified_hours = round(
+                sum(
+                    record.get("durationSeconds", 0)
+                    for record in verified_attendance
+                ) / 3600,
+                2
+            )
+
+            history.append({
+                "id": str(event_id),
+                "eventId": event.get("eventId", ""),
+                "title": event.get("eventTitle", ""),
+                "description": event.get("eventDescription", ""),
+                "venue": event.get("location", ""),
+                "date": event.get("date", ""),
+                "startTime": event.get("startTime", ""),
+                "endTime": event.get("endTime", ""),
+                "zone": event.get("zone", ""),
+                "eventType": event.get("eventType", "regular"),
+                "status": "Completed" if is_completed else "Past",
+                "volunteersNeeded": event.get("volunteersNeeded", 0),
+                "totalRegistrations": len(registrations),
+                "selectedCount": sum(
+                    1 for item in registrations
+                    if item.get("status") == "Approved"
+                ),
+                "attendanceCount": len(attendance_records),
+                "verifiedAttendanceCount": len(verified_attendance),
+                "totalVerifiedHours": total_verified_hours,
+                "registrations": registration_list
+            })
+
+        return jsonify({
+            "success": True,
+            "totalEvents": len(history),
+            "history": history
+        }), 200
+
+    except Exception as e:
+        print("Admin Event History Error:", repr(e))
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "message": "Unable to fetch event history"
+        }), 500
+
+@events_bp.route("/admin/student-status", methods=["GET"])
+@token_required(["admin"])
+def admin_student_status():
+    try:
+        students = list(profile_collection.find({
+            "role": {"$in": ["student", "alumni"]}
+        }))
+
+        eligible_events = list(events_collection.find({
+            "approvalListSentAt": {
+                "$exists": True,
+                "$ne": None
+            }
+        }))
+
+        all_registrations = list(
+            registrations_collection.find()
+        )
+
+        eligible_events.sort(
+            key=lambda event: event.get("approvalListSentAt")
+        )
+
+        student_results = []
+
+        for student in students:
+            student_username = student.get("username", "")
+
+            missed_opportunities = 0
+
+            for event in eligible_events:
+                registered = any(
+                    str(reg.get("eventId")) == str(event["_id"])
+                    and reg.get("studentUsername") == student_username
+                    for reg in all_registrations
+                )
+
+                if registered:
+                    missed_opportunities = 0
+                else:
+                    missed_opportunities += 1
+
+            student_status = (
+                "Inactive"
+                if missed_opportunities > 3
+                else "Active"
+            )
+
+            student_results.append({
+                "username": student_username,
+                "name": student.get("name", ""),
+                "status": student_status,
+                "missedOpportunities": missed_opportunities
+            })
+
+        return jsonify({
+            "success": True,
+            "students": student_results,
+            "totalStudents": len(student_results),
+            "activeCount": sum(
+                1 for student in student_results
+                if student["status"] == "Active"
+            ),
+            "inactiveCount": sum(
+                1 for student in student_results
+                if student["status"] == "Inactive"
+            )
+        }), 200
+
+    except Exception as e:
+        print("Admin Student Status Error:", repr(e))
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "message": "Unable to fetch student status"
+        }), 500

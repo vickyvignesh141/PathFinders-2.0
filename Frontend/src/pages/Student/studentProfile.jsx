@@ -1,6 +1,7 @@
 
 import React, { useState } from "react";
 import styles from "./StudentProfile.module.css";
+import { saveStudentProfile } from "../../services/profileService";
 
 const StudentProfile = () => {
   const [profile, setProfile] = useState({
@@ -23,6 +24,7 @@ const StudentProfile = () => {
   });
 
   const [preview, setPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -51,13 +53,39 @@ const StudentProfile = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+ 
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    console.log("Student Profile:", profile);
+  const username = localStorage.getItem("username");
 
-    alert("Student profile saved successfully!");
-  };
+  if (!username) {
+    alert("Please login again to save your profile.");
+    return;
+  }
+
+  try {
+    setSaving(true);
+
+    const response = await saveStudentProfile(username, profile);
+
+    if (response.success) {
+      alert("Student profile saved successfully!");
+    } else {
+      alert(response.message || "Unable to save profile.");
+    }
+  } catch (error) {
+    console.error("Profile save error:", error);
+
+    alert(
+      error.response?.data?.message ||
+      "Something went wrong while saving your profile."
+    );
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   return (
     <div className={styles.profilePage}>
@@ -144,8 +172,8 @@ const StudentProfile = () => {
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
-                  
-                  
+
+
                 </select>
               </div>
 
@@ -333,7 +361,7 @@ const StudentProfile = () => {
                   <option value="2nd Year">2nd Year</option>
                   <option value="3rd Year">3rd Year</option>
                   <option value="4th Year">4th Year</option>
-                  
+
                 </select>
               </div>
 
@@ -406,8 +434,12 @@ const StudentProfile = () => {
               Reset
             </button>
 
-            <button type="submit" className={styles.saveButton}>
-              Save Profile
+            <button
+              type="submit"
+              className={styles.saveButton}
+              disabled={saving}
+            >
+              {saving ? "Saving..." : "Save Profile"}
             </button>
           </div>
         </form>
