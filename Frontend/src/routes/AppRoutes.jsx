@@ -12,6 +12,7 @@ import StudentHistory from "../pages/Student/StudentHistory.jsx";
 import StudentCertificate from "../pages/Student/StudentCertificate.jsx";
 import StudentLayout from "../layouts/StudentLayout.jsx";
 import AdminLayout from "../layouts/AdminLayout.jsx";
+import StudentFeedback from "../pages/Student/StudentFeedback.jsx";
 
 
 import AlumniDashboard from "../pages/Alumni/AlumniDashboard.jsx";
@@ -58,6 +59,7 @@ function App() {
           <Route path="profile" element={<StudentProfile />} />
           <Route path="history" element={<StudentHistory />} />
           <Route path="certificate" element={<StudentCertificate />} />
+          <Route path="feedback" element={<StudentFeedback />} />
         </Route>
 
       </Routes>

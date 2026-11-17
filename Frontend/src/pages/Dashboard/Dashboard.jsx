@@ -119,13 +119,16 @@ export default function Dashboard() {
     <span className={styles.logo}>M</span>
     <span>
       <strong className={styles.brandName}>
-        MAATRAM<span className={styles.dot}>.</span>
+        MAATRAM<span className={styles.dot}></span>
       </strong>
       <small className={styles.brandCaption}>
         VOLUNTEER COMMUNITY
       </small>
     </span>
   </a>
+   <div className={styles.headerTitle}>
+    Volunteering Opportunities
+  </div>
 
   <nav className={styles.nav}>
     {/* Volunteer Login */}
@@ -159,8 +162,7 @@ export default function Dashboard() {
       {/* Main Content - Volunteering Details */}
       <main className={styles.opportunities} id="home">
         <div className={styles.sectionHeading}>
-          <h2>Volunteering Opportunities</h2>
-          <p>Choose an opportunity that matches your skills and interests.</p>
+          
         </div>
 
         <div className={styles.grid}>

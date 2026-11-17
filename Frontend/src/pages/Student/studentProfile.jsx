@@ -1,31 +1,45 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./StudentProfile.module.css";
 import { saveStudentProfile } from "../../services/profileService";
 
-const StudentProfile = () => {
-  const [profile, setProfile] = useState({
-    fullName: "",
-    profilePhoto: "",
-    dob: "",
-    gender: "",
-    location: "",
-    mobile: "",
-    email: "",
-    college: "",
-    collegeLocation: "",
-    zone: "",
-    department: "",
-    degree: "",
-    year: "",
-    batch: "",
-    accommodation: "",
-    linkedin: "",
-  });
+const initialProfile = {
+  fullName: "",
+  profilePhoto: "",
+  dob: "",
+  gender: "",
+  location: "",
+  mobile: "",
+  email: "",
+  college: "",
+  collegeLocation: "",
+  zone: "",
+  department: "",
+  degree: "",
+  year: "",
+  batch: "",
+  accommodation: "",
+  linkedin: "",
+};
 
+const StudentProfile = () => {
+  const navigate = useNavigate();
+
+  const [profile, setProfile] = useState(initialProfile);
   const [preview, setPreview] = useState(null);
   const [saving, setSaving] = useState(false);
 
+  // Clean up preview URL
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
+  // Handle Input Changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -35,70 +49,105 @@ const StudentProfile = () => {
     }));
   };
 
+  // Handle Profile Photo Upload
   const handlePhotoUpload = (e) => {
     const file = e.target.files[0];
 
-    if (file) {
-      if (!file.type.startsWith("image/")) {
-        alert("Please upload a valid image.");
-        return;
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload a valid image.");
+      e.target.value = "";
+      return;
+    }
+
+    setProfile((prev) => ({
+      ...prev,
+      profilePhoto: file,
+    }));
+
+    setPreview(URL.createObjectURL(file));
+  };
+
+  // Handle Profile Submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const username = localStorage.getItem("username");
+
+    if (!username) {
+      alert("Please login again to save your profile.");
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const response = await saveStudentProfile(username, profile);
+
+      if (response.success) {
+        alert("Student profile saved successfully!");
+      } else {
+        alert(response.message || "Unable to save profile.");
       }
+    } catch (error) {
+      console.error("Profile save error:", error);
 
-      setProfile((prev) => ({
-        ...prev,
-        profilePhoto: file,
-      }));
-
-      setPreview(URL.createObjectURL(file));
+      alert(
+        error.response?.data?.message ||
+        "Something went wrong while saving your profile."
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
- 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  const username = localStorage.getItem("username");
-
-  if (!username) {
-    alert("Please login again to save your profile.");
-    return;
-  }
-
-  try {
-    setSaving(true);
-
-    const response = await saveStudentProfile(username, profile);
-
-    if (response.success) {
-      alert("Student profile saved successfully!");
-    } else {
-      alert(response.message || "Unable to save profile.");
-    }
-  } catch (error) {
-    console.error("Profile save error:", error);
-
-    alert(
-      error.response?.data?.message ||
-      "Something went wrong while saving your profile."
-    );
-  } finally {
-    setSaving(false);
-  }
-};
-
+  // Reset Profile
+  const handleReset = () => {
+    setProfile({ ...initialProfile });
+    setPreview(null);
+  };
 
   return (
     <div className={styles.profilePage}>
       <div className={styles.profileContainer}>
+
         {/* Page Header */}
-        <div className={styles.pageHeader}>
+        <div
+          className={styles.pageHeader}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
           <div>
             <h1>Student Profile</h1>
             <p>Manage your personal and academic information</p>
           </div>
+
+          {/* Back to Dashboard */}
+          <button
+            type="button"
+            onClick={() => navigate("/student/dashboard")}
+            style={{
+              padding: "10px 18px",
+              background: "#f5c518",
+              color: "#171717",
+              border: "none",
+              borderRadius: "6px",
+              fontWeight: "600",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            ← Back to Dashboard
+          </button>
         </div>
 
         <form onSubmit={handleSubmit}>
+
           {/* Profile Photo */}
           <div className={styles.photoSection}>
             <div className={styles.photoPreview}>
@@ -136,6 +185,7 @@ const handleSubmit = async (e) => {
             </div>
 
             <div className={styles.formGrid}>
+
               <div className={styles.formGroup}>
                 <label>Student Full Name *</label>
                 <input
@@ -172,8 +222,6 @@ const handleSubmit = async (e) => {
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
-
-
                 </select>
               </div>
 
@@ -189,6 +237,7 @@ const handleSubmit = async (e) => {
                   required
                 />
               </div>
+
             </div>
           </section>
 
@@ -203,6 +252,7 @@ const handleSubmit = async (e) => {
             </div>
 
             <div className={styles.formGrid}>
+
               <div className={styles.formGroup}>
                 <label>Mobile Number *</label>
                 <input
@@ -241,6 +291,7 @@ const handleSubmit = async (e) => {
                   onChange={handleChange}
                 />
               </div>
+
             </div>
           </section>
 
@@ -255,6 +306,7 @@ const handleSubmit = async (e) => {
             </div>
 
             <div className={styles.formGrid}>
+
               <div className={styles.formGroup}>
                 <label>College Name *</label>
                 <input
@@ -297,6 +349,7 @@ const handleSubmit = async (e) => {
                 </select>
               </div>
 
+              {/* Department */}
               <div className={styles.formGroup}>
                 <label>Department *</label>
                 <select
@@ -306,7 +359,9 @@ const handleSubmit = async (e) => {
                   required
                 >
                   <option value="">Select Department</option>
-                  <option value="Computer Science">Computer Science</option>
+                  <option value="Computer Science">
+                    Computer Science
+                  </option>
                   <option value="Information Technology">
                     Information Technology
                   </option>
@@ -325,6 +380,7 @@ const handleSubmit = async (e) => {
                 </select>
               </div>
 
+              {/* Degree */}
               <div className={styles.formGroup}>
                 <label>Degree / Course *</label>
                 <select
@@ -348,6 +404,7 @@ const handleSubmit = async (e) => {
                 </select>
               </div>
 
+              {/* Year */}
               <div className={styles.formGroup}>
                 <label>Year of Study *</label>
                 <select
@@ -361,10 +418,10 @@ const handleSubmit = async (e) => {
                   <option value="2nd Year">2nd Year</option>
                   <option value="3rd Year">3rd Year</option>
                   <option value="4th Year">4th Year</option>
-
                 </select>
               </div>
 
+              {/* Academic Batch */}
               <div className={styles.formGroup}>
                 <label>Academic Batch *</label>
                 <select
@@ -374,6 +431,7 @@ const handleSubmit = async (e) => {
                   required
                 >
                   <option value="">Select Academic Batch</option>
+
                   {Array.from({ length: 5 }, (_, i) => {
                     const start = 2023 + i;
                     const end = start + 4;
@@ -401,35 +459,17 @@ const handleSubmit = async (e) => {
                   <option value="Day Scholar">Day Scholar</option>
                 </select>
               </div>
+
             </div>
           </section>
 
-          {/* Buttons */}
+          {/* Form Buttons */}
           <div className={styles.formActions}>
+
             <button
               type="reset"
               className={styles.cancelButton}
-              onClick={() => {
-                setProfile({
-                  fullName: "",
-                  profilePhoto: "",
-                  dob: "",
-                  gender: "",
-                  location: "",
-                  mobile: "",
-                  email: "",
-                  college: "",
-                  collegeLocation: "",
-                  zone: "",
-                  department: "",
-                  degree: "",
-                  year: "",
-                  batch: "",
-                  accommodation: "",
-                  linkedin: "",
-                });
-                setPreview(null);
-              }}
+              onClick={handleReset}
             >
               Reset
             </button>
@@ -441,6 +481,7 @@ const handleSubmit = async (e) => {
             >
               {saving ? "Saving..." : "Save Profile"}
             </button>
+
           </div>
         </form>
       </div>
