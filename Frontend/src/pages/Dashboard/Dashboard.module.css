@@ -1,13 +1,17 @@
+
 .page {
-  /* Colors changed to match Maatram theme (Yellow & Black) */
-  --blue: #111111;         /* Changed from Blue to Black */
-  --orange: #ffcc00;       /* Changed from Orange to Bright Maatram Yellow */
-  --light-blue: #fff9e6;   /* Changed to Light Yellow tint */
-  --text: #222222;         /* Dark text */
-  --muted: #555555;        /* Grey text */
+  /* Maatram Theme Colors */
+  --blue: #111111;
+  --orange: #ffcc00;
+  --light-blue: #fff9e6;
+  --text: #222222;
+  --muted: #555555;
 
   min-height: 100vh;
-  background: #fff;
+
+  /* Maatram Foundation Background Image */
+  background: url("/images/maatram-bg.jpeg") center center / cover fixed no-repeat;
+
   color: var(--text);
   font-family: Inter, Arial, sans-serif;
 }
@@ -16,6 +20,8 @@
   box-sizing: border-box;
 }
 
+/* Header */
+
 .header {
   min-height: 80px;
   padding: 15px 7%;
@@ -23,8 +29,8 @@
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  background: #fff;
-  border-bottom: 1px solid #e9edf3;
+  background: #111111;
+  border-bottom: 1px solid #333333;
   position: sticky;
   top: 0;
   z-index: 10;
@@ -34,7 +40,7 @@
   display: flex;
   align-items: center;
   gap: 11px;
-  color: var(--blue);
+  color: #ffffff;
   text-decoration: none;
 }
 
@@ -42,8 +48,8 @@
   width: 43px;
   height: 43px;
   border-radius: 11px;
-  background: var(--blue);
-  color: var(--orange);
+  background: var(--orange);
+  color: var(--blue);
   display: grid;
   place-items: center;
   font-size: 23px;
@@ -54,7 +60,7 @@
   display: block;
   font-size: 21px;
   letter-spacing: 1px;
-  color: var(--blue);
+  color: #ffffff;
 }
 
 .dot {
@@ -66,8 +72,10 @@
   margin-top: 3px;
   font-size: 9px;
   letter-spacing: 1.2px;
-  color: var(--muted);
+  color: #cccccc;
 }
+
+/* Navigation */
 
 .nav {
   display: flex;
@@ -76,7 +84,7 @@
 }
 
 .nav a {
-  color: var(--text);
+  color: #ffffff;
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
@@ -88,16 +96,23 @@
 
 .nav .loginBtn {
   padding: 12px 23px;
-  background: var(--blue);
-  color: #fff;
+  background: var(--orange);
+  color: #111111;
+  border: 1px solid var(--orange);
   border-radius: 8px;
-  transition: background 0.2s, color 0.2s;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
 }
 
 .nav .loginBtn:hover {
-  background: var(--orange);
-  color: #111;
+  background: #ffffff;
+  color: #111111;
+  border-color: #ffffff;
+  transform: translateY(-2px);
 }
+
+/* Hero Section */
 
 .hero {
   padding: 75px 7%;
@@ -181,6 +196,8 @@
   color: var(--orange);
 }
 
+/* Hero Card */
+
 .heroCard {
   position: relative;
   overflow: hidden;
@@ -228,6 +245,8 @@
   background: var(--orange);
 }
 
+/* Opportunities Section */
+
 .opportunities {
   padding: 75px 7%;
 }
@@ -251,6 +270,8 @@
   line-height: 1.8;
 }
 
+/* Cards Grid */
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -259,30 +280,35 @@
 
 .opportunityCard {
   padding: 27px 25px;
-  border: 1px solid var(--orange); 
+  border: 1px solid var(--orange);
   border-radius: 15px;
-  background: var(--orange); /* Default: Yellow */
-  color: var(--blue); /* Default text black */
-  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+  background: var(--orange);
+  color: var(--blue);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease,
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
-/* TOUCH PANNUM POTHUI (HOVER) BLACK AAGUM */
+/* Hover Effect */
+
 .opportunityCard:hover {
   transform: translateY(-5px);
-  background-color: var(--blue); /* Black background */
+  background-color: var(--blue);
   border-color: var(--blue);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2); 
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.2);
 }
 
-/* Hover la Heading WHITE aagum */
 .opportunityCard:hover h3 {
   color: #ffffff;
 }
 
-/* Hover la Description WHITE aagum */
 .opportunityCard:hover p {
   color: #ffffff;
 }
+
+/* Opportunity Icon */
 
 .opportunityIcon {
   display: grid;
@@ -291,18 +317,19 @@
   height: 48px;
   margin-bottom: 20px;
   border-radius: 12px;
-  background: var(--blue); /* Default: Black icon bg */
-  color: var(--orange); /* Default: Yellow icon text */
+  background: var(--blue);
+  color: var(--orange);
   font-size: 25px;
   font-weight: 800;
   transition: all 0.3s ease;
 }
 
-/* Hover la Icon background YELLOW aagum, text BLACK aagum */
 .opportunityCard:hover .opportunityIcon {
   background: var(--orange);
   color: var(--blue);
 }
+
+/* Card Content */
 
 .opportunityCard h3 {
   margin-bottom: 12px;
@@ -334,11 +361,12 @@
   color: var(--blue);
 }
 
-/* Hover la Learn More link WHITE aagum */
 .opportunityCard:hover .learnMore,
 .opportunityCard:hover .learnMore span {
   color: #ffffff;
 }
+
+/* Impact Section */
 
 .impact {
   margin: 0 7% 70px;
@@ -379,6 +407,8 @@
   flex-shrink: 0;
 }
 
+/* Footer */
+
 .footer {
   padding: 27px 7%;
   background: var(--blue);
@@ -395,6 +425,8 @@
   font-size: 18px;
 }
 
+/* Tablet Responsive */
+
 @media (max-width: 900px) {
   .hero {
     grid-template-columns: 1fr;
@@ -410,6 +442,8 @@
     flex-direction: column;
   }
 }
+
+/* Mobile Responsive */
 
 @media (max-width: 600px) {
   .header {
@@ -470,4 +504,20 @@
     flex-direction: column;
     padding: 25px 6%;
   }
+}
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.headerTitle {
+  position: absolute;
+  left: 45%;
+  transform: translateX(-50%);
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }

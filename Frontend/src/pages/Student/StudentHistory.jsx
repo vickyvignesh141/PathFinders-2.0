@@ -1,133 +1,256 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import styles from "./StudentHistory.module.css";
 
-const eventsData = [
-  {
-    id: 1,
-    title: "National Level Hackathon 2026",
-    category: "Technical",
-    date: "15 March 2026",
-    location: "Chennai",
-    organizer: "Department of Computer Science",
-    role: "Participant",
-    status: "Selected",
-    description:
-      "A national level hackathon where students develop innovative solutions for real-world problems using technology.",
-    team: "Code Warriors",
-    certificate: "Yes",
-    duration: "24 Hours",
-    image:
-      "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=800",
-  },
-  {
-    id: 2,
-    title: "Smart India Hackathon",
-    category: "Technical",
-    date: "20 February 2026",
-    location: "Coimbatore",
-    organizer: "AICTE",
-    role: "Team Leader",
-    status: "Completed",
-    description:
-      "A nationwide initiative to provide students with a platform to solve pressing problems faced by government departments and industries.",
-    team: "Tech Titans",
-    certificate: "Yes",
-    duration: "36 Hours",
-    image:
-      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800",
-  },
-  {
-    id: 3,
-    title: "Community Awareness Program",
-    category: "Volunteering",
-    date: "10 January 2026",
-    location: "Chennai",
-    organizer: "Maatram Foundation",
-    role: "Volunteer",
-    status: "Completed",
-    description:
-      "Participated in a community awareness program focused on education, social responsibility and creating positive changes in society.",
-    team: "Social Impact Team",
-    certificate: "Yes",
-    duration: "5 Hours",
-    image:
-      "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800",
-  },
-  {
-    id: 4,
-    title: "Web Development Workshop",
-    category: "Workshop",
-    date: "05 December 2025",
-    location: "College Campus",
-    organizer: "IT Department",
-    role: "Participant",
-    status: "Completed",
-    description:
-      "A hands-on workshop covering React, modern frontend development and practical web application building.",
-    team: "Individual",
-    certificate: "Yes",
-    duration: "6 Hours",
-    image:
-      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800",
-  },
-  {
-    id: 5,
-    title: "Inter College Coding Contest",
-    category: "Competition",
-    date: "18 November 2025",
-    location: "Madurai",
-    organizer: "Coding Club",
-    role: "Participant",
-    status: "Completed",
-    description:
-      "An inter-college coding competition designed to test programming knowledge, logical thinking and problem-solving skills.",
-    team: "Individual",
-    certificate: "No",
-    duration: "3 Hours",
-    image:
-      "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800",
-  },
-  {
-    id: 6,
-    title: "Green Campus Initiative",
-    category: "Volunteering",
-    date: "12 October 2025",
-    location: "College Campus",
-    organizer: "Eco Club",
-    role: "Volunteer",
-    status: "Completed",
-    description:
-      "Participated in a campus cleanliness and tree plantation initiative to promote environmental awareness.",
-    team: "Green Team",
-    certificate: "Yes",
-    duration: "4 Hours",
-    image:
-      "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800",
-  },
-];
+const API_URL = "http://localhost:5000/api/events/";
 
-const  StudentHistory = () => {
+const StudentHistory = () => {
+  const navigate = useNavigate();
+
+  const [eventsData, setEventsData] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filters = ["All", "Technical", "Volunteering", "Workshop", "Competition"];
+  const filters = [
+    "All",
+    "Volunteering",
+  ];
 
+  // Format event date
+  const formatDate = (date) => {
+    if (!date) return "Date not available";
+
+    const dateOnly = String(date).split("T")[0];
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+      const [year, month, day] = dateOnly.split("-");
+
+      return new Date(
+        Number(year),
+        Number(month) - 1,
+        Number(day)
+      ).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      });
+    }
+
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return date;
+    }
+
+    return parsedDate.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  // Convert attendance duration into readable hours
+  const formatDuration = (seconds) => {
+    if (seconds === null || seconds === undefined) {
+      return "Not available";
+    }
+
+    const totalSeconds = Number(seconds);
+
+    if (!Number.isFinite(totalSeconds) || totalSeconds < 0) {
+      return "Not available";
+    }
+
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+    if (hours > 0 && minutes > 0) {
+      return `${hours} Hours ${minutes} Minutes`;
+    }
+
+    if (hours > 0) {
+      return `${hours} Hours`;
+    }
+
+    return `${minutes} Minutes`;
+  };
+
+  // Fetch only completed and admin-verified attendance
+  useEffect(() => {
+    const fetchStudentHistory = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("accessToken") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("access_token");
+
+        // Get student attendance
+        const attendanceResponse = await fetch(
+          `${API_URL}student/attendance/timers`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              ...(token
+                ? { Authorization: `Bearer ${token}` }
+                : {}),
+            },
+            credentials: "include",
+          }
+        );
+
+        const attendanceData = await attendanceResponse.json();
+
+        if (!attendanceResponse.ok || !attendanceData.success) {
+          throw new Error(
+            attendanceData.message || "Unable to fetch attendance history"
+          );
+        }
+
+        // Get event details
+        const eventsResponse = await fetch(API_URL, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        let allEvents = [];
+
+        if (eventsResponse.ok) {
+          const eventsDataResponse = await eventsResponse.json();
+
+          if (eventsDataResponse.success) {
+            allEvents = eventsDataResponse.events || [];
+          }
+        }
+
+        // Match attendance with event details
+        const eventMap = new Map(
+          allEvents.map((event) => [
+            String(event._id),
+            event,
+          ])
+        );
+
+        // IMPORTANT:
+        // Only Completed + adminVerified attendance is displayed
+        const attendedEvents = (attendanceData.attendance || [])
+          .filter(
+            (record) =>
+              record.attendanceStatus === "Completed" &&
+              record.adminVerified === true
+          )
+          .map((record) => {
+            const eventDetails = eventMap.get(
+              String(record.eventId)
+            );
+
+            return {
+              id: record._id,
+              eventId: record.eventId,
+
+              title:
+                eventDetails?.eventTitle ||
+                record.eventTitle ||
+                "Volunteering Event",
+
+              category: "Volunteering",
+
+              date: formatDate(
+                eventDetails?.date || record.scannedAt
+              ),
+
+              location:
+                eventDetails?.location || "Not available",
+
+              organizer:
+                eventDetails?.organizer ||
+                eventDetails?.organization ||
+                "Maatram Foundation",
+
+              role: "Volunteer",
+
+              status: "Completed",
+
+              description:
+                eventDetails?.eventDescription ||
+                eventDetails?.volunteerWork ||
+                "Volunteering event successfully completed.",
+
+              team: "—",
+
+              certificate: "Not specified",
+
+              duration: formatDuration(
+                record.durationSeconds
+              ),
+
+              image:
+                eventDetails?.image ||
+                "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800",
+
+              scannedAt: record.scannedAt,
+              completedAt: record.completedAt,
+
+              volunteerWork:
+                eventDetails?.volunteerWork || "Not available",
+
+              instructions:
+                eventDetails?.instructions || "Not available",
+
+              zone:
+                eventDetails?.zone || "Not available",
+            };
+          });
+
+        // Remove duplicate events using eventId
+        const uniqueEvents = Array.from(
+          new Map(
+            attendedEvents.map((event) => [
+              event.eventId,
+              event,
+            ])
+          ).values()
+        );
+
+        setEventsData(uniqueEvents);
+
+      } catch (err) {
+        console.error("Student History Error:", err);
+        setError(
+          err.message || "Something went wrong while loading history."
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudentHistory();
+  }, []);
+
+  // Search and filter
   const filteredEvents = eventsData.filter((event) => {
     const matchesSearch =
       event.title.toLowerCase().includes(search.toLowerCase()) ||
       event.category.toLowerCase().includes(search.toLowerCase());
 
     const matchesFilter =
-      activeFilter === "All" || event.category === activeFilter;
+      activeFilter === "All" ||
+      event.category === activeFilter;
 
     return matchesSearch && matchesFilter;
   });
 
-  const completedCount = eventsData.filter(
-    (event) => event.status === "Completed"
-  ).length;
+  const completedCount = eventsData.length;
 
   const volunteeringCount = eventsData.filter(
     (event) => event.category === "Volunteering"
@@ -138,56 +261,54 @@ const  StudentHistory = () => {
       <div className={styles.historyContainer}>
 
         {/* Header */}
-        <div className={styles.pageHeader}>
+        <div
+          className={styles.pageHeader}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+            gap: "20px",
+          }}
+        >
           <div>
-            <span className={styles.eyebrow}>STUDENT ACTIVITIES</span>
-            <h1>My Event History<span>.</span></h1>
-            <p>
-              Explore all the events, competitions and volunteering
-              activities you have participated in.
-            </p>
+            <span className={styles.eyebrow}>
+              STUDENT ACTIVITIES
+            </span>
+
+            <h1>
+              My Event History<span>.</span>
+            </h1>
           </div>
 
-          <div className={styles.headerIcon}>✦</div>
-        </div>
-
-        {/* Statistics */}
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>▣</div>
-            <div>
-              <h2>{eventsData.length}</h2>
-              <p>Total Events</p>
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>✓</div>
-            <div>
-              <h2>{completedCount}</h2>
-              <p>Completed Events</p>
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>♧</div>
-            <div>
-              <h2>{volunteeringCount}</h2>
-              <p>Volunteering Events</p>
-            </div>
-          </div>
+          {/* Back to Dashboard - Right Side */}
+          <button
+            type="button"
+            onClick={() => navigate("/student/dashboard")}
+            style={{
+              padding: "10px 18px",
+              background: "#f5c518",
+              color: "#171717",
+              border: "none",
+              borderRadius: "6px",
+              fontWeight: "600",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            ← Back to Dashboard
+          </button>
         </div>
 
         {/* Search and Filter */}
         <div className={styles.filterSection}>
           <div className={styles.sectionTitle}>
-            <h2>Participation History</h2>
-            <span>{filteredEvents.length} Events</span>
           </div>
 
           <div className={styles.filterControls}>
             <div className={styles.searchBox}>
               <span>⌕</span>
+
               <input
                 type="text"
                 placeholder="Search events..."
@@ -195,90 +316,101 @@ const  StudentHistory = () => {
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-
-            <div className={styles.filterButtons}>
-              {filters.map((filter) => (
-                <button
-                  key={filter}
-                  className={
-                    activeFilter === filter
-                      ? styles.activeFilter
-                      : styles.filterButton
-                  }
-                  onClick={() => setActiveFilter(filter)}
-                >
-                  {filter}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
+        {/* Loading */}
+        {loading && (
+          <div className={styles.emptyState}>
+            <h3>Loading your event history...</h3>
+            <p>Please wait while we fetch your attended events.</p>
+          </div>
+        )}
+
+        {/* Error */}
+        {!loading && error && (
+          <div className={styles.emptyState}>
+            <h3>Unable to Load Event History</h3>
+            <p>{error}</p>
+          </div>
+        )}
+
         {/* Event Cards */}
-        <div className={styles.eventGrid}>
-          {filteredEvents.map((event) => (
-            <div
-              key={event.id}
-              className={styles.eventCard}
-              onClick={() => setSelectedEvent(event)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") setSelectedEvent(event);
-              }}
-            >
-              <div className={styles.eventImage}>
-                <img src={event.image} alt={event.title} />
+        {!loading && !error && (
+          <div className={styles.eventGrid}>
+            {filteredEvents.map((event) => (
+              <div
+                key={event.id}
+                className={styles.eventCard}
+                onClick={() => setSelectedEvent(event)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setSelectedEvent(event);
+                  }
+                }}
+              >
+                <div className={styles.eventImage}>
+                  <img
+                    src={event.image}
+                    alt={event.title}
+                  />
 
-                <span className={styles.categoryBadge}>
-                  {event.category}
-                </span>
-              </div>
-
-              <div className={styles.eventContent}>
-                <div className={styles.eventDate}>
-                  <span>◷</span> {event.date}
-                </div>
-
-                <h3>{event.title}</h3>
-
-                <p className={styles.eventLocation}>
-                  <span>⌖</span> {event.location}
-                </p>
-
-                <div className={styles.cardFooter}>
-                  <span
-                    className={
-                      event.status === "Selected"
-                        ? styles.selectedStatus
-                        : styles.completedStatus
-                    }
-                  >
-                    {event.status}
+                  <span className={styles.categoryBadge}>
+                    {event.category}
                   </span>
+                </div>
 
-                  <button
-                    className={styles.viewButton}
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedEvent(event);
-                    }}
-                  >
-                    View Details <span>↗</span>
-                  </button>
+                <div className={styles.eventContent}>
+                  <div className={styles.eventDate}>
+                    <span>◷</span> {event.date}
+                  </div>
+
+                  <h3>{event.title}</h3>
+
+                  <p className={styles.eventLocation}>
+                    <span>⌖</span> {event.location}
+                  </p>
+
+                  <div className={styles.cardFooter}>
+                    <span className={styles.completedStatus}>
+                      {event.status}
+                    </span>
+
+                    <button
+                      className={styles.viewButton}
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedEvent(event);
+                      }}
+                    >
+                      View Details <span>↗</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* Empty State */}
-        {filteredEvents.length === 0 && (
+        {!loading && !error && filteredEvents.length === 0 && (
           <div className={styles.emptyState}>
             <div>⌕</div>
-            <h3>No events found</h3>
-            <p>Try searching with another event name or category.</p>
+
+            <h3>
+              {eventsData.length === 0
+                ? "No Attended Events Yet"
+                : "No Events Found"}
+            </h3>
+
+            <p>
+              {eventsData.length === 0
+                ? "Your completed and verified volunteering events will appear here."
+                : "Try searching with another event name or category."}
+            </p>
           </div>
         )}
       </div>
@@ -309,6 +441,7 @@ const  StudentHistory = () => {
                 src={selectedEvent.image}
                 alt={selectedEvent.title}
               />
+
               <span>{selectedEvent.category}</span>
             </div>
 
@@ -317,7 +450,9 @@ const  StudentHistory = () => {
                 EVENT PARTICIPATION DETAILS
               </span>
 
-              <h2 id="event-modal-title">{selectedEvent.title}</h2>
+              <h2 id="event-modal-title">
+                {selectedEvent.title}
+              </h2>
 
               <p className={styles.modalDescription}>
                 {selectedEvent.description}
@@ -345,8 +480,8 @@ const  StudentHistory = () => {
                 </div>
 
                 <div className={styles.detailItem}>
-                  <span>Team Name</span>
-                  <strong>{selectedEvent.team}</strong>
+                  <span>Volunteer Work</span>
+                  <strong>{selectedEvent.volunteerWork}</strong>
                 </div>
 
                 <div className={styles.detailItem}>
@@ -363,6 +498,22 @@ const  StudentHistory = () => {
                   <span>Event Status</span>
                   <strong>{selectedEvent.status}</strong>
                 </div>
+
+                <div className={styles.detailItem}>
+                  <span>Attendance Scanned At</span>
+                  <strong>
+                    {selectedEvent.scannedAt
+                      ? new Date(
+                          selectedEvent.scannedAt
+                        ).toLocaleString("en-IN")
+                      : "Not available"}
+                  </strong>
+                </div>
+
+                <div className={styles.detailItem}>
+                  <span>Admin Verified</span>
+                  <strong>Yes</strong>
+                </div>
               </div>
 
               <div className={styles.modalFooter}>
@@ -377,7 +528,6 @@ const  StudentHistory = () => {
           </div>
         </div>
       )}
-
     </div>
   );
 };
