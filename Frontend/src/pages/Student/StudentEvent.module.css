@@ -664,3 +664,46 @@
   }
 }
 
+/* Header actions: Available Events + Back to Dashboard */
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+
+.backDashboardBtn {
+  background: #f5c542;
+  color: #171717;
+  border: 1px solid #f5c542;
+  border-radius: 9px;
+  padding: 13px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: 0.2s ease;
+}
+
+.backDashboardBtn:hover {
+  background: #e8b51e;
+  border-color: #e8b51e;
+  transform: translateY(-2px);
+}
+
+/* Mobile responsive */
+@media (max-width: 650px) {
+  .headerActions {
+    width: 100%;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .backDashboardBtn {
+    padding: 11px 14px;
+    font-size: 12px;
+  }
+}
+

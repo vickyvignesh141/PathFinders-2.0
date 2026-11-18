@@ -1,75 +1,105 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
+import { useNavigate } from "react-router-dom";
 import styles from "./StudentCertificate.module.css";
 
-const certificateData = [
-  {
-    id: 1,
-    title: "Community Awareness Program",
-    organization: "Maatram Foundation",
-    category: "Social Volunteering",
-    date: "10 January 2026",
-    hours: "5 Hours",
-    certificateId: "MAT-2026-001",
-    status: "Available",
-    studentName: "Logesh",
-  },
-  {
-    id: 2,
-    title: "Green Campus Initiative",
-    organization: "Eco Club",
-    category: "Environmental Volunteering",
-    date: "12 October 2025",
-    hours: "4 Hours",
-    certificateId: "ECO-2025-002",
-    status: "Available",
-    studentName: "Logesh",
-  },
-  {
-    id: 3,
-    title: "Education Support Program",
-    organization: "Student Volunteer Club",
-    category: "Education Volunteering",
-    date: "15 September 2025",
-    hours: "8 Hours",
-    certificateId: "EDU-2025-003",
-    status: "Available",
-    studentName: "Logesh",
-  },
-  {
-    id: 4,
-    title: "Community Cleanliness Drive",
-    organization: "Green Earth Organization",
-    category: "Community Service",
-    date: "20 August 2025",
-    hours: "3 Hours",
-    certificateId: "GRE-2025-004",
-    status: "Processing",
-    studentName: "Logesh",
-  },
-];
+const API_URL = "http://localhost:5000/api/feedback/student/certificates";
 
 const StudentCertificate = () => {
-  const [certificates] = useState(certificateData);
+  const navigate = useNavigate();
+
+  const [certificates, setCertificates] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  // Fetch certificates from backend
+  useEffect(() => {
+    fetchCertificates();
+  }, []);
+
+  const fetchCertificates = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(API_URL, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to fetch certificates");
+      }
+
+      const formattedCertificates = (data.certificates || []).map(
+        (cert, index) => {
+          const feedbackSubmitted = cert.feedbackSubmitted === true;
+
+          return {
+            ...cert,
+            id: cert.id || cert.eventId || index,
+            title: cert.title || "Volunteer Event",
+            organization: cert.organization || "Maatram Foundation",
+            category: cert.category || "Volunteering",
+            date: cert.date || "Date not available",
+            hours: cert.hours || "Not available",
+            certificateId: cert.certificateId || "Pending",
+            studentName: cert.studentName || "Student",
+
+            feedbackSubmitted,
+
+            status: feedbackSubmitted
+              ? "Available"
+              : "Feedback Required",
+          };
+        }
+      );
+
+      setCertificates(formattedCertificates);
+    } catch (err) {
+      console.error("Certificate fetch error:", err);
+      setError(err.message || "Unable to load certificates.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Certificates unlocked after feedback
   const availableCertificates = certificates.filter(
-    (cert) => cert.status === "Available"
+    (cert) => cert.feedbackSubmitted
   );
 
-  const totalHours = availableCertificates.reduce((total, cert) => {
-    return total + Number(cert.hours.split(" ")[0]);
+  // Calculate total volunteering hours
+  const totalHours = certificates.reduce((total, cert) => {
+    const hours = parseFloat(String(cert.hours).replace(/[^\d.]/g, ""));
+    return total + (Number.isFinite(hours) ? hours : 0);
   }, 0);
 
-  const filteredCertificates = certificates.filter((cert) =>
-    cert.title.toLowerCase().includes(search.toLowerCase()) ||
-    cert.organization.toLowerCase().includes(search.toLowerCase())
+  // Search
+  const filteredCertificates = certificates.filter(
+    (cert) =>
+      cert.title.toLowerCase().includes(search.toLowerCase()) ||
+      cert.organization.toLowerCase().includes(search.toLowerCase())
   );
 
   // Generate and download PDF
   const downloadCertificate = (cert) => {
+    // IMPORTANT: Feedback must be submitted before downloading
+    if (!cert.feedbackSubmitted) {
+      alert("Please submit feedback for this event to download your certificate.");
+      return;
+    }
+
     const pdf = new jsPDF({
       orientation: "landscape",
       unit: "mm",
@@ -173,156 +203,237 @@ const StudentCertificate = () => {
       <div className={styles.container}>
 
         {/* Header */}
-        <div className={styles.pageHeader}>
+        <div
+          className={styles.pageHeader}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            width: "100%",
+            gap: "20px",
+          }}
+        >
           <div>
             <span className={styles.eyebrow}>
               STUDENT ACHIEVEMENTS
             </span>
-            <h1>My Certificates<span>.</span></h1>
+
+            <h1>
+              My Certificates<span>.</span>
+            </h1>
+
             <p>
               Your volunteering journey, achievements and certificates
               in one place.
             </p>
           </div>
 
-          <div className={styles.headerIcon}>✦</div>
+          <button
+            type="button"
+            onClick={() => navigate("/student/dashboard")}
+            style={{
+              padding: "10px 18px",
+              background: "#f5c518",
+              color: "#171717",
+              border: "none",
+              borderRadius: "6px",
+              fontWeight: "600",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            ← Back to Dashboard
+          </button>
         </div>
 
-        {/* Statistics */}
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>🏆</div>
-            <div>
-              <h2>{availableCertificates.length}</h2>
-              <p>Certificates Earned</p>
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>🤝</div>
-            <div>
-              <h2>{certificates.length}</h2>
-              <p>Total Volunteering Events</p>
-            </div>
-          </div>
-
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>◷</div>
-            <div>
-              <h2>{totalHours} Hrs</h2>
-              <p>Volunteering Hours</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className={styles.sectionHeader}>
-          <div>
-            <h2>My Achievements</h2>
-            <p>Certificates earned through volunteering activities</p>
-          </div>
-
-          <div className={styles.searchBox}>
-            <span>⌕</span>
-            <input
-              type="text"
-              placeholder="Search certificates..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
-
-        {/* Certificates */}
-        <div className={styles.certificateGrid}>
-          {filteredCertificates.map((cert) => (
-            <div className={styles.certificateCard} key={cert.id}>
-
-              <div className={styles.certificatePreview}>
-                <div className={styles.previewBorder}>
-                  <span className={styles.previewStar}>✦</span>
-                  <p className={styles.previewOrganization}>
-                    {cert.organization}
-                  </p>
-                  <h3>CERTIFICATE</h3>
-                  <span className={styles.previewSubtitle}>
-                    OF APPRECIATION
-                  </span>
-                  <div className={styles.previewLine}></div>
-                  <p className={styles.previewEvent}>
-                    {cert.title}
-                  </p>
-                  <span className={styles.previewFooter}>
-                    VOLUNTEER RECOGNITION
-                  </span>
-                </div>
-
-                {cert.status === "Processing" && (
-                  <div className={styles.processingOverlay}>
-                    <span>Certificate Processing</span>
-                  </div>
-                )}
-              </div>
-
-              <div className={styles.cardContent}>
-                <div className={styles.cardTop}>
-                  <span className={styles.category}>
-                    {cert.category}
-                  </span>
-
-                  <span
-                    className={
-                      cert.status === "Available"
-                        ? styles.available
-                        : styles.processing
-                    }
-                  >
-                    {cert.status}
-                  </span>
-                </div>
-
-                <h3>{cert.title}</h3>
-
-                <p className={styles.organization}>
-                  {cert.organization}
-                </p>
-
-                <div className={styles.cardInfo}>
-                  <span>◷ {cert.date}</span>
-                  <span>⌛ {cert.hours}</span>
-                </div>
-
-                <div className={styles.certificateId}>
-                  ID: {cert.certificateId}
-                </div>
-
-                <div className={styles.cardActions}>
-                  <button
-                    className={styles.viewButton}
-                    onClick={() => setSelectedCertificate(cert)}
-                  >
-                    Preview
-                  </button>
-
-                  <button
-                    className={styles.downloadButton}
-                    disabled={cert.status !== "Available"}
-                    onClick={() => downloadCertificate(cert)}
-                  >
-                    <span>↓</span> Download PDF
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredCertificates.length === 0 && (
+        {/* Loading */}
+        {loading && (
           <div className={styles.emptyState}>
-            <span>🏆</span>
-            <h3>No Certificates Found</h3>
-            <p>Try searching with another event name.</p>
+            <h3>Loading Certificates...</h3>
+            <p>Please wait while we fetch your certificates.</p>
           </div>
+        )}
+
+        {/* Error */}
+        {!loading && error && (
+          <div className={styles.emptyState}>
+            <h3>Unable to Load Certificates</h3>
+            <p>{error}</p>
+
+            <button
+              type="button"
+              onClick={fetchCertificates}
+              className={styles.downloadButton}
+            >
+              Try Again
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <>
+            {/* Statistics */}
+            <div className={styles.statsGrid}>
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>🏆</div>
+                <div>
+                  <h2>{availableCertificates.length}</h2>
+                  <p>Certificates Unlocked</p>
+                </div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>🤝</div>
+                <div>
+                  <h2>{certificates.length}</h2>
+                  <p>Total Attended Events</p>
+                </div>
+              </div>
+
+              <div className={styles.statCard}>
+                <div className={styles.statIcon}>◷</div>
+                <div>
+                  <h2>{Number(totalHours.toFixed(2))} Hrs</h2>
+                  <p>Total Volunteering Hours</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Search */}
+            <div className={styles.sectionHeader}>
+              <div>
+                <h2>My Achievements</h2>
+                <p>
+                  Submit event feedback to unlock your certificates.
+                </p>
+              </div>
+
+              <div className={styles.searchBox}>
+                <span>⌕</span>
+
+                <input
+                  type="text"
+                  placeholder="Search certificates..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* Certificates */}
+            <div className={styles.certificateGrid}>
+              {filteredCertificates.map((cert) => (
+                <div
+                  className={styles.certificateCard}
+                  key={cert.id}
+                >
+                  <div className={styles.certificatePreview}>
+                    <div className={styles.previewBorder}>
+                      <span className={styles.previewStar}>✦</span>
+
+                      <p className={styles.previewOrganization}>
+                        {cert.organization}
+                      </p>
+
+                      <h3>CERTIFICATE</h3>
+
+                      <span className={styles.previewSubtitle}>
+                        OF APPRECIATION
+                      </span>
+
+                      <div className={styles.previewLine}></div>
+
+                      <p className={styles.previewEvent}>
+                        {cert.title}
+                      </p>
+
+                      <span className={styles.previewFooter}>
+                        VOLUNTEER RECOGNITION
+                      </span>
+                    </div>
+
+                    {!cert.feedbackSubmitted && (
+                      <div className={styles.processingOverlay}>
+                        <span>Submit Feedback to Unlock</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className={styles.cardContent}>
+                    <div className={styles.cardTop}>
+                      <span className={styles.category}>
+                        {cert.category}
+                      </span>
+
+                      <span
+                        className={
+                          cert.feedbackSubmitted
+                            ? styles.available
+                            : styles.processing
+                        }
+                      >
+                        {cert.status}
+                      </span>
+                    </div>
+
+                    <h3>{cert.title}</h3>
+
+                    <p className={styles.organization}>
+                      {cert.organization}
+                    </p>
+
+                    <div className={styles.cardInfo}>
+                      <span>◷ {cert.date}</span>
+                      <span>⌛ {cert.hours}</span>
+                    </div>
+
+                    <div className={styles.certificateId}>
+                      ID: {cert.certificateId}
+                    </div>
+
+                    {!cert.feedbackSubmitted && (
+                      <p style={{
+                        fontSize: "12px",
+                        color: "#a07800",
+                        marginTop: "8px",
+                      }}>
+                        Submit feedback for this event to unlock PDF download.
+                      </p>
+                    )}
+
+                    <div className={styles.cardActions}>
+                      <button
+                        className={styles.viewButton}
+                        onClick={() => setSelectedCertificate(cert)}
+                      >
+                        Preview
+                      </button>
+
+                      <button
+                        className={styles.downloadButton}
+                        disabled={!cert.feedbackSubmitted}
+                        onClick={() => downloadCertificate(cert)}
+                      >
+                        <span>↓</span> Download PDF
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {filteredCertificates.length === 0 && (
+              <div className={styles.emptyState}>
+                <span>🏆</span>
+                <h3>No Certificates Found</h3>
+                <p>
+                  {certificates.length === 0
+                    ? "You don't have any verified completed event certificates yet."
+                    : "Try searching with another event name."}
+                </p>
+              </div>
+            )}
+          </>
         )}
 
         {/* Certificate Preview Modal */}
@@ -349,7 +460,7 @@ const StudentCertificate = () => {
                 <h2>{selectedCertificate.title}</h2>
               </div>
 
-              {selectedCertificate.status === "Available" ? (
+              {selectedCertificate.feedbackSubmitted ? (
                 <div className={styles.fullCertificate}>
                   <div className={styles.fullCertificateBorder}>
                     <span className={styles.largeStar}>✦</span>
@@ -365,9 +476,7 @@ const StudentCertificate = () => {
 
                     <div className={styles.certificateDivider}></div>
 
-                    <p>
-                      For successfully participating in
-                    </p>
+                    <p>For successfully participating in</p>
 
                     <strong>{selectedCertificate.title}</strong>
 
@@ -383,11 +492,12 @@ const StudentCertificate = () => {
                 </div>
               ) : (
                 <div className={styles.processingMessage}>
-                  <span>◷</span>
-                  <h3>Certificate is being processed</h3>
+                  <span>📝</span>
+                  <h3>Feedback Required</h3>
                   <p>
-                    Your certificate will be available once it is approved
-                    and uploaded by the event organizer.
+                    You have successfully attended this event.
+                    Please submit your feedback to unlock and download
+                    your certificate.
                   </p>
                 </div>
               )}
@@ -402,7 +512,7 @@ const StudentCertificate = () => {
 
                 <button
                   className={styles.downloadButton}
-                  disabled={selectedCertificate.status !== "Available"}
+                  disabled={!selectedCertificate.feedbackSubmitted}
                   onClick={() =>
                     downloadCertificate(selectedCertificate)
                   }

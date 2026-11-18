@@ -399,3 +399,32 @@
   .vlRoleIconWrap { width: 32px; height: 32px; }
   .vlRoleBox span { font-size: 12px; }
 }
+/* ================= PASSWORD EYE BUTTON ================= */
+
+.vlPasswordWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.vlPasswordWrapper .vlInput {
+  padding-right: 48px;
+}
+
+.vlPasswordToggle {
+  position: absolute;
+  right: 14px;
+  top: 12px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  transition: color 0.2s ease;
+}
+
+.vlPasswordToggle:hover {
+  color: #d4a900;
+}

@@ -251,11 +251,10 @@ const StudentEvent = () => {
   };
 
   // Selected students can enter the event details page
- const openSelectedEvent = (event) => {
-  const eventId = event.eventId;
-
-  navigate(`/student/eventdetails/${eventId}`);
-};
+  const openSelectedEvent = (event) => {
+    const eventId = event.eventId;
+    navigate(`/student/eventdetails/${eventId}`);
+  };
 
   const renderStatus = (status) => {
     if (status === "Selected") {
@@ -285,9 +284,19 @@ const StudentEvent = () => {
           </p>
         </div>
 
-        <div className={styles.eventCount}>
-          <span>{events.length}</span>
-          <small>Available Events</small>
+        <div className={styles.headerActions}>
+          <div className={styles.eventCount}>
+            <span>{events.length}</span>
+            <small>Available Events</small>
+          </div>
+
+          <button
+            type="button"
+            className={styles.backDashboardBtn}
+            onClick={() => navigate("/student/dashboard")}
+          >
+            ← Back to Dashboard
+          </button>
         </div>
       </header>
 
@@ -382,49 +391,6 @@ const StudentEvent = () => {
         </div>
 
         {/* Student History */}
-        <section className={styles.historySection}>
-          <div className={styles.historyHeader}>
-            <div>
-              <h2>Student History</h2>
-              <p>Your previously completed events.</p>
-            </div>
-
-            <span className={styles.historyCount}>
-              {HISTORY.length} past events
-            </span>
-          </div>
-
-          <div className={styles.meHistoryList}>
-            {HISTORY.map((item) => (
-              <div className={styles.historyItem} key={item.id}>
-                <div className={styles.historyIcon}>📘</div>
-
-                <div className={styles.historyInfo}>
-                  <h3>{item.title}</h3>
-                  <p>
-                    {item.type} • {item.date}
-                  </p>
-                </div>
-
-                <span className={styles.completedBadge}>
-                  {item.status}
-                </span>
-
-                {item.certificate && (
-                  <button
-                    className={styles.certificateBtn}
-                    type="button"
-                    onClick={() =>
-                      alert("Certificate feature will be connected soon.")
-                    }
-                  >
-                    🎓 Certificate
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
 
       {/* Event Details Popup */}

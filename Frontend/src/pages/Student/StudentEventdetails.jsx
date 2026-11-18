@@ -2,7 +2,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import styles from "./StudentEventdetails.module.css";
-import { getAllEvents, verifyEventQR, getMyAttendanceTimers, } from "../../services/eventService";
+import {
+  getAllEvents,
+  verifyEventQR,
+  getMyAttendanceTimers,
+} from "../../services/eventService";
 import { Html5Qrcode } from "html5-qrcode";
 
 // Convert backend UTC timestamp correctly
@@ -26,21 +30,17 @@ const StudentEventdetails = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const [rating, setRating] = useState(0);
-  const [feedback, setFeedback] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
   const [showQR, setShowQR] = useState(false);
   const [cameraOn, setCameraOn] = useState(false);
   const [cameraError, setCameraError] = useState("");
 
-  // TIMER STATES
   // TIMER AND ATTENDANCE STATES
   const [checkInTime, setCheckInTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState("00:00:00");
   const [attendanceRecord, setAttendanceRecord] = useState(null);
   const [timerCompleted, setTimerCompleted] = useState(false);
   const [finalDuration, setFinalDuration] = useState(null);
+
   const scannerRef = useRef(null);
   const scanProcessingRef = useRef(false);
 
@@ -78,9 +78,6 @@ const StudentEventdetails = () => {
 
     fetchEvent();
   }, [eventId]);
-
-
-
 
   // =====================================
   // FETCH STUDENT ATTENDANCE FROM BACKEND
@@ -140,11 +137,6 @@ const StudentEventdetails = () => {
   // LIVE VOLUNTEERING TIMER
   // =====================================
 
-
-  // =====================================
-  // LIVE VOLUNTEERING TIMER
-  // =====================================
-
   useEffect(() => {
     if (!checkInTime) return;
 
@@ -183,20 +175,6 @@ const StudentEventdetails = () => {
 
     return () => clearInterval(interval);
   }, [checkInTime, timerCompleted, finalDuration]);
-
-
-  // =====================================
-  // FEEDBACK
-  // =====================================
-
-  const handleFeedbackSubmit = () => {
-    if (rating > 0) {
-      setIsSubmitted(true);
-      setTimeout(() => setIsSubmitted(false), 3000);
-    } else {
-      alert("Please select a rating");
-    }
-  };
 
   // =====================================
   // QR CAMERA
@@ -264,7 +242,7 @@ const StudentEventdetails = () => {
             scanProcessingRef.current = false;
           }
         },
-        () => { }
+        () => {}
       );
 
       setCameraOn(true);
@@ -348,9 +326,12 @@ const StudentEventdetails = () => {
         scannerRef.current = null;
 
         if (scanner.isScanning) {
-          scanner.stop()
+          scanner
+            .stop()
             .then(() => scanner.clear())
-            .catch((err) => console.error("Camera cleanup error:", err));
+            .catch((err) =>
+              console.error("Camera cleanup error:", err)
+            );
         } else {
           scanner.clear().catch((err) =>
             console.error("Camera cleanup error:", err)
@@ -386,13 +367,13 @@ const StudentEventdetails = () => {
 
   const formattedDate = eventData.date
     ? new Date(`${eventData.date}T00:00:00`).toLocaleDateString(
-      "en-IN",
-      {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }
-    )
+        "en-IN",
+        {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }
+      )
     : "Not specified";
 
   // =====================================
@@ -461,9 +442,6 @@ const StudentEventdetails = () => {
 
         {/* LIVE TIMER CARD */}
 
-
-        {/* LIVE TIMER CARD */}
-
         <div className={styles.infoCard}>
           <div className={styles.infoIcon}>⏱️</div>
 
@@ -482,12 +460,11 @@ const StudentEventdetails = () => {
               {!attendanceRecord
                 ? "Scan event QR to start"
                 : timerCompleted
-                  ? "Event Completed & Verified"
-                  : "Attendance Running"}
+                ? "Event Completed & Verified"
+                : "Attendance Running"}
             </small>
           </div>
         </div>
-
 
       </div>
 
@@ -531,27 +508,6 @@ const StudentEventdetails = () => {
 
         {/* EVENT INFORMATION */}
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>
-            Event Information
-          </h2>
-
-          <p className={styles.infoValue}>
-            Event ID: {eventData.eventId}
-          </p>
-
-          <p className={styles.infoValue}>
-            Zone: {eventData.zone}
-          </p>
-
-          <p className={styles.infoValue}>
-            Volunteers Needed: {eventData.volunteersNeeded}
-          </p>
-
-          <p className={styles.infoValue}>
-            Status: {eventData.status}
-          </p>
-        </section>
 
         {/* REGISTRATION / QR */}
 
@@ -560,59 +516,26 @@ const StudentEventdetails = () => {
           <button
             className={styles.btnQR}
             onClick={openQRModal}
-            disabled={!!attendanceRecord}          >
+            disabled={!!attendanceRecord}
+          >
             {attendanceRecord
               ? "✓ Attendance Checked In"
               : "📱 Scan QR Code"}
           </button>
 
-          {/* FEEDBACK */}
+          {/* FEEDBACK BUTTON */}
 
-          <div className={styles.feedbackBox}>
-            <h3 className={styles.organizerTitle}>
-              Event Feedback
-            </h3>
-
-            <p className={styles.feedbackSubtitle}>
-              How was your experience?
-            </p>
-
-            <div className={styles.stars}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  className={`${styles.star} ${rating >= star ? styles.starActive : ""
-                    }`}
-                  onClick={() => setRating(star)}
-                >
-                  ★
-                </button>
-              ))}
-            </div>
-
-            <div className={styles.feedbackForm}>
-              <textarea
-                className={styles.feedbackTextarea}
-                placeholder="Leave a comment..."
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-              />
-
-              {isSubmitted ? (
-                <div className={styles.successMsg}>
-                  Thank you for your feedback!
-                </div>
-              ) : (
-                <button
-                  className={styles.btnSubmitFeedback}
-                  style={{ width: "100%", padding: "10px" }}
-                  onClick={handleFeedbackSubmit}
-                >
-                  Submit Feedback
-                </button>
-              )}
-            </div>
-          </div>
+          <button
+            className={styles.btnSubmitFeedback}
+            style={{ width: "100%", padding: "12px" }}
+            onClick={() =>
+              navigate("/student/feedback", {
+                state: { event: eventData },
+              })
+            }
+          >
+            Give Feedback
+          </button>
 
         </div>
       </main>
