@@ -1,10 +1,14 @@
-import { useState, useRef, useEffect } from "react";
+
+import { useState, useRef } from "react";
 import {
   Users,
   GraduationCap,
   UserCheck,
-  Settings
+  Settings,
+  Eye,
+  EyeOff
 } from "lucide-react";
+
 import styles from "./Login.module.css";
 import { loginUser, registerUser } from "../../services/authService";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -15,6 +19,9 @@ export default function VolunteerLogin() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
   const [focused, setFocused] = useState(null);
+
+  // Password visibility
+  const [showPassword, setShowPassword] = useState(false);
 
   // Flip state
   const [isRegistering, setIsRegistering] = useState(false);
@@ -33,73 +40,111 @@ export default function VolunteerLogin() {
   const isAdmin = location.state?.loginType === "admin";
   const registerRef = useRef(null);
 
+  // AUTOMATIC ROLE DETECTION
+  const detectRole = (value) => {
+    const prefix = value.substring(0, 4);
+
+    switch (prefix) {
+      case "MAA0":
+        return "student";
+
+      case "MAA1":
+        return "alumni";
+
+      case "MAA2":
+        return "director";
+
+      default:
+        return "";
+    }
+  };
+
+  // USERNAME CHANGE
+  const handleUsernameChange = (e) => {
+    const value = e.target.value
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 9);
+
+    setUsername(value);
+    setRole(detectRole(value));
+  };
+
   const openRegister = () => {
-    if (registerRef.current) registerRef.current.scrollTop = 0;
+    if (registerRef.current) {
+      registerRef.current.scrollTop = 0;
+    }
+
     setIsRegistering(true);
   };
 
   // LOGIN FUNCTION
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-
-const handleLogin = async (e) => {
-  e.preventDefault();
-
-  // Admin and volunteer validation
-  if (!username.trim() || !password) {
-    alert("Please enter username and password.");
-    return;
-  }
-
-  if (!isAdmin && !role) {
-    alert("Please select user type.");
-    return;
-  }
-
-  if (isAdmin && !/^MAA4\d{5}$/.test(username.trim().toUpperCase())) {
-    alert("Admin username must start with MAA4 followed by 5 digits.");
-    return;
-  }
-
-  try {
-    const loginRole = isAdmin ? "admin" : role;
-
-    const data = await loginUser(
-      username.trim().toUpperCase(),
-      password,
-      loginRole
-    );
-
-    console.log("Login API response:", data);
-
-   if (data.success) {
-  localStorage.setItem("accessToken", data.access_token);
-  localStorage.setItem("name", data.name);
-  localStorage.setItem("username", data.username);
-  localStorage.setItem("role", data.role);
-      if (data.role === "student") {
-        navigate("/Student/Dashboard");
-      } else if (data.role === "alumni") {
-        navigate("/Alumni/Dashboard");
-      } else if (data.role === "director") {
-        navigate("/Director/Dashboard");
-      } else if (data.role === "admin") {
-        navigate("/admin/dashboard");
-      }
+    if (!username.trim() || !password) {
+      alert("Please enter username and password.");
+      return;
     }
 
-  } catch (error) {
-    const message =
-      error.response?.data?.message ||
-      "Unable to connect to the server. Please try again.";
+    if (!isAdmin && !role) {
+      alert(
+        "Invalid username format. Use MAA0, MAA1 or MAA2 followed by 5 digits."
+      );
+      return;
+    }
 
-    alert(message);
-    setPassword("");
-  }
-};
+    if (!isAdmin && !/^MAA[012]\d{5}$/.test(username)) {
+      alert("Please enter a valid 9-character username.");
+      return;
+    }
 
+    if (isAdmin && !/^MAA4\d{5}$/.test(username)) {
+      alert(
+        "Admin username must start with MAA4 followed by 5 digits."
+      );
+      return;
+    }
 
+    try {
+      const loginRole = isAdmin ? "admin" : role;
 
-  // REGISTRATION FUNCTION WILL BE ADDED NEXT
+      const data = await loginUser(
+        username.trim().toUpperCase(),
+        password,
+        loginRole
+      );
+
+      console.log("Login API response:", data);
+
+      if (data.success) {
+        localStorage.setItem("token", data.access_token);
+        localStorage.setItem("name", data.name);
+        localStorage.setItem("username", data.username);
+        localStorage.setItem("role", data.role);
+
+        if (data.role === "student") {
+          navigate("/Student/Dashboard");
+        } else if (data.role === "alumni") {
+          navigate("/Alumni/Dashboard");
+        } else if (data.role === "director") {
+          navigate("/Director/Dashboard");
+        } else if (data.role === "admin") {
+          navigate("/admin/dashboard");
+        }
+      }
+
+    } catch (error) {
+      const message =
+        error.response?.data?.message ||
+        "Unable to connect to the server. Please try again.";
+
+      alert(message);
+      setPassword("");
+    }
+  };
+
+  // REGISTRATION FUNCTION
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -141,6 +186,7 @@ const handleLogin = async (e) => {
 
         setIsRegistering(false);
       }
+
     } catch (error) {
       alert(
         error.response?.data?.message ||
@@ -148,7 +194,6 @@ const handleLogin = async (e) => {
       );
     }
   };
-
 
   return (
     <div className={styles.vlPage}>
@@ -185,11 +230,12 @@ const handleLogin = async (e) => {
         <div className={styles.vlFlipContainer}>
 
           <div
-            className={`${styles.vlFlipInner} ${isRegistering ? styles.vlFlipped : ""
-              }`}
+            className={`${styles.vlFlipInner} ${
+              isRegistering ? styles.vlFlipped : ""
+            }`}
           >
 
-            {/* ================= LOGIN FRONT ================= */}
+            {/* LOGIN FRONT */}
             <div className={styles.vlFlipFront}>
 
               <form
@@ -215,18 +261,15 @@ const handleLogin = async (e) => {
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) =>
-                    setUsername(
-                      e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 9)
-                    )
-                  }
+                  onChange={handleUsernameChange}
                   onFocus={() => setFocused("user")}
                   onBlur={() => setFocused(null)}
                   placeholder="MAA012345"
                   maxLength={9}
                   autoComplete="username"
-                  className={`${styles.vlInput} ${focused === "user" ? styles.vlInputFocused : ""
-                    }`}
+                  className={`${styles.vlInput} ${
+                    focused === "user" ? styles.vlInputFocused : ""
+                  }`}
                 />
 
                 {/* PASSWORD */}
@@ -234,66 +277,98 @@ const handleLogin = async (e) => {
                   Password
                 </label>
 
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setFocused("pass")}
-                  onBlur={() => setFocused(null)}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  className={`${styles.vlInput} ${focused === "pass" ? styles.vlInputFocused : ""
+                <div className={styles.vlPasswordWrapper}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onFocus={() => setFocused("pass")}
+                    onBlur={() => setFocused(null)}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    className={`${styles.vlInput} ${
+                      focused === "pass" ? styles.vlInputFocused : ""
                     }`}
-                />
+                  />
 
-                {/* ROLE SELECTION */}
+                  <button
+                    type="button"
+                    className={styles.vlPasswordToggle}
+                    onClick={() =>
+                      setShowPassword((prev) => !prev)
+                    }
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showPassword ? (
+                      <EyeOff size={20} />
+                    ) : (
+                      <Eye size={20} />
+                    )}
+                  </button>
+                </div>
+
+                {/* AUTOMATIC ROLE SELECTION */}
                 {!isAdmin && (
-
                   <div className={styles.vlRoleSection}>
 
                     <label className={styles.vlRoleLabel}>
                       <Users size={16} strokeWidth={2.5} />
-                      Select User Type *
+                      Select User Type
                     </label>
 
                     <div className={styles.vlRoleGrid}>
 
+                      {/* STUDENT */}
                       <div
-                        className={`${styles.vlRoleBox} ${role === "student" ? styles.vlRoleBoxActive : ""
-                          }`}
-                        onClick={() => setRole("student")}
+                        className={`${styles.vlRoleBox} ${
+                          role === "student"
+                            ? styles.vlRoleBoxActive
+                            : ""
+                        }`}
                       >
                         <div className={styles.vlRoleIconWrap}>
                           <GraduationCap size={22} />
                         </div>
+
                         <span>Student</span>
                       </div>
 
+                      {/* ALUMNI */}
                       <div
-                        className={`${styles.vlRoleBox} ${role === "alumni" ? styles.vlRoleBoxActive : ""
-                          }`}
-                        onClick={() => setRole("alumni")}
+                        className={`${styles.vlRoleBox} ${
+                          role === "alumni"
+                            ? styles.vlRoleBoxActive
+                            : ""
+                        }`}
                       >
                         <div className={styles.vlRoleIconWrap}>
                           <UserCheck size={22} />
                         </div>
+
                         <span>Alumni</span>
                       </div>
 
+                      {/* DIRECTOR */}
                       <div
-                        className={`${styles.vlRoleBox} ${role === "director" ? styles.vlRoleBoxActive : ""
-                          }`}
-                        onClick={() => setRole("director")}
+                        className={`${styles.vlRoleBox} ${
+                          role === "director"
+                            ? styles.vlRoleBoxActive
+                            : ""
+                        }`}
                       >
                         <div className={styles.vlRoleIconWrap}>
                           <Settings size={22} />
                         </div>
+
                         <span>Director</span>
                       </div>
 
                     </div>
                   </div>
                 )}
+
                 <button
                   type="submit"
                   className={styles.vlButton}
@@ -311,8 +386,11 @@ const handleLogin = async (e) => {
               </form>
             </div>
 
-            {/* ================= REGISTRATION BACK ================= */}
-            <div className={styles.vlFlipBack} ref={registerRef}>
+            {/* REGISTRATION BACK */}
+            <div
+              className={styles.vlFlipBack}
+              ref={registerRef}
+            >
 
               <form
                 className={styles.vlForm}
@@ -322,7 +400,9 @@ const handleLogin = async (e) => {
                 <div className={styles.vlLogoCircle}>M</div>
 
                 <h2 className={styles.vlFormTitle}>
-                 {isAdmin ? "ADMIN REGISTRATION" : "VOLUNTEER REGISTRATION"}
+                  {isAdmin
+                    ? "ADMIN REGISTRATION"
+                    : "VOLUNTEER REGISTRATION"}
                 </h2>
 
                 <p className={styles.vlFormSubtitle}>
@@ -351,9 +431,15 @@ const handleLogin = async (e) => {
                   type="text"
                   className={styles.vlInput}
                   placeholder="MAA012345"
+                  maxLength={9}
                   value={regUsername}
                   onChange={(e) =>
-                    setRegUsername(e.target.value.toUpperCase())
+                    setRegUsername(
+                      e.target.value
+                        .toUpperCase()
+                        .replace(/[^A-Z0-9]/g, "")
+                        .slice(0, 9)
+                    )
                   }
                 />
 

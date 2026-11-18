@@ -3,220 +3,259 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./StudentHistory.module.css";
 
-const API_URL = "http://localhost:5000/api/events/";
+const API_URL = "http://localhost:5000/api/feedback/student/certificates";
+
+const DEFAULT_IMAGE =
+  "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800";
+
+// ==========================================
+// FORMAT DATE
+// ==========================================
+
+const formatDate = (date) => {
+  if (!date) return "Date not available";
+
+  const dateOnly = String(date).split("T")[0];
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+    const [year, month, day] = dateOnly.split("-");
+
+    return new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day)
+    ).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return String(date);
+  }
+
+  return parsedDate.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+// ==========================================
+// FORMAT DURATION
+// ==========================================
+
+const formatDuration = (hoursText) => {
+  if (
+    hoursText === null ||
+    hoursText === undefined ||
+    hoursText === "" ||
+    hoursText === "Not available"
+  ) {
+    return "Not available";
+  }
+
+  const hours = parseFloat(
+    String(hoursText).replace("Hours", "").trim()
+  );
+
+  if (!Number.isFinite(hours) || hours < 0) {
+    return "Not available";
+  }
+
+  const totalMinutes = Math.round(hours * 60);
+
+  const fullHours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (fullHours > 0 && minutes > 0) {
+    return `${fullHours} Hours ${minutes} Minutes`;
+  }
+
+  if (fullHours > 0) {
+    return `${fullHours} Hours`;
+  }
+
+  return `${minutes} Minutes`;
+};
+
+// ==========================================
+// STUDENT HISTORY COMPONENT
+// ==========================================
 
 const StudentHistory = () => {
   const navigate = useNavigate();
 
   const [eventsData, setEventsData] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
+
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("All");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const filters = [
-    "All",
-    "Volunteering",
-  ];
+  const filters = ["All", "Volunteering"];
 
-  // Format event date
-  const formatDate = (date) => {
-    if (!date) return "Date not available";
+  // ==========================================
+  // FETCH STUDENT EVENT HISTORY
+  // ==========================================
 
-    const dateOnly = String(date).split("T")[0];
-
-    if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
-      const [year, month, day] = dateOnly.split("-");
-
-      return new Date(
-        Number(year),
-        Number(month) - 1,
-        Number(day)
-      ).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      });
-    }
-
-    const parsedDate = new Date(date);
-
-    if (Number.isNaN(parsedDate.getTime())) {
-      return date;
-    }
-
-    return parsedDate.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-    });
-  };
-
-  // Convert attendance duration into readable hours
-  const formatDuration = (seconds) => {
-    if (seconds === null || seconds === undefined) {
-      return "Not available";
-    }
-
-    const totalSeconds = Number(seconds);
-
-    if (!Number.isFinite(totalSeconds) || totalSeconds < 0) {
-      return "Not available";
-    }
-
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-
-    if (hours > 0 && minutes > 0) {
-      return `${hours} Hours ${minutes} Minutes`;
-    }
-
-    if (hours > 0) {
-      return `${hours} Hours`;
-    }
-
-    return `${minutes} Minutes`;
-  };
-
-  // Fetch only completed and admin-verified attendance
   useEffect(() => {
     const fetchStudentHistory = async () => {
       try {
         setLoading(true);
         setError("");
 
+        // Get login token
         const token =
           localStorage.getItem("token") ||
           localStorage.getItem("accessToken") ||
           localStorage.getItem("authToken") ||
           localStorage.getItem("access_token");
 
-        // Get student attendance
-        const attendanceResponse = await fetch(
-          `${API_URL}student/attendance/timers`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              ...(token
-                ? { Authorization: `Bearer ${token}` }
-                : {}),
-            },
-            credentials: "include",
-          }
-        );
-
-        const attendanceData = await attendanceResponse.json();
-
-        if (!attendanceResponse.ok || !attendanceData.success) {
+        if (!token) {
           throw new Error(
-            attendanceData.message || "Unable to fetch attendance history"
+            "Login token not found. Please login again."
           );
         }
 
-        // Get event details
-        const eventsResponse = await fetch(API_URL, {
+        // ======================================
+        // FETCH CERTIFICATE API
+        // Same API used in Student Certificate
+        // ======================================
+
+        const response = await fetch(API_URL, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
         });
 
-        let allEvents = [];
+        let responseData;
 
-        if (eventsResponse.ok) {
-          const eventsDataResponse = await eventsResponse.json();
-
-          if (eventsDataResponse.success) {
-            allEvents = eventsDataResponse.events || [];
-          }
+        try {
+          responseData = await response.json();
+        } catch {
+          throw new Error(
+            "Invalid response from server. Please check backend."
+          );
         }
 
-        // Match attendance with event details
-        const eventMap = new Map(
-          allEvents.map((event) => [
-            String(event._id),
-            event,
-          ])
+        if (!response.ok || !responseData.success) {
+          throw new Error(
+            responseData.message ||
+            `Server error: ${response.status}`
+          );
+        }
+
+        // ======================================
+        // GET ATTENDED EVENTS
+        // ======================================
+
+        const attendedCertificates =
+          Array.isArray(responseData.certificates)
+            ? responseData.certificates
+            : [];
+
+        console.log(
+          "STUDENT HISTORY API RESPONSE:",
+          responseData
         );
 
-        // IMPORTANT:
-        // Only Completed + adminVerified attendance is displayed
-        const attendedEvents = (attendanceData.attendance || [])
-          .filter(
-            (record) =>
-              record.attendanceStatus === "Completed" &&
-              record.adminVerified === true
-          )
-          .map((record) => {
-            const eventDetails = eventMap.get(
-              String(record.eventId)
-            );
+        console.log(
+          "STUDENT ATTENDED EVENTS:",
+          attendedCertificates
+        );
 
-            return {
-              id: record._id,
-              eventId: record.eventId,
+        // ======================================
+        // MAP EVENTS
+        // ======================================
 
-              title:
-                eventDetails?.eventTitle ||
-                record.eventTitle ||
-                "Volunteering Event",
+        const attendedEvents = attendedCertificates.map(
+          (record) => ({
+            id: record.id || record.eventId,
 
-              category: "Volunteering",
+            eventId: record.eventId,
 
-              date: formatDate(
-                eventDetails?.date || record.scannedAt
-              ),
+            title:
+              record.title ||
+              "Volunteering Event",
 
-              location:
-                eventDetails?.location || "Not available",
+            category:
+              record.category ||
+              "Volunteering",
 
-              organizer:
-                eventDetails?.organizer ||
-                eventDetails?.organization ||
-                "Maatram Foundation",
+            date: formatDate(record.date),
 
-              role: "Volunteer",
+            location:
+              record.location ||
+              "Not available",
 
-              status: "Completed",
+            organizer:
+              record.organization ||
+              "Maatram Foundation",
 
-              description:
-                eventDetails?.eventDescription ||
-                eventDetails?.volunteerWork ||
-                "Volunteering event successfully completed.",
+            role: "Volunteer",
 
-              team: "—",
+            status: "Completed",
 
-              certificate: "Not specified",
+            description:
+              record.description ||
+              record.eventDescription ||
+              record.category ||
+              "Volunteering event successfully completed.",
 
-              duration: formatDuration(
-                record.durationSeconds
-              ),
+            team: "—",
 
-              image:
-                eventDetails?.image ||
-                "https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=800",
+            certificate:
+              record.certificateId ||
+              "Feedback Required",
 
-              scannedAt: record.scannedAt,
-              completedAt: record.completedAt,
+            duration: formatDuration(record.hours),
 
-              volunteerWork:
-                eventDetails?.volunteerWork || "Not available",
+            image:
+              record.image ||
+              DEFAULT_IMAGE,
 
-              instructions:
-                eventDetails?.instructions || "Not available",
+            scannedAt:
+              record.scannedAt || null,
 
-              zone:
-                eventDetails?.zone || "Not available",
-            };
-          });
+            completedAt:
+              record.completedAt || null,
 
-        // Remove duplicate events using eventId
+            volunteerWork:
+              record.category ||
+              "Not available",
+
+            instructions:
+              record.instructions ||
+              "Not available",
+
+            zone:
+              record.zone ||
+              "Not available",
+
+            certificateId:
+              record.certificateId || "",
+
+            feedbackSubmitted:
+              record.feedbackSubmitted === true,
+          })
+        );
+
+        // ======================================
+        // REMOVE DUPLICATE EVENTS
+        // ======================================
+
         const uniqueEvents = Array.from(
           new Map(
             attendedEvents.map((event) => [
-              event.eventId,
+              String(event.eventId),
               event,
             ])
           ).values()
@@ -225,10 +264,16 @@ const StudentHistory = () => {
         setEventsData(uniqueEvents);
 
       } catch (err) {
-        console.error("Student History Error:", err);
-        setError(
-          err.message || "Something went wrong while loading history."
+        console.error(
+          "Student History Error:",
+          err
         );
+
+        setError(
+          err.message ||
+          "Unable to load your event history."
+        );
+
       } finally {
         setLoading(false);
       }
@@ -237,11 +282,17 @@ const StudentHistory = () => {
     fetchStudentHistory();
   }, []);
 
-  // Search and filter
+  // ==========================================
+  // SEARCH AND FILTER
+  // ==========================================
+
   const filteredEvents = eventsData.filter((event) => {
+    const searchText = search.toLowerCase();
+
     const matchesSearch =
-      event.title.toLowerCase().includes(search.toLowerCase()) ||
-      event.category.toLowerCase().includes(search.toLowerCase());
+      event.title.toLowerCase().includes(searchText) ||
+      event.category.toLowerCase().includes(searchText) ||
+      event.location.toLowerCase().includes(searchText);
 
     const matchesFilter =
       activeFilter === "All" ||
@@ -253,14 +304,20 @@ const StudentHistory = () => {
   const completedCount = eventsData.length;
 
   const volunteeringCount = eventsData.filter(
-    (event) => event.category === "Volunteering"
+    (event) =>
+      event.category.toLowerCase() === "volunteering"
   ).length;
+
+  // ==========================================
+  // RENDER
+  // ==========================================
 
   return (
     <div className={styles.historyPage}>
       <div className={styles.historyContainer}>
 
-        {/* Header */}
+        {/* HEADER */}
+
         <div
           className={styles.pageHeader}
           style={{
@@ -281,7 +338,6 @@ const StudentHistory = () => {
             </h1>
           </div>
 
-          {/* Back to Dashboard - Right Side */}
           <button
             type="button"
             onClick={() => navigate("/student/dashboard")}
@@ -300,7 +356,8 @@ const StudentHistory = () => {
           </button>
         </div>
 
-        {/* Search and Filter */}
+        {/* SEARCH */}
+
         <div className={styles.filterSection}>
           <div className={styles.sectionTitle}>
           </div>
@@ -313,29 +370,55 @@ const StudentHistory = () => {
                 type="text"
                 placeholder="Search events..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) =>
+                  setSearch(e.target.value)
+                }
               />
             </div>
           </div>
         </div>
 
-        {/* Loading */}
+        {/* LOADING */}
+
         {loading && (
           <div className={styles.emptyState}>
             <h3>Loading your event history...</h3>
-            <p>Please wait while we fetch your attended events.</p>
+
+            <p>
+              Please wait while we fetch your attended events.
+            </p>
           </div>
         )}
 
-        {/* Error */}
+        {/* ERROR */}
+
         {!loading && error && (
           <div className={styles.emptyState}>
             <h3>Unable to Load Event History</h3>
+
             <p>{error}</p>
+
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              style={{
+                marginTop: "15px",
+                padding: "10px 20px",
+                background: "#f5c518",
+                color: "#171717",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: "600",
+              }}
+            >
+              Try Again
+            </button>
           </div>
         )}
 
-        {/* Event Cards */}
+        {/* EVENT CARDS */}
+
         {!loading && !error && (
           <div className={styles.eventGrid}>
             {filteredEvents.map((event) => (
@@ -346,21 +429,33 @@ const StudentHistory = () => {
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") {
+                  if (
+                    e.key === "Enter" ||
+                    e.key === " "
+                  ) {
+                    e.preventDefault();
                     setSelectedEvent(event);
                   }
                 }}
               >
+
+                {/* IMAGE */}
+
                 <div className={styles.eventImage}>
                   <img
                     src={event.image}
                     alt={event.title}
+                    onError={(e) => {
+                      e.currentTarget.src = DEFAULT_IMAGE;
+                    }}
                   />
 
                   <span className={styles.categoryBadge}>
                     {event.category}
                   </span>
                 </div>
+
+                {/* CONTENT */}
 
                 <div className={styles.eventContent}>
                   <div className={styles.eventDate}>
@@ -390,32 +485,40 @@ const StudentHistory = () => {
                     </button>
                   </div>
                 </div>
+
               </div>
             ))}
           </div>
         )}
 
-        {/* Empty State */}
-        {!loading && !error && filteredEvents.length === 0 && (
-          <div className={styles.emptyState}>
-            <div>⌕</div>
+        {/* EMPTY STATE */}
 
-            <h3>
-              {eventsData.length === 0
-                ? "No Attended Events Yet"
-                : "No Events Found"}
-            </h3>
+        {!loading &&
+          !error &&
+          filteredEvents.length === 0 && (
+            <div className={styles.emptyState}>
+              <div>⌕</div>
 
-            <p>
-              {eventsData.length === 0
-                ? "Your completed and verified volunteering events will appear here."
-                : "Try searching with another event name or category."}
-            </p>
-          </div>
-        )}
+              <h3>
+                {eventsData.length === 0
+                  ? "No Attended Events Yet"
+                  : "No Events Found"}
+              </h3>
+
+              <p>
+                {eventsData.length === 0
+                  ? "Your completed and verified volunteering events will appear here."
+                  : "Try searching with another event name or category."}
+              </p>
+            </div>
+          )}
+
       </div>
 
-      {/* Event Details Modal */}
+      {/* ======================================
+          EVENT DETAILS MODAL
+      ====================================== */}
+
       {selectedEvent && (
         <div
           className={styles.modalOverlay}
@@ -428,6 +531,9 @@ const StudentHistory = () => {
             aria-modal="true"
             aria-labelledby="event-modal-title"
           >
+
+            {/* CLOSE BUTTON */}
+
             <button
               className={styles.closeButton}
               onClick={() => setSelectedEvent(null)}
@@ -436,14 +542,21 @@ const StudentHistory = () => {
               ×
             </button>
 
+            {/* MODAL IMAGE */}
+
             <div className={styles.modalImage}>
               <img
                 src={selectedEvent.image}
                 alt={selectedEvent.title}
+                onError={(e) => {
+                  e.currentTarget.src = DEFAULT_IMAGE;
+                }}
               />
 
               <span>{selectedEvent.category}</span>
             </div>
+
+            {/* MODAL BODY */}
 
             <div className={styles.modalBody}>
               <span className={styles.modalLabel}>
@@ -459,6 +572,7 @@ const StudentHistory = () => {
               </p>
 
               <div className={styles.detailsGrid}>
+
                 <div className={styles.detailItem}>
                   <span>Event Date</span>
                   <strong>{selectedEvent.date}</strong>
@@ -490,8 +604,20 @@ const StudentHistory = () => {
                 </div>
 
                 <div className={styles.detailItem}>
-                  <span>Certificate</span>
-                  <strong>{selectedEvent.certificate}</strong>
+                  <span>Certificate ID</span>
+                  <strong>
+                    {selectedEvent.certificateId ||
+                      "Feedback Required"}
+                  </strong>
+                </div>
+
+                <div className={styles.detailItem}>
+                  <span>Feedback Status</span>
+                  <strong>
+                    {selectedEvent.feedbackSubmitted
+                      ? "Submitted"
+                      : "Pending"}
+                  </strong>
                 </div>
 
                 <div className={styles.detailItem}>
@@ -500,21 +626,23 @@ const StudentHistory = () => {
                 </div>
 
                 <div className={styles.detailItem}>
-                  <span>Attendance Scanned At</span>
-                  <strong>
-                    {selectedEvent.scannedAt
-                      ? new Date(
-                          selectedEvent.scannedAt
-                        ).toLocaleString("en-IN")
-                      : "Not available"}
-                  </strong>
-                </div>
-
-                <div className={styles.detailItem}>
                   <span>Admin Verified</span>
                   <strong>Yes</strong>
                 </div>
+
+                <div className={styles.detailItem}>
+                  <span>Zone</span>
+                  <strong>{selectedEvent.zone}</strong>
+                </div>
+
+                <div className={styles.detailItem}>
+                  <span>Instructions</span>
+                  <strong>{selectedEvent.instructions}</strong>
+                </div>
+
               </div>
+
+              {/* MODAL FOOTER */}
 
               <div className={styles.modalFooter}>
                 <button
@@ -524,10 +652,12 @@ const StudentHistory = () => {
                   Close Details
                 </button>
               </div>
+
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 };
