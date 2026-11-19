@@ -7,6 +7,8 @@ import {
   getEventAttendance,
   completeAllStudentAttendance,
   confirmEventSelection,
+  closeEventAttendance,
+  generateRAGRecommendations,
 } from "../../services/eventService";
 import React, { useEffect, useState } from "react";
 import {
@@ -20,6 +22,8 @@ import {
   CheckCircle,
   QrCode,
   X,
+  Sparkles,
+  LoaderCircle
 } from "lucide-react";
 
 import { useLocation, useNavigate, useParams } from "react-router-dom";
@@ -139,6 +143,13 @@ const EventManage = () => {
 
   // Status update loading
   const [updatingRegistration, setUpdatingRegistration] = useState(null);
+
+  // AI Recommendation Loading State
+  const [generatingSuggestions, setGeneratingSuggestions] = useState(false);
+
+  const [aiRecommendations, setAiRecommendations] = useState([]);
+  const [recommendationResult, setRecommendationResult] = useState(null);
+  const [recommendationError, setRecommendationError] = useState("");
 
 
   // Bulk student selection
@@ -402,6 +413,45 @@ const EventManage = () => {
     }
   };
 
+  // Generate AI Volunteer Suggestions
+  const handleGenerateSuggestions = async () => {
+    if (!currentEventId) {
+      alert("Event ID is missing.");
+      return;
+    }
+
+    try {
+      setGeneratingSuggestions(true);
+      setRecommendationError("");
+      setAiRecommendations([]);
+      setRecommendationResult(null);
+
+      const response = await generateRAGRecommendations(currentEventId);
+
+      if (!response?.success) {
+        throw new Error(
+          response?.message || "Unable to generate recommendations."
+        );
+      }
+
+      setAiRecommendations(response.recommendations || []);
+      setRecommendationResult(response);
+
+      console.log("RAG + Groq recommendations:", response);
+
+    } catch (error) {
+      console.error("AI Recommendation Error:", error);
+
+      setRecommendationError(
+        error.response?.data?.message ||
+        error.message ||
+        "Unable to generate suggestions. Please try again."
+      );
+
+    } finally {
+      setGeneratingSuggestions(false);
+    }
+  };
   // -----------------------------
   // REGISTRATION COUNTS
   // -----------------------------
@@ -569,6 +619,60 @@ const EventManage = () => {
       setCompletingAttendance(false);
     }
   };
+
+  const handleCloseAttendance = async () => {
+    if (!currentEventId) {
+      alert("Event ID is missing.");
+      return;
+    }
+
+    const eligibleCount = attendanceRecords.filter(
+      (record) =>
+        record.attendanceStatus === "Completed" &&
+        record.adminVerified === true
+    ).length;
+
+    if (eligibleCount === 0) {
+      alert("No completed and verified student attendance found.");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Close attendance and send thank-you emails to ${eligibleCount} students?`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setCompletingAttendance(true);
+
+      const response = await closeEventAttendance(currentEventId);
+
+      alert(
+        `Attendance closing process completed!\n\n` +
+        `Emails sent: ${response.emailsSent}\n` +
+        `Emails failed: ${response.emailsFailed}\n` +
+        `Emails skipped: ${response.emailsSkipped}`
+      );
+
+      const attendanceResponse = await getEventAttendance(currentEventId);
+
+      setAttendanceRecords(attendanceResponse.attendance || []);
+
+    } catch (error) {
+      console.error("Close attendance error:", error);
+
+      alert(
+        error.response?.data?.message ||
+        error.message ||
+        "Unable to close attendance."
+      );
+    } finally {
+      setCompletingAttendance(false);
+    }
+  };
+
+
 
 
 
@@ -804,6 +908,155 @@ const EventManage = () => {
           </div>
         )}
 
+        {/* AI RECOMMENDATION BUTTON */}
+
+
+        {/* ============================= */}
+        {/* AI VOLUNTEER RECOMMENDATIONS */}
+        {/* ============================= */}
+
+        <div className={styles.aiRecommendationBar}>
+
+          <div className={styles.aiRecommendationInfo}>
+            <Sparkles size={22} />
+
+            <div>
+              <h3>AI Volunteer Recommendations</h3>
+
+              <p>
+                Find suitable volunteers using AI, RAG and volunteering history.
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className={styles.generateSuggestionButton}
+            onClick={handleGenerateSuggestions}
+            disabled={generatingSuggestions}
+          >
+            {generatingSuggestions ? (
+              <>
+                <LoaderCircle
+                  className={styles.loadingSpinner}
+                  size={18}
+                />
+                Generating Suggestions...
+              </>
+            ) : (
+              <>
+                <Sparkles size={18} />
+                Generate AI Suggestions
+              </>
+            )}
+          </button>
+
+        </div>
+
+        {/* ============================= */}
+        {/* RECOMMENDATION ERROR */}
+        {/* ============================= */}
+
+        {recommendationError && (
+          <p className={styles.recommendationError}>
+            {recommendationError}
+          </p>
+        )}
+
+        {/* ============================= */}
+        {/* RECOMMENDATION RESULTS */}
+        {/* ============================= */}
+
+        {aiRecommendations.length > 0 && (
+          <div className={styles.recommendationList}>
+
+            <div className={styles.panelHeader}>
+              <div>
+                <h3 className={styles.sectionTitle}>
+                  <Sparkles size={18} />
+                  AI Recommended Volunteers
+                </h3>
+
+                <p className={styles.panelSubtitle}>
+                  Volunteers selected using RAG analysis and volunteering history.
+                </p>
+              </div>
+
+              <span className={styles.selectedBadge}>
+                {aiRecommendations.length} Recommended
+              </span>
+            </div>
+
+            {aiRecommendations.map((student, index) => (
+              <div
+                key={student.registrationId || index}
+                className={styles.recommendationCard}
+              >
+
+                <div className={styles.candidateInfo}>
+
+                  <h4>
+                    #{student.finalRank || index + 1} - {student.name || "Unknown Student"}
+                  </h4>
+
+                  <p>
+                    Username: {student.username || "N/A"}
+                  </p>
+
+                  <p>
+                    Category: {student.category || "N/A"}
+                  </p>
+
+                  <p>
+                    Previous Participation: {student.participationCount ?? 0}
+                  </p>
+
+                  <p>
+                    Distance: {student.distanceKm ?? "N/A"} km
+                  </p>
+
+                  <p>
+                    RAG Distance: {student.ragDistance ?? "N/A"}
+                  </p>
+
+                </div>
+
+                <div>
+                  <p>
+                    <strong>Selection Reason</strong>
+                  </p>
+
+                  <p>
+                    {student.selectionReason || "No selection reason available."}
+                  </p>
+                </div>
+
+                <div>
+                  <p>
+                    <strong>
+                      <Sparkles size={15} />
+                      Groq AI Explanation
+                    </strong>
+                  </p>
+
+                  <p>
+                    {student.aiExplanation || "AI explanation unavailable."}
+                  </p>
+                </div>
+
+              </div>
+            ))}
+
+          </div>
+        )}
+
+        {/* ============================= */}
+        {/* REGISTRATION STATS */}
+        {/* ============================= */}
+
+
+
+
         {/* REGISTRATION STATS */}
 
         <div className={styles.eventStatsBar}>
@@ -876,40 +1129,40 @@ const EventManage = () => {
                 </span>
               </div>
 
-             <div className={styles.candidateList}>
-  {loadingMembers ? (
-    <p>Loading registered students...</p>
-  ) : memberError ? (
-    <p>{memberError}</p>
-  ) : registeredMembers.length > 0 ? (
-    registeredMembers.map((volunteer) =>
-      renderVolunteer(volunteer)
-    )
-  ) : (
-    <p>No students have registered for this event yet.</p>
-  )}
-</div>
+              <div className={styles.candidateList}>
+                {loadingMembers ? (
+                  <p>Loading registered students...</p>
+                ) : memberError ? (
+                  <p>{memberError}</p>
+                ) : registeredMembers.length > 0 ? (
+                  registeredMembers.map((volunteer) =>
+                    renderVolunteer(volunteer)
+                  )
+                ) : (
+                  <p>No students have registered for this event yet.</p>
+                )}
+              </div>
 
-{/* BULK SELECTION BUTTON */}
-<div className={styles.bulkSelectionBar}>
-  <span>
-    {selectedRegistrationIds.length} students selected
-  </span>
+              {/* BULK SELECTION BUTTON */}
+              <div className={styles.bulkSelectionBar}>
+                <span>
+                  {selectedRegistrationIds.length} students selected
+                </span>
 
-  <button
-    type="button"
-    className={styles.confirmSelectionButton}
-    onClick={handleConfirmSelection}
-    disabled={
-      confirmingSelection ||
-      selectedRegistrationIds.length === 0
-    }
-  >
-    {confirmingSelection
-      ? "Confirming & Sending Emails..."
-      : "Confirm Selection"}
-  </button>
-</div>
+                <button
+                  type="button"
+                  className={styles.confirmSelectionButton}
+                  onClick={handleConfirmSelection}
+                  disabled={
+                    confirmingSelection ||
+                    selectedRegistrationIds.length === 0
+                  }
+                >
+                  {confirmingSelection
+                    ? "Confirming & Sending Emails..."
+                    : "Confirm Selection"}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1076,6 +1329,25 @@ const EventManage = () => {
                         ? "Completing All..."
                         : "Complete Event for All Students"}
                     </button>
+
+                    <button
+                      type="button"
+                      className={styles.completeEventButton}
+                      disabled={
+                        completingAttendance ||
+                        !attendanceRecords.some(
+                          (record) =>
+                            record.attendanceStatus === "Completed" &&
+                            record.adminVerified === true
+                        )
+                      }
+                      onClick={handleCloseAttendance}
+                    >
+                      <CheckCircle size={16} />
+                      {completingAttendance
+                        ? "Processing..."
+                        : "Close Attendance & Send Thank-you Emails"}
+                    </button>
                   </div>
 
                   {attendanceRecords.map((record) => {
@@ -1238,6 +1510,7 @@ const EventManage = () => {
             </div>
           </div>
         </div>
+
       )}
     </div>
   );
