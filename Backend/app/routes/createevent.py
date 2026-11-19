@@ -4,7 +4,11 @@ import secrets
 import hashlib
 import json
 import traceback
-from services.email_service import send_selection_email
+from services.email_service import (
+    send_selection_email,
+    send_attendance_thankyou_email
+)
+
 
 from datetime import datetime, timezone, timedelta
 from pymongo.errors import DuplicateKeyError
@@ -1662,4 +1666,192 @@ def admin_student_status():
         return jsonify({
             "success": False,
             "message": "Unable to fetch student status"
+        }), 500
+        
+        
+        
+@events_bp.route("/<event_id>/attendance/close", methods=["PATCH"])
+@token_required(["admin"])
+def close_event_attendance(event_id):
+    try:
+        # 1. Validate event ID
+        try:
+            event_object_id = ObjectId(event_id)
+        except Exception:
+            return jsonify({"message": "Invalid event ID"}), 400
+
+        # 2. Find event
+        event = events_collection.find_one({"_id": event_object_id})
+
+        if not event:
+            return jsonify({"message": "Event not found"}), 404
+
+        # 3. Ensure attendance completion was performed first
+        pending_count = attendance_collection.count_documents({
+            "eventId": event_object_id,
+            "attendanceStatus": "Checked In"
+        })
+
+        if pending_count > 0:
+            return jsonify({
+                "message": (
+                    "Complete attendance for all students before closing it."
+                ),
+                "pendingCount": pending_count
+            }), 400
+
+        # 4. Only completed and admin-verified students are eligible
+        attendance_records = list(attendance_collection.find({
+            "eventId": event_object_id,
+            "attendanceStatus": "Completed",
+            "adminVerified": True
+        }))
+
+        sent_count = 0
+        failed_count = 0
+        skipped_count = 0
+
+        # 5. Send thank-you email to each eligible student
+        for record in attendance_records:
+
+            # Skip if email was already sent
+            email_status = record.get("thankYouEmail", {}).get("status")
+
+            if email_status == "sent":
+                skipped_count += 1
+                continue
+
+            # Claim this email so concurrent requests don't send duplicates
+            claim = attendance_collection.update_one(
+                {
+                    "_id": record["_id"],
+                    "attendanceStatus": "Completed",
+                    "adminVerified": True,
+                    "$or": [
+                        {"thankYouEmail.status": {"$exists": False}},
+                        {"thankYouEmail.status": "pending"},
+                        {"thankYouEmail.status": "failed"}
+                    ]
+                },
+                {
+                    "$set": {
+                        "thankYouEmail.status": "sending",
+                        "thankYouEmail.startedAt": datetime.now(timezone.utc)
+                    }
+                }
+            )
+
+            if claim.modified_count == 0:
+                skipped_count += 1
+                continue
+
+            # 6. Find student's registration
+            registration_id = record.get("registrationId")
+
+            if registration_id:
+                registration = registrations_collection.find_one({
+                    "_id": registration_id
+                })
+            else:
+                registration = registrations_collection.find_one({
+                    "eventId": event_object_id,
+                    "studentUsername": record.get("studentUsername")
+                })
+
+            if not registration or not registration.get("email"):
+                attendance_collection.update_one(
+                    {"_id": record["_id"]},
+                    {
+                        "$set": {
+                            "thankYouEmail.status": "failed",
+                            "thankYouEmail.error": "Student email not found",
+                            "thankYouEmail.failedAt": datetime.now(timezone.utc)
+                        }
+                    }
+                )
+                failed_count += 1
+                continue
+
+            # 7. Get earned points and verified hours
+            earned_points = record.get("creditedPoints")
+            credited_hours = record.get("creditedHours")
+
+            if earned_points is None or credited_hours is None:
+                attendance_collection.update_one(
+                    {"_id": record["_id"]},
+                    {
+                        "$set": {
+                            "thankYouEmail.status": "failed",
+                            "thankYouEmail.error": "Verified points or hours not found",
+                            "thankYouEmail.failedAt": datetime.now(timezone.utc)
+                        }
+                    }
+                )
+                failed_count += 1
+                continue
+
+            # 8. Send email
+            email_sent = send_attendance_thankyou_email(
+                student_email=registration["email"],
+                student_name=(
+                    registration.get("studentName")
+                    or record.get("studentName")
+                    or "Student"
+                ),
+                event=event,
+                earned_points=earned_points,
+                credited_hours=credited_hours
+            )
+
+            if email_sent:
+                attendance_collection.update_one(
+                    {"_id": record["_id"]},
+                    {
+                        "$set": {
+                            "thankYouEmail.status": "sent",
+                            "thankYouEmail.sentAt": datetime.now(timezone.utc)
+                        },
+                        "$unset": {
+                            "thankYouEmail.error": ""
+                        }
+                    }
+                )
+                sent_count += 1
+            else:
+                attendance_collection.update_one(
+                    {"_id": record["_id"]},
+                    {
+                        "$set": {
+                            "thankYouEmail.status": "failed",
+                            "thankYouEmail.error": "Email sending failed",
+                            "thankYouEmail.failedAt": datetime.now(timezone.utc)
+                        }
+                    }
+                )
+                failed_count += 1
+
+        # 9. Mark attendance as closed
+        events_collection.update_one(
+            {"_id": event_object_id},
+            {
+                "$set": {
+                    "attendanceClosed": True,
+                    "attendanceClosedAt": datetime.now(timezone.utc)
+                }
+            }
+        )
+
+        return jsonify({
+            "message": "Attendance closing process completed",
+            "totalEligibleStudents": len(attendance_records),
+            "emailsSent": sent_count,
+            "emailsFailed": failed_count,
+            "emailsSkipped": skipped_count
+        }), 200
+
+    except Exception as e:
+        print("Close attendance error:", str(e))
+        return jsonify({
+            "message": "Failed to close attendance",
+            "error": str(e)
         }), 500

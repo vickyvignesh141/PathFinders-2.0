@@ -114,6 +114,14 @@ export const completeAllStudentAttendance = async (eventId) => {
   return response.data;
 };
 
+export const closeEventAttendance = async (eventId) => {
+  const response = await api.patch(
+    `/events/${eventId}/attendance/close`
+  );
+
+  return response.data;
+};
+
 
 
 // =====================================
@@ -157,3 +165,23 @@ export const getAdminStudentStatus = async () => {
   return response.data;
 };
 
+
+
+
+// ADMIN: GET RAG CANDIDATES
+export const getRAGCandidates = async (eventId) => {
+  const response = await api.get(
+    `/rag/${eventId}/candidates`
+  );
+
+  return response.data;
+};
+
+// ADMIN: GENERATE RAG RECOMMENDATIONS
+export const generateRAGRecommendations = async (eventId) => {
+  const response = await api.get(
+    `/rag/${eventId}/recommendations`
+  );
+
+  return response.data;
+};

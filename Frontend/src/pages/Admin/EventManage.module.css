@@ -927,6 +927,117 @@ button:disabled {
   cursor: not-allowed;
 }
 
+
+/* AI RECOMMENDATION BAR */
+
+.aiRecommendationBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding: 22px;
+  margin: 20px 0;
+  background: linear-gradient(135deg, #211d0c, #171717);
+  border: 1px solid #66520d;
+  border-radius: 14px;
+}
+
+.aiRecommendationInfo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #ffcc00;
+}
+
+.aiRecommendationInfo h3 {
+  margin: 0 0 6px;
+  color: #ffcc00;
+  font-size: 16px;
+}
+
+.aiRecommendationInfo p {
+  margin: 0;
+  color: #c5c5c5;
+  font-size: 13px;
+}
+
+.generateSuggestionButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 20px;
+  border: none;
+  border-radius: 9px;
+  background: #ffcc00;
+  color: #171717;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.generateSuggestionButton:hover:not(:disabled) {
+  background: #e6b800;
+}
+
+.generateSuggestionButton:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.loadingSpinner {
+  animation: suggestionSpin 1s linear infinite;
+}
+
+@keyframes suggestionSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.recommendationError {
+  color: #ff6464;
+  margin: 10px 0;
+}
+
+.recommendationList {
+  margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.recommendationList h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #171717;
+}
+
+.recommendationCard {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-left: 4px solid #ffcc00;
+  border-radius: 10px;
+  padding: 18px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.recommendationCard h4 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  color: #171717;
+}
+
+.recommendationCard p {
+  margin: 7px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #444;
+}
+
+.recommendationCard strong {
+  color: #171717;
+}
 /* RESPONSIVE DESIGN */
 
 @media (max-width: 1100px) {
