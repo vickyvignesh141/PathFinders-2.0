@@ -1784,3 +1784,36 @@
 .metaItem {
   color: #111111;
 }
+
+/* Admin Selected Status */
+.statusSelected {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #86efac;
+}
+
+/* Admin Rejected Status */
+.statusRejected {
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+/* Registered - Yellow */
+.registeredEventDay {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #facc15 !important;
+}
+
+.selectedEventDay {
+  background: #dcfce7 !important;
+  color: #15803d !important;
+  border: 1px solid #22c55e !important;
+}
+
+.rejectedEventDay {
+  background: #fee2e2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #ef4444 !important;
+}
