@@ -8,20 +8,21 @@ const api = axios.create({
   },
 });
 
-// Automatically attach authentication token
+// Attach the currently logged-in user's token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("token");
 
-    if (token) {
+    // Don't attach an old token to login/register requests
+    const isAuthRequest = config.url?.includes("/auth/");
+
+    if (token && !isAuthRequest) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default api;
