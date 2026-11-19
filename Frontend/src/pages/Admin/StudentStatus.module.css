@@ -1560,3 +1560,360 @@ button.statCard {
     height: 48px;
   }
 }
+
+/* Compact Student Activity Overview Header */
+.heroCompact {
+  width: 100%;
+  min-height: 75px;
+  display: flex;
+  align-items: center;
+  padding: 18px 28px;
+  margin-bottom: 22px;
+
+  background: #ffffff;
+  border: 1px solid #e5e5e5;
+  border-radius: 14px;
+
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.04);
+}
+
+.heroCompact h2 {
+  margin: 0;
+  color: #111111;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.heroCompact h2 span {
+  color: #151413;
+}
+
+/* Back Button */
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #ffdf32;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 15px;
+}
+
+.backButton:hover {
+  background: #000000;
+  color: #ffdf32;
+  transform: translateX(-3px);
+}
+
+/* =================================
+   BACK TO DASHBOARD BUTTON
+================================= */
+
+.backButton {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  width: auto !important;
+  min-width: 210px;
+  height: 46px;
+  padding: 0 20px !important;
+
+  gap: 10px;
+
+  background: #ffdf32 !important;
+  color: #000000 !important;
+
+  border: 2px solid #000000 !important;
+  border-radius: 10px !important;
+
+  font-family: inherit;
+  font-size: 15px !important;
+  font-weight: 800 !important;
+  line-height: 1 !important;
+
+  white-space: nowrap !important;
+  word-break: keep-all !important;
+  flex-shrink: 0 !important;
+
+  cursor: pointer;
+  box-shadow: none !important;
+  transform: none;
+
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.backButton span {
+  display: inline-block !important;
+  width: auto !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+  font-size: inherit !important;
+}
+
+.backButton:hover {
+  background: #000000 !important;
+  color: #ffdf32 !important;
+}
+
+.backButton:active {
+  transform: scale(0.98);
+}
+
+.backButton:focus-visible {
+  outline: 3px solid #d4a900;
+  outline-offset: 3px;
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .backButton {
+    min-width: 180px;
+    height: 42px;
+    padding: 0 14px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* Student List Container */
+.studentList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+/* Individual Student Boxes */
+.studentCard {
+  width: 100%;
+  min-height: 110px;
+  padding: 22px 24px !important;
+
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  border-radius: 14px !important;
+
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+  transition: 0.2s ease;
+}
+
+/* Hover Effect */
+.studentCard:hover {
+  border-color: #000000 !important;
+  background: #fff9e5 !important;
+  transform: translateY(-2px);
+}
+
+/* Student Name */
+.studentCard h3 {
+  color: #000000 !important;
+  font-size: 17px !important;
+  font-weight: 800 !important;
+}
+
+/* Student Details */
+.studentCard p {
+  color: #333333 !important;
+  font-size: 14px;
+}
+
+/* =====================================
+   VOLUNTEER DIRECTORY - LARGER LAYOUT
+===================================== */
+
+.directory {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 28px !important;
+  margin-top: 24px !important;
+
+  background: #ffffff !important;
+  border: 2px solid #000000 !important;
+  border-radius: 18px !important;
+  box-sizing: border-box;
+}
+
+/* Directory Heading */
+.directoryHeader {
+  margin-bottom: 25px !important;
+}
+
+.directoryHeader h2 {
+  font-size: 25px !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+}
+
+.resultCount {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+/* Search and Filter Area */
+.filterArea {
+  display: flex;
+  gap: 18px !important;
+  margin-bottom: 25px !important;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  min-height: 50px !important;
+  padding: 12px 18px !important;
+  font-size: 15px !important;
+  border: 2px solid #000000 !important;
+  border-radius: 10px !important;
+  background: #fff8df !important;
+}
+
+.searchBox input {
+  font-size: 15px !important;
+  color: #000000 !important;
+}
+
+.filterButtons {
+  display: flex;
+  gap: 10px !important;
+}
+
+.filterButton,
+.filterActive,
+.filterInactive {
+  min-height: 43px !important;
+  padding: 10px 18px !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  border-radius: 9px !important;
+}
+
+/* Student Table Wrapper */
+.tableWrapper {
+  width: 100% !important;
+  overflow-x: auto !important;
+  border: 2px solid #000000 !important;
+  border-radius: 12px !important;
+}
+
+/* Student Table */
+.table {
+  width: 100% !important;
+  min-width: 1250px;
+  border-collapse: collapse;
+}
+
+/* Table Headings */
+.table th {
+  padding: 19px 16px !important;
+  font-size: 14px !important;
+  font-weight: 800 !important;
+  color: #000000 !important;
+  background: #ffdf32 !important;
+  white-space: nowrap;
+}
+
+/* Student Rows */
+.table td {
+  padding: 20px 16px !important;
+  font-size: 14px !important;
+  color: #111111 !important;
+  vertical-align: middle;
+}
+
+.table tbody tr {
+  min-height: 75px;
+  border-bottom: 1px solid #cccccc;
+  transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: #fff8df !important;
+}
+
+/* Student Name and Avatar */
+.studentCell {
+  gap: 13px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+
+.avatar {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  font-size: 17px !important;
+}
+
+/* Roll Number */
+.rollNumber {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+/* Zone and Department */
+.zoneBadge,
+.department {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+/* Status */
+.statusActive,
+.statusInactive {
+  padding: 8px 13px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+}
+
+/* Points and Activity */
+.points {
+  font-size: 15px !important;
+  font-weight: 800 !important;
+}
+
+.activityGood,
+.activityBad {
+  font-size: 14px !important;
+  font-weight: 700 !important;
+}
+
+@media (max-width: 768px) {
+  .directory {
+    padding: 16px !important;
+  }
+
+  .directoryHeader h2 {
+    font-size: 21px !important;
+  }
+
+  .filterArea {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchBox {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .filterButtons {
+    flex-wrap: wrap;
+  }
+
+  .table {
+    min-width: 1150px;
+  }
+}

@@ -1,5 +1,7 @@
 import styles from "./EventHistory.module.css";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, LayoutDashboard } from "lucide-react";
 import {
   AlertTriangle,
   CalendarDays,
@@ -41,6 +43,8 @@ const formatTime = (value) => {
   if (!Number.isInteger(hour) || !Number.isInteger(minute)) {
     return "Time unavailable";
   }
+
+
 
   const date = new Date();
   date.setHours(hour, minute, 0, 0);
@@ -123,6 +127,7 @@ const SkeletonList = () => (
    Page
    ------------------------------------------------------------------ */
 const AdminEventHistory = () => {
+  const navigate = useNavigate();
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -151,7 +156,7 @@ const AdminEventHistory = () => {
       console.error("Admin History Error:", err);
       setError(
         err.response?.data?.message ||
-          "Unable to load event history. Please try again."
+        "Unable to load event history. Please try again."
       );
     } finally {
       setLoading(false);
@@ -215,6 +220,14 @@ const AdminEventHistory = () => {
     <div className={styles.page}>
       {/* HEADER */}
       <header className={styles.header}>
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={() => navigate("/admin/dashboard")}
+        >
+          <LayoutDashboard size={18} />
+          <span>Back to Dashboard</span>
+        </button>
         <div className={styles.headerText}>
           <span className={styles.eyebrow}>
             <History size={13} strokeWidth={2.5} aria-hidden="true" />
@@ -353,9 +366,8 @@ const AdminEventHistory = () => {
                     <div className={styles.eventTitleRow}>
                       <h3>{event.title}</h3>
                       <span
-                        className={`${styles.completedBadge} ${
-                          isPV ? styles.pvBadge : ""
-                        }`}
+                        className={`${styles.completedBadge} ${isPV ? styles.pvBadge : ""
+                          }`}
                       >
                         {event.status}
                       </span>
@@ -403,9 +415,8 @@ const AdminEventHistory = () => {
                   </div>
 
                   <span
-                    className={`${styles.expandIcon} ${
-                      isExpanded ? styles.expandIconOpen : ""
-                    }`}
+                    className={`${styles.expandIcon} ${isExpanded ? styles.expandIconOpen : ""
+                      }`}
                     aria-hidden="true"
                   >
                     <ChevronDown size={18} />
@@ -458,12 +469,11 @@ const AdminEventHistory = () => {
                                   </td>
                                   <td>
                                     <span
-                                      className={`${
-                                        styles.statusBadge
-                                      } ${getStatusClass(
-                                        student.status,
-                                        styles
-                                      )}`}
+                                      className={`${styles.statusBadge
+                                        } ${getStatusClass(
+                                          student.status,
+                                          styles
+                                        )}`}
                                     >
                                       {student.status || "Pending"}
                                     </span>
