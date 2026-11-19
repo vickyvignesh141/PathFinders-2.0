@@ -199,7 +199,7 @@ def register():
     }
 
     # Save to MongoDB
-    db.volunteers.insert_one(volunteer)
+    db.studentvolunteers.insert_one(volunteer)
 
     return jsonify({
         "success": True,

@@ -118,6 +118,10 @@ export default function VolunteerLogin() {
       console.log("Login API response:", data);
 
       if (data.success) {
+        // Remove old authentication tokens
+        localStorage.removeItem("accessToken");
+
+        // Store current user's authentication details
         localStorage.setItem("token", data.access_token);
         localStorage.setItem("name", data.name);
         localStorage.setItem("username", data.username);
@@ -230,9 +234,8 @@ export default function VolunteerLogin() {
         <div className={styles.vlFlipContainer}>
 
           <div
-            className={`${styles.vlFlipInner} ${
-              isRegistering ? styles.vlFlipped : ""
-            }`}
+            className={`${styles.vlFlipInner} ${isRegistering ? styles.vlFlipped : ""
+              }`}
           >
 
             {/* LOGIN FRONT */}
@@ -267,9 +270,8 @@ export default function VolunteerLogin() {
                   placeholder="MAA012345"
                   maxLength={9}
                   autoComplete="username"
-                  className={`${styles.vlInput} ${
-                    focused === "user" ? styles.vlInputFocused : ""
-                  }`}
+                  className={`${styles.vlInput} ${focused === "user" ? styles.vlInputFocused : ""
+                    }`}
                 />
 
                 {/* PASSWORD */}
@@ -286,9 +288,8 @@ export default function VolunteerLogin() {
                     onBlur={() => setFocused(null)}
                     placeholder="Enter your password"
                     autoComplete="current-password"
-                    className={`${styles.vlInput} ${
-                      focused === "pass" ? styles.vlInputFocused : ""
-                    }`}
+                    className={`${styles.vlInput} ${focused === "pass" ? styles.vlInputFocused : ""
+                      }`}
                   />
 
                   <button
@@ -322,11 +323,10 @@ export default function VolunteerLogin() {
 
                       {/* STUDENT */}
                       <div
-                        className={`${styles.vlRoleBox} ${
-                          role === "student"
+                        className={`${styles.vlRoleBox} ${role === "student"
                             ? styles.vlRoleBoxActive
                             : ""
-                        }`}
+                          }`}
                       >
                         <div className={styles.vlRoleIconWrap}>
                           <GraduationCap size={22} />
@@ -337,11 +337,10 @@ export default function VolunteerLogin() {
 
                       {/* ALUMNI */}
                       <div
-                        className={`${styles.vlRoleBox} ${
-                          role === "alumni"
+                        className={`${styles.vlRoleBox} ${role === "alumni"
                             ? styles.vlRoleBoxActive
                             : ""
-                        }`}
+                          }`}
                       >
                         <div className={styles.vlRoleIconWrap}>
                           <UserCheck size={22} />
@@ -352,11 +351,10 @@ export default function VolunteerLogin() {
 
                       {/* DIRECTOR */}
                       <div
-                        className={`${styles.vlRoleBox} ${
-                          role === "director"
+                        className={`${styles.vlRoleBox} ${role === "director"
                             ? styles.vlRoleBoxActive
                             : ""
-                        }`}
+                          }`}
                       >
                         <div className={styles.vlRoleIconWrap}>
                           <Settings size={22} />

@@ -1176,7 +1176,6 @@
   cursor: not-allowed;
 }
 
-<<<<<<< Updated upstream
 
 /* AI RECOMMENDATION BAR */
 
@@ -1289,55 +1288,6 @@
   color: #171717;
 }
 /* RESPONSIVE DESIGN */
-=======
-/* -------------------------
-   LOADING / EMPTY TEXT
-------------------------- */
-
-.dashboard .main > p,
-.candidateList > p {
-  padding: 20px;
-  color: var(--muted);
-  font-size: 13px;
-  line-height: 1.7;
-}
-
-.candidateList > p {
-  margin: 0;
-  background: #fffefa;
-  border: 1px dashed #e9dfc9;
-  border-radius: 10px;
-  text-align: center;
-}
-
-/* -------------------------
-   ANIMATIONS
-------------------------- */
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes modalSlide {
-  from {
-    opacity: 0;
-    transform: translateY(15px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* -------------------------
-   TABLET RESPONSIVE
-------------------------- */
->>>>>>> Stashed changes
 
 @media (max-width: 1100px) {
   .main {
