@@ -347,3 +347,26 @@
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 11px 18px;
+  background: #ffdf32;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 15px;
+}
+
+.backButton:hover {
+  background: #000000;
+  color: #ffdf32;
+  transform: translateY(-2px);
+}

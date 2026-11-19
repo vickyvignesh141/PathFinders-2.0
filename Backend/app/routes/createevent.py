@@ -1,4 +1,3 @@
-
 import re
 import secrets
 import hashlib
@@ -1594,73 +1593,259 @@ def get_admin_event_history():
 @token_required(["admin"])
 def admin_student_status():
     try:
-        students = list(profile_collection.find({
-            "role": {"$in": ["student", "alumni"]}
-        }))
+        from datetime import datetime, timezone
 
-        eligible_events = list(events_collection.find({
-            "approvalListSentAt": {
-                "$exists": True,
-                "$ne": None
-            }
-        }))
+        # -----------------------------------------
+        # 1. Fetch students
+        # -----------------------------------------
+        students = list(
+            profile_collection.find(
+                {"role": {"$in": ["student", "alumni"]}},
+                {"password": 0}
+            )
+        )
 
+        # -----------------------------------------
+        # 2. Fetch events whose approval lists
+        #    have been sent
+        # -----------------------------------------
+        eligible_events = list(
+            events_collection.find({
+                "approvalListSentAt": {
+                    "$exists": True,
+                    "$ne": None
+                }
+            })
+        )
+
+        eligible_event_ids = {
+            str(event["_id"]) for event in eligible_events
+        }
+
+        # -----------------------------------------
+        # 3. Fetch registrations once
+        # -----------------------------------------
         all_registrations = list(
-            registrations_collection.find()
+            registrations_collection.find(
+                {},
+                {
+                    "studentUsername": 1,
+                    "eventId": 1
+                }
+            )
         )
 
-        eligible_events.sort(
-            key=lambda event: event.get("approvalListSentAt")
+        registered_pairs = {
+            (
+                str(registration.get("studentUsername", "")),
+                str(registration.get("eventId", ""))
+            )
+            for registration in all_registrations
+        }
+
+        # -----------------------------------------
+        # 4. Fetch verified attendance once
+        # -----------------------------------------
+        all_attendance = list(
+            attendance_collection.find({
+                "adminVerified": True
+            })
         )
 
-        student_results = []
+        attendance_by_student = {}
+
+        for attendance in all_attendance:
+            username = attendance.get("studentUsername")
+
+            if not username:
+                continue
+
+            activity_date = (
+                attendance.get("completedAt")
+                or attendance.get("scannedAt")
+                or attendance.get("createdAt")
+            )
+
+            if not activity_date:
+                continue
+
+            attendance_by_student.setdefault(
+                username, []
+            ).append(activity_date)
+
+        # -----------------------------------------
+        # 5. Helper: convert date to ISO string
+        # -----------------------------------------
+        def serialize_date(value):
+            if not value:
+                return None
+
+            if isinstance(value, datetime):
+                return value.isoformat()
+
+            return str(value)
+
+        def calculate_days_ago(value):
+            if not value:
+                return None
+
+            try:
+                if isinstance(value, str):
+                    value = datetime.fromisoformat(
+                        value.replace("Z", "+00:00")
+                    )
+
+                if not isinstance(value, datetime):
+                    return None
+
+                if value.tzinfo is None:
+                    value = value.replace(tzinfo=timezone.utc)
+
+                now = datetime.now(timezone.utc)
+                difference = now - value.astimezone(timezone.utc)
+
+                return max(0, difference.days)
+
+            except (ValueError, TypeError):
+                return None
+
+        # -----------------------------------------
+        # 6. Build student response
+        # -----------------------------------------
+        result = []
 
         for student in students:
-            student_username = student.get("username", "")
+            username = student.get("username", "")
 
+            # Count missed approval-list opportunities
             missed_opportunities = 0
 
-            for event in eligible_events:
-                registered = any(
-                    str(reg.get("eventId")) == str(event["_id"])
-                    and reg.get("studentUsername") == student_username
-                    for reg in all_registrations
-                )
-
-                if registered:
-                    missed_opportunities = 0
-                else:
+            for event_id in eligible_event_ids:
+                if (username, event_id) not in registered_pairs:
                     missed_opportunities += 1
 
-            student_status = (
+            status = (
                 "Inactive"
                 if missed_opportunities > 3
                 else "Active"
             )
 
-            student_results.append({
-                "username": student_username,
-                "name": student.get("name", ""),
-                "status": student_status,
-                "missedOpportunities": missed_opportunities
+            volunteering = (
+                student.get("past_volunteering_details") or {}
+            )
+
+            events_breakdown = (
+                volunteering.get("events_breakdown") or []
+            )
+
+            # Find latest verified attendance date
+            activity_dates = attendance_by_student.get(
+                username, []
+            )
+
+            last_activity = (
+                max(activity_dates)
+                if activity_dates
+                else None
+            )
+
+            last_active_days = calculate_days_ago(
+                last_activity
+            )
+
+            # Format zone
+            zone_value = student.get("zone")
+
+            zone = (
+                f"Zone {zone_value}"
+                if zone_value is not None
+                else "-"
+            )
+
+            # Build actual student data
+            result.append({
+                "id": str(student.get("_id", "")),
+                "name": student.get("name", "Unknown"),
+                "rollNo": username,
+                "email": student.get("email", ""),
+                "phone": student.get("mobile_number", ""),
+                "college": student.get("college", ""),
+                "zone": zone,
+                "batch": student.get("batch", ""),
+                "department": student.get("department", ""),
+                "status": status,
+
+                "eventsAttended": len(events_breakdown),
+
+                "hours": volunteering.get(
+                    "total_effective_hours", 0
+                ),
+
+                "points": volunteering.get(
+                    "total_points", 0
+                ),
+
+                "regularHours": volunteering.get(
+                    "regular_hours", 0
+                ),
+
+                "physicalVerificationHours": volunteering.get(
+                    "physical_verification_hours", 0
+                ),
+
+                "physicalVerificationCount": volunteering.get(
+                    "physical_verification_count", 0
+                ),
+
+                "skills": student.get("skills", []),
+
+                "eventsBreakdown": events_breakdown,
+
+                "lastActiveDays": last_active_days,
+
+                "lastActivityDate": serialize_date(
+                    last_activity
+                ),
+
+                "joinedOn": serialize_date(
+                    student.get("joinedAt")
+                    or student.get("createdAt")
+                ),
+
+                "missedOpportunities": missed_opportunities,
+
+                "accommodation": student.get(
+                    "accommodation_type", ""
+                )
             })
+
+        # -----------------------------------------
+        # 7. Sort by student name
+        # -----------------------------------------
+        result.sort(
+            key=lambda item: item["name"].lower()
+        )
+
+        active_count = sum(
+            1 for student in result
+            if student["status"] == "Active"
+        )
+
+        inactive_count = sum(
+            1 for student in result
+            if student["status"] == "Inactive"
+        )
 
         return jsonify({
             "success": True,
-            "students": student_results,
-            "totalStudents": len(student_results),
-            "activeCount": sum(
-                1 for student in student_results
-                if student["status"] == "Active"
-            ),
-            "inactiveCount": sum(
-                1 for student in student_results
-                if student["status"] == "Inactive"
-            )
+            "students": result,
+            "totalStudents": len(result),
+            "activeCount": active_count,
+            "inactiveCount": inactive_count
         }), 200
 
     except Exception as e:
-        print("Admin Student Status Error:", repr(e))
+        print("STUDENT STATUS ERROR:", str(e))
         traceback.print_exc()
 
         return jsonify({

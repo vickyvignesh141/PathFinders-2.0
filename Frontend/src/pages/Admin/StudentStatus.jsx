@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from "react";
+
+import React, { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   Search,
@@ -19,365 +20,61 @@ import {
   ChevronRight,
 } from "lucide-react";
 
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styles from "./StudentStatus.module.css";
-
-/* ============================================================
-   FALLBACK DATA
-   Used if the page is refreshed directly.
-   ============================================================ */
-
-const FALLBACK_VOLUNTEERS = [
-  {
-    id: 1,
-    name: "Santhosh Kumar",
-    email: "santhosh.kumar@maatram.edu",
-    phone: "+91 98765 43210",
-    rollNo: "MA2022001",
-    college: "Maatram Institute of Technology",
-    zone: "Zone 1",
-    batch: "2022-2026",
-    department: "CSE",
-    status: "Active",
-    eventsAttended: 14,
-    hours: 52,
-    rating: 4.8,
-    skills: ["Event Management", "Logistics"],
-    eventIds: [1, 2],
-    lastActiveDays: 0,
-    joinedOn: "2022-07-15",
-  },
-
-  {
-    id: 2,
-    name: "Priya Ramesh",
-    email: "priya.ramesh@maatram.edu",
-    phone: "+91 98765 43211",
-    rollNo: "GR2021002",
-    college: "Green Valley College",
-    zone: "Zone 2",
-    batch: "2021-2025",
-    department: "ECE",
-    status: "Active",
-    eventsAttended: 11,
-    hours: 41,
-    rating: 4.6,
-    skills: ["Registration Desk", "Public Speaking"],
-    eventIds: [1, 3],
-    lastActiveDays: 1,
-    joinedOn: "2021-07-15",
-  },
-
-  {
-    id: 3,
-    name: "Karthik Vel",
-    email: "karthik.vel@maatram.edu",
-    phone: "+91 98765 43212",
-    rollNo: "SX2023003",
-    college: "St. Xavier's College",
-    zone: "Zone 3",
-    batch: "2023-2027",
-    department: "MECH",
-    status: "Active",
-    eventsAttended: 9,
-    hours: 33,
-    rating: 4.4,
-    skills: ["Logistics", "Crowd Control"],
-    eventIds: [1],
-    lastActiveDays: 2,
-    joinedOn: "2023-07-15",
-  },
-
-  {
-    id: 4,
-    name: "Meena Suresh",
-    email: "meena.suresh@maatram.edu",
-    phone: "+91 98765 43213",
-    rollNo: "SU2022004",
-    college: "Sunrise Engineering College",
-    zone: "Zone 4",
-    batch: "2022-2026",
-    department: "IT",
-    status: "Active",
-    eventsAttended: 12,
-    hours: 47,
-    rating: 4.7,
-    skills: ["Photography", "Design"],
-    eventIds: [2, 3],
-    lastActiveDays: 0,
-    joinedOn: "2022-07-15",
-  },
-
-  {
-    id: 5,
-    name: "Arjun Kumar",
-    email: "arjun.kumar@maatram.edu",
-    phone: "+91 98765 43214",
-    rollNo: "MA2024005",
-    college: "Maatram Institute of Technology",
-    zone: "Zone 1",
-    batch: "2024-2028",
-    department: "CSE",
-    status: "Active",
-    eventsAttended: 6,
-    hours: 22,
-    rating: 4.2,
-    skills: ["Technical Support", "Event Management"],
-    eventIds: [1],
-    lastActiveDays: 3,
-    joinedOn: "2024-07-15",
-  },
-
-  {
-    id: 6,
-    name: "Divya Nair",
-    email: "divya.nair@maatram.edu",
-    phone: "+91 98765 43215",
-    rollNo: "GR2022006",
-    college: "Green Valley College",
-    zone: "Zone 2",
-    batch: "2022-2026",
-    department: "BBA",
-    status: "Active",
-    eventsAttended: 15,
-    hours: 58,
-    rating: 4.9,
-    skills: [
-      "Event Management",
-      "Public Speaking",
-      "Registration Desk",
-    ],
-    eventIds: [1, 2, 3],
-    lastActiveDays: 0,
-    joinedOn: "2022-07-15",
-  },
-
-  {
-    id: 7,
-    name: "Rahul Menon",
-    email: "rahul.menon@maatram.edu",
-    phone: "+91 98765 43216",
-    rollNo: "SX2021007",
-    college: "St. Xavier's College",
-    zone: "Zone 3",
-    batch: "2021-2025",
-    department: "CSE",
-    status: "Inactive",
-    eventsAttended: 8,
-    hours: 30,
-    rating: 4.1,
-    skills: ["Technical Support"],
-    eventIds: [2],
-    lastActiveDays: 96,
-    joinedOn: "2021-07-15",
-  },
-
-  {
-    id: 8,
-    name: "Ananya Iyer",
-    email: "ananya.iyer@maatram.edu",
-    phone: "+91 98765 43217",
-    rollNo: "SU2023008",
-    college: "Sunrise Engineering College",
-    zone: "Zone 5",
-    batch: "2023-2027",
-    department: "ECE",
-    status: "Active",
-    eventsAttended: 10,
-    hours: 38,
-    rating: 4.5,
-    skills: ["First Aid", "Crowd Control"],
-    eventIds: [1, 2],
-    lastActiveDays: 1,
-    joinedOn: "2023-07-15",
-  },
-
-  {
-    id: 9,
-    name: "Vignesh Raj",
-    email: "vignesh.raj@maatram.edu",
-    phone: "+91 98765 43218",
-    rollNo: "MA2022009",
-    college: "Maatram Institute of Technology",
-    zone: "Zone 1",
-    batch: "2022-2026",
-    department: "MECH",
-    status: "Active",
-    eventsAttended: 13,
-    hours: 50,
-    rating: 4.6,
-    skills: ["Logistics", "Crowd Control"],
-    eventIds: [2, 3],
-    lastActiveDays: 2,
-    joinedOn: "2022-07-15",
-  },
-
-  {
-    id: 10,
-    name: "Sneha Pillai",
-    email: "sneha.pillai@maatram.edu",
-    phone: "+91 98765 43219",
-    rollNo: "GR2024010",
-    college: "Green Valley College",
-    zone: "Zone 2",
-    batch: "2024-2028",
-    department: "IT",
-    status: "Active",
-    eventsAttended: 5,
-    hours: 19,
-    rating: 4.0,
-    skills: ["Design", "Photography"],
-    eventIds: [3],
-    lastActiveDays: 4,
-    joinedOn: "2024-07-15",
-  },
-
-  {
-    id: 11,
-    name: "Ashwin Das",
-    email: "ashwin.das@maatram.edu",
-    phone: "+91 98765 43220",
-    rollNo: "SX2023011",
-    college: "St. Xavier's College",
-    zone: "Zone 3",
-    batch: "2023-2027",
-    department: "BBA",
-    status: "Inactive",
-    eventsAttended: 7,
-    hours: 26,
-    rating: 3.9,
-    skills: ["Registration Desk"],
-    eventIds: [1],
-    lastActiveDays: 120,
-    joinedOn: "2023-07-15",
-  },
-
-  {
-    id: 12,
-    name: "Nandini Rao",
-    email: "nandini.rao@maatram.edu",
-    phone: "+91 98765 43221",
-    rollNo: "SU2022012",
-    college: "Sunrise Engineering College",
-    zone: "Zone 4",
-    batch: "2022-2026",
-    department: "CSE",
-    status: "Active",
-    eventsAttended: 16,
-    hours: 61,
-    rating: 4.9,
-    skills: [
-      "Event Management",
-      "Teaching",
-      "Public Speaking",
-    ],
-    eventIds: [1, 2, 3],
-    lastActiveDays: 0,
-    joinedOn: "2022-07-15",
-  },
-
-  {
-    id: 13,
-    name: "Hari Prasad",
-    email: "hari.prasad@maatram.edu",
-    phone: "+91 98765 43222",
-    rollNo: "MA2021013",
-    college: "Maatram Institute of Technology",
-    zone: "Zone 5",
-    batch: "2021-2025",
-    department: "EEE",
-    status: "Active",
-    eventsAttended: 9,
-    hours: 35,
-    rating: 4.3,
-    skills: ["Technical Support", "Logistics"],
-    eventIds: [2],
-    lastActiveDays: 3,
-    joinedOn: "2021-07-15",
-  },
-
-  {
-    id: 14,
-    name: "Lakshmi Devi",
-    email: "lakshmi.devi@maatram.edu",
-    phone: "+91 98765 43223",
-    rollNo: "GR2023014",
-    college: "Green Valley College",
-    zone: "Zone 2",
-    batch: "2023-2027",
-    department: "ECE",
-    status: "Active",
-    eventsAttended: 11,
-    hours: 44,
-    rating: 4.7,
-    skills: ["First Aid", "Registration Desk"],
-    eventIds: [1, 3],
-    lastActiveDays: 1,
-    joinedOn: "2023-07-15",
-  },
-
-  {
-    id: 15,
-    name: "Ravi Shankar",
-    email: "ravi.shankar@maatram.edu",
-    phone: "+91 98765 43224",
-    rollNo: "MA2021015",
-    college: "Maatram Institute of Technology",
-    zone: "Zone 1",
-    batch: "2021-2025",
-    department: "CSE",
-    status: "Inactive",
-    eventsAttended: 12,
-    hours: 45,
-    rating: 4.4,
-    skills: ["Technical Support", "Event Management"],
-    eventIds: [1, 2],
-    lastActiveDays: 210,
-    joinedOn: "2021-07-15",
-  },
-];
+import { getAdminStudentStatus } from "../../services/eventService";
 
 /* ============================================================
    HELPERS
    ============================================================ */
 
-const pointsOf = (student) =>
-  student.eventsAttended * 10 +
-  student.hours * 2 +
-  Math.round(student.rating * 20);
+const pointsOf = (student) => Number(student.points || 0);
 
 const getActivityText = (days) => {
+  if (days === null || days === undefined) {
+    return "No activity date";
+  }
+
   if (days === 0) return "Active today";
   if (days === 1) return "Active yesterday";
   if (days <= 7) return `Active ${days} days ago`;
+
   return `Inactive for ${days} days`;
 };
 
-const getInitials = (name) => {
+const getInitials = (name = "") => {
   return name
-    .split(" ")
+    .trim()
+    .split(/\s+/)
     .slice(0, 2)
     .map((word) => word[0])
     .join("")
     .toUpperCase();
 };
 
+const formatDate = (value) => {
+  if (!value) return "-";
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) return "-";
+
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+};
+
 /* ============================================================
    STUDENT PROFILE MODAL
    ============================================================ */
 
-function StudentProfile({
-  student,
-  events,
-  onClose,
-}) {
+function StudentProfile({ student, onClose }) {
   if (!student) return null;
 
-  const attendedEvents = (student.eventIds || [])
-    .map((id) =>
-      events?.find((event) => event.id === id)
-    )
-    .filter(Boolean);
+  const events = student.eventsBreakdown || [];
+  const skills = student.skills || [];
 
   return (
     <div
@@ -388,7 +85,6 @@ function StudentProfile({
         className={styles.modal}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div className={styles.modalHeader}>
           <div className={styles.profileIdentity}>
             <div className={styles.largeAvatar}>
@@ -399,8 +95,7 @@ function StudentProfile({
               <h2>{student.name}</h2>
 
               <p>
-                {student.rollNo} ·{" "}
-                {student.department}
+                {student.rollNo} · {student.department || "-"}
               </p>
 
               <span
@@ -424,40 +119,35 @@ function StudentProfile({
           </button>
         </div>
 
-        {/* Body */}
         <div className={styles.modalBody}>
-          {/* Quick Stats */}
+          {/* QUICK STATS */}
           <div className={styles.profileStats}>
             <div className={styles.profileStat}>
               <CalendarCheck size={18} />
-              <strong>
-                {student.eventsAttended}
-              </strong>
+              <strong>{student.eventsAttended}</strong>
               <span>Events</span>
             </div>
 
             <div className={styles.profileStat}>
               <Clock size={18} />
               <strong>{student.hours}h</strong>
-              <span>Hours</span>
+              <span>Total Hours</span>
             </div>
 
             <div className={styles.profileStat}>
               <Trophy size={18} />
-              <strong>
-                {pointsOf(student)}
-              </strong>
+              <strong>{pointsOf(student)}</strong>
               <span>Points</span>
             </div>
 
             <div className={styles.profileStat}>
               <Star size={18} />
-              <strong>{student.rating}</strong>
-              <span>Rating</span>
+              <strong>{student.physicalVerificationCount || 0}</strong>
+              <span>PV Count</span>
             </div>
           </div>
 
-          {/* Personal Information */}
+          {/* PERSONAL INFORMATION */}
           <section className={styles.detailSection}>
             <div className={styles.sectionTitle}>
               <UserCheck size={17} />
@@ -469,7 +159,7 @@ function StudentProfile({
                 <Mail size={15} />
                 <div>
                   <small>Email</small>
-                  <strong>{student.email}</strong>
+                  <strong>{student.email || "-"}</strong>
                 </div>
               </div>
 
@@ -477,7 +167,7 @@ function StudentProfile({
                 <Phone size={15} />
                 <div>
                   <small>Phone</small>
-                  <strong>{student.phone}</strong>
+                  <strong>{student.phone || "-"}</strong>
                 </div>
               </div>
 
@@ -485,7 +175,7 @@ function StudentProfile({
                 <GraduationCap size={15} />
                 <div>
                   <small>College</small>
-                  <strong>{student.college}</strong>
+                  <strong>{student.college || "-"}</strong>
                 </div>
               </div>
 
@@ -493,7 +183,7 @@ function StudentProfile({
                 <MapPin size={15} />
                 <div>
                   <small>Zone</small>
-                  <strong>{student.zone}</strong>
+                  <strong>{student.zone || "-"}</strong>
                 </div>
               </div>
 
@@ -501,7 +191,7 @@ function StudentProfile({
                 <Activity size={15} />
                 <div>
                   <small>Batch</small>
-                  <strong>{student.batch}</strong>
+                  <strong>{student.batch || "-"}</strong>
                 </div>
               </div>
 
@@ -509,32 +199,68 @@ function StudentProfile({
                 <Award size={15} />
                 <div>
                   <small>Joined</small>
-                  <strong>{student.joinedOn}</strong>
+                  <strong>{formatDate(student.joinedOn)}</strong>
+                </div>
+              </div>
+
+              <div className={styles.detailItem}>
+                <GraduationCap size={15} />
+                <div>
+                  <small>Accommodation</small>
+                  <strong>{student.accommodation || "-"}</strong>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Skills */}
+          {/* VOLUNTEERING HOURS */}
+          <section className={styles.detailSection}>
+            <div className={styles.sectionTitle}>
+              <Clock size={17} />
+              Volunteering Contribution
+            </div>
+
+            <div className={styles.profileStats}>
+              <div className={styles.profileStat}>
+                <Clock size={18} />
+                <strong>{student.regularHours || 0}h</strong>
+                <span>Regular Hours</span>
+              </div>
+
+              <div className={styles.profileStat}>
+                <Award size={18} />
+                <strong>{student.physicalVerificationHours || 0}h</strong>
+                <span>PV Hours</span>
+              </div>
+            </div>
+          </section>
+
+          {/* SKILLS */}
           <section className={styles.detailSection}>
             <div className={styles.sectionTitle}>
               <Award size={17} />
               Volunteer Skills
             </div>
 
-            <div className={styles.skillList}>
-              {student.skills.map((skill) => (
-                <span
-                  key={skill}
-                  className={styles.skillChip}
-                >
-                  {skill}
-                </span>
-              ))}
-            </div>
+            {skills.length === 0 ? (
+              <div className={styles.emptyEvents}>
+                No volunteer skills recorded.
+              </div>
+            ) : (
+              <div className={styles.skillList}>
+                {skills.map((skill, index) => (
+                  <span
+                    key={`${skill}-${index}`}
+                    className={styles.skillChip}
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            )}
           </section>
 
-          {/* Activity */}
+          {/* ACTIVITY */}
           <section className={styles.detailSection}>
             <div className={styles.sectionTitle}>
               <Activity size={17} />
@@ -544,7 +270,8 @@ function StudentProfile({
             <div className={styles.activityBox}>
               <div
                 className={
-                  student.status === "Active"
+                  student.lastActiveDays !== null &&
+                    student.lastActiveDays <= 7
                     ? styles.activityIconActive
                     : styles.activityIconInactive
                 }
@@ -554,38 +281,33 @@ function StudentProfile({
 
               <div>
                 <strong>
-                  {getActivityText(
-                    student.lastActiveDays
-                  )}
+                  {getActivityText(student.lastActiveDays)}
                 </strong>
 
                 <p>
-                  Last volunteering activity
-                  recorded{" "}
-                  {student.lastActiveDays === 0
-                    ? "today."
-                    : `${student.lastActiveDays} days ago.`}
+                  Last verified activity:{" "}
+                  {formatDate(student.lastActivityDate)}
                 </p>
               </div>
             </div>
           </section>
 
-          {/* Events */}
+          {/* EVENTS */}
           <section className={styles.detailSection}>
             <div className={styles.sectionTitle}>
               <CalendarCheck size={17} />
               Events Participated
             </div>
 
-            {attendedEvents.length === 0 ? (
+            {events.length === 0 ? (
               <div className={styles.emptyEvents}>
-                No events participated yet.
+                No completed volunteering events recorded.
               </div>
             ) : (
               <div className={styles.eventList}>
-                {attendedEvents.map((event) => (
+                {events.map((event, index) => (
                   <div
-                    key={event.id}
+                    key={`${event.event_name}-${index}`}
                     className={styles.eventRow}
                   >
                     <div className={styles.eventIcon}>
@@ -593,9 +315,10 @@ function StudentProfile({
                     </div>
 
                     <div>
-                      <strong>{event.title}</strong>
+                      <strong>{event.event_name || "Volunteering Event"}</strong>
                       <span>
-                        {event.zone} · Volunteer
+                        {Number(event.hours || 0)} hours ·{" "}
+                        {Number(event.points || 0)} points
                       </span>
                     </div>
 
@@ -607,7 +330,6 @@ function StudentProfile({
           </section>
         </div>
 
-        {/* Footer */}
         <div className={styles.modalFooter}>
           <button
             className={styles.closeFooterButton}
@@ -627,132 +349,160 @@ function StudentProfile({
 
 const StudentStatus = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const passedVolunteers =
-    location.state?.volunteers;
-
-  const passedEvents = location.state?.events;
-
-  const volunteers =
-    passedVolunteers?.length
-      ? passedVolunteers
-      : FALLBACK_VOLUNTEERS;
-
-  const events =
-    passedEvents?.length
-      ? passedEvents
-      : [];
-
-  const [statusFilter, setStatusFilter] =
-    useState("All");
-
+  const [volunteers, setVolunteers] = useState([]);
+  const [statusFilter, setStatusFilter] = useState("All");
   const [search, setSearch] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState(null);
 
-  const [selectedStudent, setSelectedStudent] =
-    useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  /* ----------------------------------------------------------
+     FETCH REAL STUDENT DATA
+     ---------------------------------------------------------- */
+
+  const fetchStudents = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await getAdminStudentStatus();
+
+      if (!response?.success) {
+        throw new Error(
+          response?.message || "Unable to load student data."
+        );
+      }
+
+      const formattedStudents = (response.students || []).map(
+        (student) => ({
+          ...student,
+          id: student.id || student.rollNo,
+          name: student.name || "Unknown",
+          rollNo: student.rollNo || "-",
+          email: student.email || "",
+          phone: student.phone || "",
+          college: student.college || "-",
+          zone: student.zone || "-",
+          batch: student.batch || "-",
+          department: student.department || "-",
+          status: student.status || "Inactive",
+          eventsAttended: Number(student.eventsAttended || 0),
+          hours: Number(student.hours || 0),
+          points: Number(student.points || 0),
+          regularHours: Number(student.regularHours || 0),
+          physicalVerificationHours: Number(
+            student.physicalVerificationHours || 0
+          ),
+          physicalVerificationCount: Number(
+            student.physicalVerificationCount || 0
+          ),
+          skills: Array.isArray(student.skills)
+            ? student.skills
+            : [],
+          eventsBreakdown: Array.isArray(student.eventsBreakdown)
+            ? student.eventsBreakdown
+            : [],
+          lastActiveDays:
+            student.lastActiveDays === null ||
+              student.lastActiveDays === undefined
+              ? null
+              : Number(student.lastActiveDays),
+        })
+      );
+
+      setVolunteers(formattedStudents);
+    } catch (err) {
+      console.error("Student Status API Error:", err);
+
+      setError(
+        err.response?.data?.message ||
+        err.message ||
+        "Failed to load student data."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
   /* ----------------------------------------------------------
      COUNTS
      ---------------------------------------------------------- */
 
   const activeCount = volunteers.filter(
-    (student) =>
-      student.status === "Active"
+    (student) => student.status === "Active"
   ).length;
 
   const inactiveCount = volunteers.filter(
-    (student) =>
-      student.status === "Inactive"
+    (student) => student.status === "Inactive"
   ).length;
+
+  const totalHours = volunteers.reduce(
+    (total, student) => total + Number(student.hours || 0),
+    0
+  );
+
+  const totalPoints = volunteers.reduce(
+    (total, student) => total + pointsOf(student),
+    0
+  );
 
   /* ----------------------------------------------------------
      FILTER
      ---------------------------------------------------------- */
 
   const filteredStudents = useMemo(() => {
-    const term = search
-      .trim()
-      .toLowerCase();
+    const term = search.trim().toLowerCase();
 
     return volunteers
       .filter((student) => {
-        if (statusFilter === "All") {
-          return true;
-        }
-
-        return (
-          student.status === statusFilter
-        );
+        if (statusFilter === "All") return true;
+        return student.status === statusFilter;
       })
       .filter((student) => {
         if (!term) return true;
 
-        return (
-          student.name
-            .toLowerCase()
-            .includes(term) ||
-          student.rollNo
-            .toLowerCase()
-            .includes(term) ||
-          student.college
-            .toLowerCase()
-            .includes(term) ||
-          student.department
-            .toLowerCase()
-            .includes(term) ||
-          student.zone
-            .toLowerCase()
-            .includes(term) ||
-          student.batch
-            .toLowerCase()
-            .includes(term)
+        return [
+          student.name,
+          student.rollNo,
+          student.college,
+          student.department,
+          student.zone,
+          student.batch,
+        ].some((value) =>
+          String(value || "").toLowerCase().includes(term)
         );
       });
-  }, [
-    volunteers,
-    statusFilter,
-    search,
-  ]);
+  }, [volunteers, statusFilter, search]);
 
   /* ----------------------------------------------------------
-     TOTAL HOURS
+     PAGE
      ---------------------------------------------------------- */
-
-  const totalHours = volunteers.reduce(
-    (total, student) =>
-      total + Number(student.hours || 0),
-    0
-  );
-
-  const totalPoints = volunteers.reduce(
-    (total, student) =>
-      total + pointsOf(student),
-    0
-  );
 
   return (
     <div className={styles.page}>
-      {/* ======================================================
-          HEADER
-      ====================================================== */}
-
+      {/* HEADER */}
       <header className={styles.header}>
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={() => navigate("/admin/dashboard")}
+        >
+          <span>←</span>
+          <span>Back to Dashboard</span>
+        </button>
         <div className={styles.headerLeft}>
-          <button
-            className={styles.backButton}
-            onClick={() =>
-              navigate("/admin/dashboard")
-            }
-          >
-            <ArrowLeft size={17} />
-          </button>
+
 
           <div>
             <h1>Student Status</h1>
             <p>
-              Monitor volunteer activity and
-              engagement
+              Monitor volunteer activity and engagement
             </p>
           </div>
         </div>
@@ -764,412 +514,240 @@ const StudentStatus = () => {
       </header>
 
       <main className={styles.main}>
-        {/* ====================================================
-            HERO
-        ==================================================== */}
+        {/* HERO */}
+        
 
-        <section className={styles.hero}>
-          <div>
-            <span className={styles.heroTag}>
-              VOLUNTEER MANAGEMENT
-            </span>
-
-            <h2>
-              Student Activity
-              <span> Overview</span>
-            </h2>
-
-            <p>
-              Track active and inactive
-              volunteers, understand their
-              contribution and quickly view
-              individual student profiles.
-            </p>
+        {/* LOADING / ERROR */}
+        {loading && (
+          <div className={styles.emptyEvents}>
+            Loading student records from database...
           </div>
+        )}
 
-          <div className={styles.heroDecoration}>
-            <div className={styles.orbit}>
-              <Users size={30} />
-            </div>
+        {!loading && error && (
+          <div className={styles.emptyEvents}>
+            <strong>Unable to load students</strong>
+            <p>{error}</p>
+
+            <button
+              className={styles.closeFooterButton}
+              onClick={fetchStudents}
+            >
+              Try Again
+            </button>
           </div>
-        </section>
+        )}
 
-        {/* ====================================================
-            SUMMARY CARDS
-        ==================================================== */}
+        {!loading && !error && (
+          <>
+            {/* SUMMARY CARDS */}
+            
 
-        <section className={styles.statsGrid}>
-          <div
-            className={`${styles.statCard} ${styles.totalCard}`}
-          >
-            <div className={styles.statIcon}>
-              <Users size={22} />
-            </div>
+            {/* DIRECTORY */}
+            <section className={styles.directory}>
+              <div className={styles.directoryHeader}>
+                <div>
+                  <h3>Volunteer Directory</h3>
+                  <p>
+                    Click a student to view their complete
+                    volunteering profile.
+                  </p>
+                </div>
 
-            <div>
-              <span>Total Students</span>
-              <strong>{volunteers.length}</strong>
-            </div>
+                <div className={styles.resultCount}>
+                  {filteredStudents.length} shown
+                </div>
+              </div>
 
-            <div className={styles.statArrow}>
-              →
-            </div>
-          </div>
+              {/* FILTERS */}
+              <div className={styles.filterArea}>
+                <div className={styles.searchBox}>
+                  <Search size={17} />
 
-          <button
-            className={`${styles.statCard} ${styles.activeCard}`}
-            onClick={() =>
-              setStatusFilter("Active")
-            }
-          >
-            <div className={styles.statIcon}>
-              <UserCheck size={22} />
-            </div>
+                  <input
+                    type="text"
+                    placeholder="Search name, roll no, college, department..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
 
-            <div>
-              <span>Active Volunteers</span>
-              <strong>{activeCount}</strong>
-            </div>
+                  {search && (
+                    <button onClick={() => setSearch("")}>
+                      <X size={15} />
+                    </button>
+                  )}
+                </div>
 
-            <div className={styles.statArrow}>
-              →
-            </div>
-          </button>
+                <div className={styles.filterButtons}>
+                  <button
+                    className={
+                      statusFilter === "All"
+                        ? styles.filterActive
+                        : styles.filterButton
+                    }
+                    onClick={() => setStatusFilter("All")}
+                  >
+                    All
+                    <span>{volunteers.length}</span>
+                  </button>
 
-          <button
-            className={`${styles.statCard} ${styles.inactiveCard}`}
-            onClick={() =>
-              setStatusFilter("Inactive")
-            }
-          >
-            <div className={styles.statIcon}>
-              <UserX size={22} />
-            </div>
+                  <button
+                    className={
+                      statusFilter === "Active"
+                        ? styles.filterActive
+                        : styles.filterButton
+                    }
+                    onClick={() => setStatusFilter("Active")}
+                  >
+                    <UserCheck size={14} />
+                    Active
+                    <span>{activeCount}</span>
+                  </button>
 
-            <div>
-              <span>Inactive Volunteers</span>
-              <strong>{inactiveCount}</strong>
-            </div>
+                  <button
+                    className={
+                      statusFilter === "Inactive"
+                        ? styles.filterInactive
+                        : styles.filterButton
+                    }
+                    onClick={() => setStatusFilter("Inactive")}
+                  >
+                    <UserX size={14} />
+                    Inactive
+                    <span>{inactiveCount}</span>
+                  </button>
+                </div>
+              </div>
 
-            <div className={styles.statArrow}>
-              →
-            </div>
-          </button>
+              {/* TABLE */}
+              <div className={styles.tableWrapper}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>Roll No</th>
+                      <th>College</th>
+                      <th>Zone</th>
+                      <th>Department</th>
+                      <th>Status</th>
+                      <th>Events</th>
+                      <th>Hours</th>
+                      <th>Points</th>
+                      <th>Activity</th>
+                    </tr>
+                  </thead>
 
-          <div
-            className={`${styles.statCard} ${styles.hoursCard}`}
-          >
-            <div className={styles.statIcon}>
-              <Clock size={22} />
-            </div>
+                  <tbody>
+                    {filteredStudents.map((student, index) => (
+                      <tr
+                        key={student.id}
+                        style={{
+                          "--delay": `${index * 0.04}s`,
+                        }}
+                        onClick={() => setSelectedStudent(student)}
+                      >
+                        <td>
+                          <div className={styles.studentCell}>
+                            <div className={styles.avatar}>
+                              {getInitials(student.name)}
+                            </div>
 
-            <div>
-              <span>Total Hours</span>
-              <strong>{totalHours}h</strong>
-            </div>
-          </div>
-
-          <div
-            className={`${styles.statCard} ${styles.pointsCard}`}
-          >
-            <div className={styles.statIcon}>
-              <Trophy size={22} />
-            </div>
-
-            <div>
-              <span>Community Points</span>
-              <strong>{totalPoints}</strong>
-            </div>
-          </div>
-        </section>
-
-        {/* ====================================================
-            DIRECTORY
-        ==================================================== */}
-
-        <section className={styles.directory}>
-          <div className={styles.directoryHeader}>
-            <div>
-              <h3>
-                Volunteer Directory
-              </h3>
-
-              <p>
-                Click a student to view their
-                complete volunteering profile.
-              </p>
-            </div>
-
-            <div className={styles.resultCount}>
-              {filteredStudents.length} shown
-            </div>
-          </div>
-
-          {/* FILTERS */}
-
-          <div className={styles.filterArea}>
-            <div className={styles.searchBox}>
-              <Search size={17} />
-
-              <input
-                type="text"
-                placeholder="Search name, roll no, college, department..."
-                value={search}
-                onChange={(e) =>
-                  setSearch(e.target.value)
-                }
-              />
-
-              {search && (
-                <button
-                  onClick={() => setSearch("")}
-                >
-                  <X size={15} />
-                </button>
-              )}
-            </div>
-
-            <div className={styles.filterButtons}>
-              <button
-                className={
-                  statusFilter === "All"
-                    ? styles.filterActive
-                    : styles.filterButton
-                }
-                onClick={() =>
-                  setStatusFilter("All")
-                }
-              >
-                All
-                <span>{volunteers.length}</span>
-              </button>
-
-              <button
-                className={
-                  statusFilter === "Active"
-                    ? styles.filterActive
-                    : styles.filterButton
-                }
-                onClick={() =>
-                  setStatusFilter("Active")
-                }
-              >
-                <UserCheck size={14} />
-                Active
-                <span>{activeCount}</span>
-              </button>
-
-              <button
-                className={
-                  statusFilter === "Inactive"
-                    ? styles.filterInactive
-                    : styles.filterButton
-                }
-                onClick={() =>
-                  setStatusFilter("Inactive")
-                }
-              >
-                <UserX size={14} />
-                Inactive
-                <span>{inactiveCount}</span>
-              </button>
-            </div>
-          </div>
-
-          {/* TABLE */}
-
-          <div className={styles.tableWrapper}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Student</th>
-                  <th>Roll No</th>
-                  <th>College</th>
-                  <th>Zone</th>
-                  <th>Department</th>
-                  <th>Status</th>
-                  <th>Events</th>
-                  <th>Hours</th>
-                  <th>Points</th>
-                  <th>Activity</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {filteredStudents.map(
-                  (student, index) => (
-                    <tr
-                      key={student.id}
-                      style={{
-                        "--delay": `${index * 0.04}s`,
-                      }}
-                      onClick={() =>
-                        setSelectedStudent(
-                          student
-                        )
-                      }
-                    >
-                      <td>
-                        <div
-                          className={
-                            styles.studentCell
-                          }
-                        >
-                          <div
-                            className={
-                              styles.avatar
-                            }
-                          >
-                            {getInitials(
-                              student.name
-                            )}
+                            <div>
+                              <strong>{student.name}</strong>
+                              <span>{student.batch}</span>
+                            </div>
                           </div>
+                        </td>
 
-                          <div>
-                            <strong>
-                              {student.name}
-                            </strong>
+                        <td>
+                          <span className={styles.rollNumber}>
+                            {student.rollNo}
+                          </span>
+                        </td>
 
-                            <span>
-                              {student.batch}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
+                        <td>{student.college}</td>
 
-                      <td>
-                        <span
-                          className={
-                            styles.rollNumber
-                          }
-                        >
-                          {student.rollNo}
-                        </span>
-                      </td>
+                        <td>
+                          <span className={styles.zoneBadge}>
+                            {student.zone}
+                          </span>
+                        </td>
 
-                      <td>
-                        {student.college}
-                      </td>
+                        <td>
+                          <span className={styles.department}>
+                            {student.department}
+                          </span>
+                        </td>
 
-                      <td>
-                        <span
-                          className={
-                            styles.zoneBadge
-                          }
-                        >
-                          {student.zone}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span
-                          className={
-                            styles.department
-                          }
-                        >
-                          {student.department}
-                        </span>
-                      </td>
-
-                      <td>
-                        <span
-                          className={
-                            student.status ===
-                            "Active"
-                              ? styles.statusActive
-                              : styles.statusInactive
-                          }
-                        >
+                        <td>
                           <span
                             className={
-                              styles.statusDot
+                              student.status === "Active"
+                                ? styles.statusActive
+                                : styles.statusInactive
                             }
-                          ></span>
+                          >
+                            <span className={styles.statusDot}></span>
+                            {student.status}
+                          </span>
+                        </td>
 
-                          {student.status}
-                        </span>
-                      </td>
+                        <td>
+                          <strong>{student.eventsAttended}</strong>
+                        </td>
 
-                      <td>
-                        <strong>
-                          {student.eventsAttended}
-                        </strong>
-                      </td>
+                        <td>
+                          <strong>{student.hours}h</strong>
+                        </td>
 
-                      <td>
-                        <strong>
-                          {student.hours}h
-                        </strong>
-                      </td>
+                        <td>
+                          <span className={styles.points}>
+                            <Trophy size={13} />
+                            {pointsOf(student)}
+                          </span>
+                        </td>
 
-                      <td>
-                        <span
-                          className={
-                            styles.points
-                          }
-                        >
-                          <Trophy size={13} />
-                          {pointsOf(student)}
-                        </span>
-                      </td>
+                        <td>
+                          <span
+                            className={
+                              student.lastActiveDays !== null &&
+                                student.lastActiveDays <= 7
+                                ? styles.activityGood
+                                : styles.activityBad
+                            }
+                          >
+                            {getActivityText(student.lastActiveDays)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
 
-                      <td>
-                        <span
-                          className={
-                            student.lastActiveDays <=
-                            7
-                              ? styles.activityGood
-                              : styles.activityBad
-                          }
-                        >
-                          {getActivityText(
-                            student.lastActiveDays
-                          )}
-                        </span>
-                      </td>
-                    </tr>
-                  )
-                )}
+                    {filteredStudents.length === 0 && (
+                      <tr>
+                        <td colSpan="10" className={styles.emptyRow}>
+                          <Users size={30} />
 
-                {filteredStudents.length ===
-                  0 && (
-                  <tr>
-                    <td
-                      colSpan="10"
-                      className={
-                        styles.emptyRow
-                      }
-                    >
-                      <Users size={30} />
+                          <strong>No students found</strong>
 
-                      <strong>
-                        No students found
-                      </strong>
-
-                      <span>
-                        Try changing the search
-                        or status filter.
-                      </span>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+                          <span>
+                            Try changing the search or status filter.
+                          </span>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </>
+        )}
       </main>
 
-      {/* ======================================================
-          STUDENT PROFILE
-      ====================================================== */}
-
+      {/* STUDENT PROFILE */}
       {selectedStudent && (
         <StudentProfile
           student={selectedStudent}
-          events={events}
-          onClose={() =>
-            setSelectedStudent(null)
-          }
+          onClose={() => setSelectedStudent(null)}
         />
       )}
     </div>

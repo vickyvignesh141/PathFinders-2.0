@@ -1,5 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { LayoutDashboard } from "lucide-react";
 import {
   Trophy,
   Medal,
@@ -132,6 +134,7 @@ const RankBadge = ({ rank }) => {
 // MAIN LEADERBOARD COMPONENT
 // =====================================
 const Leaderboard = ({ onBack }) => {
+  const navigate = useNavigate();
   const [volunteers, setVolunteers] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -173,8 +176,8 @@ const Leaderboard = ({ onBack }) => {
 
       setError(
         err.response?.data?.message ||
-          err.message ||
-          "Unable to load leaderboard. Please try again."
+        err.message ||
+        "Unable to load leaderboard. Please try again."
       );
     } finally {
       setLoading(false);
@@ -332,6 +335,14 @@ const Leaderboard = ({ onBack }) => {
 
       {/* HEADER */}
       <header className={styles.header}>
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={() => navigate("/admin/dashboard")}
+        >
+          <span>←</span>
+          <span>Back to Dashboard</span>
+        </button>
         <div className={styles.headerTitles}>
           <h1 className={styles.pageTitle}>
             <Award className={styles.titleIcon} size={28} />
